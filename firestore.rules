@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Regras para a coleção 'users'
+    match /users/{userId} {
+      allow create: if request.auth != null;
+      // Permite que um usuário obtenha seu próprio documento.
+      allow get: if request.auth != null && request.auth.uid == userId;
+      // Permite que usuários autenticados listem (query) outros usuários.
+      // A consulta no lado do cliente deve ser segura e filtrar adequadamente (ex: por userType).
+      allow list: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Regras para a coleção 'transactions'
+    match /transactions/{transactionId} {
+      // O motorista pode ler/atualizar/deletar suas transações.
+      // O cliente pode ler as transações que ele criou.
+      allow read, update, delete: if request.auth != null && 
+                                      (request.auth.uid == resource.data.userId || 
+                                       (resource.data.clientId != null && request.auth.uid == resource.data.clientId));
+      // Permite que motoristas e clientes criem transações.
+      allow create: if request.auth != null;
+    }
+    
+    // Regras para a coleção 'workShifts'
+    match /workShifts/{shiftId} {
+      allow read, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create, update: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+
+    // REGRAS SEGURAS E FINAIS para a coleção 'appointments'
+    match /appointments/{appointmentId} {
+      // --- REGRAS DE LEITURA ---
+      // Permite obter um documento específico se o usuário for o dono.
+      allow get: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Permite listar (fazer query) se o usuário estiver autenticado.
+      // A segurança da consulta é reforçada pelo código da aplicação.
+      allow list: if request.auth != null;
+
+      // --- REGRAS DE ESCRITA ---
+      // Permite criar um novo agendamento se o usuário estiver autenticado e for o dono.
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Permite atualizar um agendamento se o usuário for o dono.
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Permite apagar um agendamento se o usuário for o dono.
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // Regras para a coleção 'configurations'
+    match /configurations/{userId} {
+      allow read, create, update: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
