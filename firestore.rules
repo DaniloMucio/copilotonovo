@@ -25,6 +25,11 @@ service cloud.firestore {
       allow create: if request.auth != null;
     }
     
+    // Regra para permitir queries (list) na coleção transactions
+    match /transactions {
+      allow list: if request.auth != null;
+    }
+    
     // Regras para a coleção 'workShifts'
     match /workShifts/{shiftId} {
       allow read, delete: if request.auth != null && request.auth.uid == resource.data.userId;
@@ -52,6 +57,39 @@ service cloud.firestore {
     // Regras para a coleção 'configurations'
     match /configurations/{userId} {
       allow read, create, update: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Regras para a coleção 'vehicles'
+    match /vehicles/{vehicleId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Regra para permitir queries (list) na coleção vehicles
+    match /vehicles {
+      allow list: if request.auth != null;
+    }
+
+    // Regras para a coleção 'maintenance'
+    match /maintenance/{maintenanceId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Regra para permitir queries (list) na coleção maintenance
+    match /maintenance {
+      allow list: if request.auth != null;
+    }
+
+    // Regras para a coleção 'fuel'
+    match /fuel/{fuelId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Regra para permitir queries (list) na coleção fuel
+    match /fuel {
+      allow list: if request.auth != null;
     }
   }
 }
