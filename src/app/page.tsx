@@ -56,7 +56,7 @@ export default function LoginPage() {
   });
   
   // PWA hook por último
-  const { canInstall, install } = usePWAInstall();
+  const { canInstall, install, isClient } = usePWAInstall();
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     try {
@@ -159,7 +159,7 @@ export default function LoginPage() {
       <Footer />
       
       {/* PWA Install Banner */}
-      <PWAInstallButton canInstall={canInstall} install={install} variant="banner" />
+      <PWAInstallButton canInstall={canInstall} install={install} variant="banner" isClient={isClient} />
     </div>
   );
 }

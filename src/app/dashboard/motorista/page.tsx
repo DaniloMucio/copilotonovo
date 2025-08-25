@@ -46,6 +46,7 @@ import { ProfileForm } from '@/components/forms/ProfileForm';
 import { ChangePasswordForm } from '@/components/forms/ChangePasswordForm';
 import { ReportsManager } from '@/components/ReportsManager';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
+import { usePWAInstall } from '@/hooks/use-pwa-install';
 
 interface MotoristaDashboardProps {
   canInstall?: boolean;
@@ -65,6 +66,9 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const { toast } = useToast();
+  
+  // PWA hook
+  const { canInstall: pwaCanInstall, install: pwaInstall, isClient } = usePWAInstall();
 
   const defaultTab = searchParams.get('tab') || 'overview';
   
@@ -208,7 +212,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
                 <ChangePasswordForm onFormSubmit={handlePasswordUpdate} />
               </DialogContent>
             </Dialog>
-            <PWAInstallButton canInstall={canInstall} install={install} />
+            <PWAInstallButton canInstall={pwaCanInstall} install={pwaInstall} isClient={isClient} />
           </div>
         </div>
       </div>

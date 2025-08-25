@@ -12,21 +12,21 @@ interface PWAInstallButtonProps {
   variant?: 'icon' | 'full' | 'banner';
 }
 
-export const PWAInstallButton = ({ canInstall, install, variant = 'icon' }: PWAInstallButtonProps) => {
+export const PWAInstallButton = ({ canInstall, install, variant = 'icon' }: PWAInstallButtonProps & { isClient?: boolean }) => {
   const [showDialog, setShowDialog] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
-  // Debug: mostrar informações sobre o estado do PWA
-  const debugInfo = {
-    canInstall, 
-    variant, 
-    dismissed,
-    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server',
-    location: typeof window !== 'undefined' ? window.location.href : 'server',
-    protocol: typeof window !== 'undefined' ? window.location.protocol : 'server'
-  };
-  
-  console.log('PWAInstallButton render:', debugInfo);
+  // Debug: mostrar informações sobre o estado do PWA (só no cliente)
+  if (typeof window !== 'undefined') {
+    console.log('PWAInstallButton render:', {
+      canInstall, 
+      variant, 
+      dismissed,
+      userAgent: navigator.userAgent,
+      location: window.location.href,
+      protocol: window.location.protocol
+    });
+  }
 
   // Para debug: sempre mostrar em desenvolvimento ou se atender critérios básicos
   const isDevelopment = typeof process !== 'undefined' && process.env.NODE_ENV === 'development';
@@ -68,10 +68,7 @@ export const PWAInstallButton = ({ canInstall, install, variant = 'icon' }: PWAI
             <div>
               <p className="font-semibold text-sm">Instalar Co-Piloto</p>
               <p className="text-xs opacity-90">
-                {typeof window !== 'undefined' && window.location.protocol === 'https:' 
-                  ? 'Clique para instalar o app' 
-                  : 'Acesso rápido como app nativo'
-                }
+                Clique para instalar o app
               </p>
             </div>
           </div>

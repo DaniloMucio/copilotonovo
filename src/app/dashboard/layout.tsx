@@ -35,7 +35,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(auth.currentUser);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [navItems, setNavItems] = useState<any[]>([]);
-  const { canInstall, install } = usePWAInstall();
+  const { canInstall, install, isClient } = usePWAInstall();
 
   const handleLogout = useCallback(async () => {
     try {

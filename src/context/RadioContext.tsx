@@ -8,6 +8,9 @@ export interface RadioStation {
   name: string;
   description: string;
   streamUrl: string;
+  category: 'music' | 'news' | 'specialized' | 'regional';
+  region?: string;
+  website?: string;
 }
 
 interface RadioContextType {
