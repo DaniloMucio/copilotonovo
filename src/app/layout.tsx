@@ -18,7 +18,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Co-Piloto" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/icons/icon-cp-192x192.svg" />
       </head>
       <body className="font-body antialiased flex flex-col min-h-screen">
         <ClientLayout>

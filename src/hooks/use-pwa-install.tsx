@@ -82,9 +82,10 @@ export const usePWAInstall = () => {
     };
   }, []); // Removidas dependências que causam re-renders infinitos
 
-  const handleInstall = async () => {
+    const handleInstall = async () => {
     if (installPrompt) {
       // Se tiver prompt automático, usa ele
+      console.log('Using automatic install prompt');
       await installPrompt.prompt();
       
       const { outcome } = await installPrompt.userChoice;
@@ -97,33 +98,79 @@ export const usePWAInstall = () => {
         console.log('User dismissed the install prompt');
       }
     } else {
-      // Se não tiver prompt, tenta instalação manual
-      console.log('No install prompt available, trying manual installation...');
+      // Se não tiver prompt, tenta forçar instalação
+      console.log('No install prompt available, trying to force installation...');
       
-      // Verifica se o navegador suporta instalação manual
-      if ('serviceWorker' in navigator && 'PushManager' in window) {
-        try {
-          // Tenta registrar o service worker manualmente
+      try {
+        // Tenta registrar o service worker
+        if ('serviceWorker' in navigator) {
           const registration = await navigator.serviceWorker.register('/sw.js');
-          console.log('Service Worker registered manually:', registration);
+          console.log('Service Worker registered:', registration);
           
-                // Detecta se o navegador tem botão de instalação
-      const hasInstallButton = window.location.protocol === 'https:' && 
-        (navigator.userAgent.includes('Chrome') || navigator.userAgent.includes('Edge'));
-      
-      if (hasInstallButton) {
-        // Navegador moderno - mostra instruções específicas
-        alert('Para instalar o app:\n\n1. Procure o ícone de instalação (🔽) na barra de endereços\n2. Clique nele e depois em "Instalar"\n3. Ou use o menu do navegador (⋮) → "Instalar Co-Piloto"');
-      } else {
-        // Navegador antigo - mostra instruções gerais
-        alert('Para instalar o app:\n\n1. Use o menu do navegador (⋮)\n2. Procure por "Instalar app" ou "Adicionar à tela inicial"\n3. Ou use Ctrl+Shift+I → Application → Install');
-      }
-        } catch (error) {
-          console.error('Failed to register service worker manually:', error);
-          alert('Instalação automática não disponível. Use o menu do navegador para instalar o app.');
+          // Aguarda um pouco para o service worker carregar
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Tenta disparar o evento de instalação manualmente
+          if ('PushManager' in window) {
+            try {
+              // Força a verificação de instalação
+              const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: 'BEl62iUYgUivxIkv69yViEuiBIa1HlG5DQvRRkOjVlUFEjvZfkN8dGQKcqzQMsBTo7EluulYooYyL0HwQjw9UZtM'
+              });
+              console.log('Push subscription created:', subscription);
+              
+              // Mostra popup de instalação personalizado
+              showInstallPopup();
+            } catch (error) {
+              console.log('Push subscription failed, showing manual instructions');
+              showInstallPopup();
+            }
+          } else {
+            showInstallPopup();
+          }
+        } else {
+          showInstallPopup();
         }
-      } else {
-        alert('Seu navegador não suporta instalação de PWA. Use o menu do navegador para instalar o app.');
+      } catch (error) {
+        console.error('Installation failed:', error);
+        showInstallPopup();
+      }
+    }
+  };
+
+  // Função para mostrar popup de instalação personalizado
+  const showInstallPopup = () => {
+    const isChrome = navigator.userAgent.includes('Chrome');
+    const isEdge = navigator.userAgent.includes('Edge');
+    const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
+    
+    let message = 'Para instalar o Co-Piloto:\n\n';
+    
+    if (isChrome || isEdge) {
+      message += '1. Clique no ícone de instalação (🔽) na barra de endereços\n';
+      message += '2. Ou use o menu (⋮) → "Instalar Co-Piloto"\n';
+      message += '3. Ou pressione Ctrl+Shift+I → Application → Install';
+    } else if (isSafari) {
+      message += '1. Use o menu Safari → "Adicionar à Tela Inicial"\n';
+      message += '2. Ou use o menu Compartilhar → "Adicionar à Tela Inicial"';
+    } else {
+      message += '1. Use o menu do navegador (⋮ ou ⚙️)\n';
+      message += '2. Procure por "Instalar app" ou "Adicionar à tela inicial"';
+    }
+    
+    message += '\n\nClique em OK para continuar.';
+    
+    if (confirm(message)) {
+      // Tenta abrir a página de instalação do navegador
+      try {
+        if (isChrome || isEdge) {
+          window.open('chrome://apps/', '_blank');
+        } else if (isSafari) {
+          window.open('https://support.apple.com/guide/safari/add-webpages-to-your-home-screen-ibrw1110/mac', '_blank');
+        }
+      } catch (e) {
+        console.log('Could not open browser-specific page');
       }
     }
   };
