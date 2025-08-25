@@ -69,22 +69,27 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       <Sidebar />
       
       {/* Conteúdo Principal */}
-      <div className="flex-1 lg:ml-64">
+      <div className="flex-1 lg:ml-64 min-w-0">
         {/* Header */}
-        <header className="sticky top-0 h-16 border-b bg-background px-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <header className="sticky top-0 h-16 border-b bg-background px-4 md:px-6 flex items-center justify-between">
+          {/* Espaço vazio à esquerda para compensar o botão do menu */}
+          <div className="w-12 md:w-16"></div>
+          
+          {/* Logo e nome centralizados */}
+          <div className="flex items-center gap-2 absolute left-1/2 transform -translate-x-1/2">
             <Logo />
-            <span className="text-lg font-semibold">Co-Piloto</span>
+            <span className="text-base md:text-lg font-semibold">Co-Piloto</span>
           </div>
           
-          <Button onClick={handleLogout} variant="outline">
-            <LogOut className="mr-2 h-4 w-4" />
-            Sair
+          {/* Botão de logout à direita */}
+          <Button onClick={handleLogout} variant="outline" size="sm" className="md:size-default">
+            <LogOut className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+            <span className="hidden sm:inline">Sair</span>
           </Button>
         </header>
 
         {/* Conteúdo */}
-        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+        <main className="flex flex-1 flex-col gap-4 p-3 md:gap-6 md:p-6 lg:gap-8 lg:p-8 min-w-0">
           {children}
         </main>
       </div>

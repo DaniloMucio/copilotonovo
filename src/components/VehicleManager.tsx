@@ -31,6 +31,7 @@ import {
   type MaintenanceItem as RealMaintenanceItem,
   type FuelRecord as RealFuelRecord
 } from '@/services/vehicle';
+import { getTransactions, type Transaction } from '@/services/transactions';
 // Removido - debug não é mais necessário
 
 // Tipos para gestão de veículo (compatibilidade)
@@ -264,6 +265,7 @@ export function VehicleManager() {
   const { user } = useAuth();
   const [maintenanceItems, setMaintenanceItems] = useState<MaintenanceItem[]>([]);
   const [fuelRecords, setFuelRecords] = useState<FuelRecord[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [vehicleInfo, setVehicleInfo] = useState<VehicleInfo>({
     brand: '',
     model: '',
@@ -294,11 +296,12 @@ export function VehicleManager() {
         console.log('🔍 Carregando dados em paralelo...');
         
         // Carregar dados em paralelo
-        const [vehicle, maintenance, fuel, stats] = await Promise.all([
+        const [vehicle, maintenance, fuel, stats, transactions] = await Promise.all([
           getUserVehicle(user.uid),
           getVehicleMaintenance(user.uid),
           getFuelRecords(user.uid),
-          calculateVehicleStats(user.uid)
+          calculateVehicleStats(user.uid),
+          getTransactions(user.uid)
         ]);
 
         console.log('✅ Dados carregados:', { 
@@ -344,8 +347,25 @@ export function VehicleManager() {
           fuelType: record.fuelType
         }));
 
+        // Adicionar transações de combustível das despesas
+        const fuelTransactions = (transactions || [])
+          .filter(t => t.type === 'despesa' && t.category === 'Combustível' && t.km && t.pricePerLiter)
+          .map(t => ({
+            id: `fuel_${t.id}`,
+            date: format(t.date instanceof Date ? t.date : t.date.toDate(), 'yyyy-MM-dd'),
+            liters: t.amount / (t.pricePerLiter || 1),
+            cost: t.amount,
+            km: t.km || 0,
+            station: 'Posto (Transação)',
+            fuelType: 'gasoline' as any
+          }));
+
+        // Combinar dados de combustível
+        const allFuelRecords = [...convertedFuel, ...fuelTransactions];
+
         setMaintenanceItems(convertedMaintenance);
-        setFuelRecords(convertedFuel);
+        setFuelRecords(allFuelRecords);
+        setTransactions(transactions);
 
         console.log('🎉 Dados do veículo carregados com sucesso!');
 
@@ -379,6 +399,14 @@ export function VehicleManager() {
   // Calcula estatísticas
   const totalMaintenanceCost = maintenanceItems.reduce((sum, item) => sum + item.cost, 0);
   const totalFuelCost = fuelRecords.reduce((sum, record) => sum + record.cost, 0);
+  
+          // Adicionar custos de manutenção das transações
+        const maintenanceTransactions = (transactions || [])
+          .filter(t => t.type === 'despesa' && t.category === 'Manutenção')
+          .reduce((sum, t) => sum + t.amount, 0);
+        
+        const totalMaintenanceWithTransactions = totalMaintenanceCost + maintenanceTransactions;
+  
   const urgentMaintenance = maintenanceItems.filter(item => {
     const daysUntilNext = differenceInDays(new Date(item.nextDate), new Date());
     const kmUntilNext = item.nextKm - vehicleInfo.currentKm;
@@ -475,19 +503,7 @@ export function VehicleManager() {
           </p>
         </div>
         
-        {process.env.NODE_ENV === 'development' && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => {
-              console.log('🔍 Debug removido - não é mais necessário');
-              alert('Debug removido - funcionalidade não é mais necessária');
-            }}
-            className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-          >
-            🐛 Debug
-          </Button>
-        )}
+                 {/* Botão debug removido */}
       </div>
 
       {/* Informações do veículo */}
@@ -522,20 +538,20 @@ export function VehicleManager() {
 
       {/* Métricas rápidas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Custo Total Manutenção</CardTitle>
-            <Wrench className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              R$ {totalMaintenanceCost.toFixed(2)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {maintenanceItems.length} itens registrados
-            </p>
-          </CardContent>
-        </Card>
+                 <Card>
+           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+             <CardTitle className="text-sm font-medium">Custo Total Manutenção</CardTitle>
+             <Wrench className="h-4 w-4 text-muted-foreground" />
+           </CardHeader>
+           <CardContent>
+             <div className="text-2xl font-bold text-red-600">
+               R$ {totalMaintenanceWithTransactions.toFixed(2)}
+             </div>
+             <p className="text-xs text-muted-foreground">
+               {maintenanceItems.length} itens + transações
+             </p>
+           </CardContent>
+         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -593,18 +609,14 @@ export function VehicleManager() {
         
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Manutenções recentes */}
-            <Card>
-              <CardHeader className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">Manutenções Recentes</CardTitle>
-                  <CardDescription>Últimas manutenções realizadas</CardDescription>
-                </div>
-                <Button size="sm" onClick={handleAddMaintenance}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar
-                </Button>
-              </CardHeader>
+                         {/* Manutenções recentes */}
+             <Card>
+               <CardHeader>
+                 <div>
+                   <CardTitle className="text-lg">Manutenções Recentes</CardTitle>
+                   <CardDescription>Últimas manutenções realizadas</CardDescription>
+                 </div>
+               </CardHeader>
               <CardContent className="space-y-3">
                 {maintenanceItems.slice(0, 3).map((item) => (
                   <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
@@ -625,18 +637,14 @@ export function VehicleManager() {
               </CardContent>
             </Card>
 
-            {/* Abastecimentos recentes */}
-            <Card>
-              <CardHeader className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">Abastecimentos Recentes</CardTitle>
-                  <CardDescription>Últimos abastecimentos registrados</CardDescription>
-                </div>
-                <Button size="sm" onClick={handleAddFuel}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar
-                </Button>
-              </CardHeader>
+                         {/* Abastecimentos recentes */}
+             <Card>
+               <CardHeader>
+                 <div>
+                   <CardTitle className="text-lg">Abastecimentos Recentes</CardTitle>
+                   <CardDescription>Últimos abastecimentos registrados</CardDescription>
+                 </div>
+               </CardHeader>
               <CardContent className="space-y-3">
                 {fuelRecords.slice(0, 3).map((record) => (
                   <div key={record.id} className="flex items-center justify-between p-3 border rounded-lg">
@@ -662,14 +670,13 @@ export function VehicleManager() {
           </div>
         </TabsContent>
         
-        <TabsContent value="maintenance" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Controle de Manutenção</h3>
-            <Button onClick={handleAddMaintenance}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Manutenção
-            </Button>
-          </div>
+                 <TabsContent value="maintenance" className="space-y-4">
+           <div>
+             <h3 className="text-lg font-semibold">Controle de Manutenção</h3>
+             <p className="text-sm text-muted-foreground mt-1">
+               Manutenções registradas através da agenda e formulário de despesas
+             </p>
+           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {maintenanceItems.map((item) => (
@@ -684,14 +691,13 @@ export function VehicleManager() {
           </div>
         </TabsContent>
         
-        <TabsContent value="fuel" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Controle de Combustível</h3>
-            <Button onClick={handleAddFuel}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Abastecimento
-            </Button>
-          </div>
+                 <TabsContent value="fuel" className="space-y-4">
+           <div>
+             <h3 className="text-lg font-semibold">Controle de Combustível</h3>
+             <p className="text-sm text-muted-foreground mt-1">
+               Abastecimentos registrados através do formulário de despesas
+             </p>
+           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {fuelRecords.map((record) => (

@@ -23,11 +23,9 @@ import { format, subDays, subWeeks, subMonths, startOfDay, endOfDay, startOfWeek
 import { ptBR } from 'date-fns/locale';
 import { useAuth } from '@/context/AuthContext';
 import { 
-  getUserTransactions, 
-  calculateFinancialMetrics, 
-  type FinancialTransaction,
-  type FinancialMetrics as RealFinancialMetrics 
-} from '@/services/financial';
+  getTransactions,
+  type Transaction
+} from '@/services/transactions';
 // Removido - debug não é mais necessário
 
 // Tipos para os dados financeiros
@@ -36,7 +34,6 @@ interface FinancialData {
   revenue: number;
   expenses: number;
   profit: number;
-  hours: number;
   km: number;
   fuel: number;
 }
@@ -45,10 +42,10 @@ interface FinancialMetrics {
   totalRevenue: number;
   totalExpenses: number;
   netProfit: number;
-  averagePerHour: number;
   averagePerKm: number;
   fuelEfficiency: number;
   profitMargin: number;
+  transactionCount: number;
 }
 
 // Componente de métrica individual
@@ -99,10 +96,10 @@ export function FinancialDashboard() {
     totalRevenue: 0,
     totalExpenses: 0,
     netProfit: 0,
-    averagePerHour: 0,
     averagePerKm: 0,
     fuelEfficiency: 0,
-    profitMargin: 0
+    profitMargin: 0,
+    transactionCount: 0
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -141,33 +138,37 @@ export function FinancialDashboard() {
 
         // Buscar transações reais
         console.log('🔍 Buscando transações...');
-        const transactions = await getUserTransactions(user.uid, startDate, endDate);
+        const transactions = await getTransactions(user.uid);
         console.log('✅ Transações encontradas:', transactions.length);
         
+        // Filtrar por período
+        const filteredTransactions = transactions.filter(transaction => {
+          const transactionDate = transaction.date instanceof Date ? transaction.date : transaction.date.toDate();
+          return transactionDate >= startDate && transactionDate <= endDate;
+        });
+        
         // Converter transações para formato do gráfico
-        const chartData = transactions.map(transaction => ({
-          date: format(transaction.date, 'yyyy-MM-dd'),
-          revenue: transaction.type === 'revenue' ? transaction.amount : 0,
-          expenses: transaction.type === 'expense' ? transaction.amount : 0,
-          profit: transaction.type === 'revenue' ? transaction.amount : -transaction.amount,
-          hours: transaction.hours || 0,
+        const chartData = filteredTransactions.map(transaction => ({
+          date: format(transaction.date instanceof Date ? transaction.date : transaction.date.toDate(), 'yyyy-MM-dd'),
+          revenue: transaction.type === 'receita' ? transaction.amount : 0,
+          expenses: transaction.type === 'despesa' ? transaction.amount : 0,
+          profit: transaction.type === 'receita' ? transaction.amount : -transaction.amount,
           km: transaction.km || 0,
-          fuel: transaction.fuel || 0
+          fuel: transaction.category === 'Combustível' ? (transaction.amount / (transaction.pricePerLiter || 1)) : 0
         }));
 
         // Agrupar por data
         const groupedData = chartData.reduce((acc, item) => {
           const existing = acc.find(d => d.date === item.date);
-          if (existing) {
-            existing.revenue += item.revenue;
-            existing.expenses += item.expenses;
-            existing.profit += item.profit;
-            existing.hours += item.hours;
-            existing.km += item.km;
-            existing.fuel += item.fuel;
-          } else {
-            acc.push({ ...item });
-          }
+                     if (existing) {
+             existing.revenue += item.revenue;
+             existing.expenses += item.expenses;
+             existing.profit += item.profit;
+             existing.km += item.km;
+             existing.fuel += item.fuel;
+           } else {
+             acc.push({ ...item });
+           }
           return acc;
         }, [] as FinancialData[]);
 
@@ -178,17 +179,32 @@ export function FinancialDashboard() {
 
         // Calcular métricas reais
         console.log('📊 Calculando métricas...');
-        const realMetrics = await calculateFinancialMetrics(user.uid, startDate, endDate);
-        console.log('✅ Métricas calculadas:', realMetrics);
+        
+        const revenueTransactions = filteredTransactions.filter(t => t.type === 'receita');
+        const expenseTransactions = filteredTransactions.filter(t => t.type === 'despesa');
+        
+        const totalRevenue = revenueTransactions.reduce((sum, t) => sum + t.amount, 0);
+        const totalExpenses = expenseTransactions.reduce((sum, t) => sum + t.amount, 0);
+        const netProfit = totalRevenue - totalExpenses;
+        
+        // Calcular métricas baseadas em KM e combustível
+        const totalKm = filteredTransactions.reduce((sum, t) => sum + (t.km || 0), 0);
+        const totalFuel = filteredTransactions
+          .filter(t => t.category === 'Combustível')
+          .reduce((sum, t) => sum + (t.amount / (t.pricePerLiter || 1)), 0);
+        
+        const averagePerKm = totalKm > 0 ? netProfit / totalKm : 0;
+        const fuelEfficiency = totalFuel > 0 ? totalKm / totalFuel : 0;
+        const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
         
         setMetrics({
-          totalRevenue: realMetrics.totalRevenue,
-          totalExpenses: realMetrics.totalExpenses,
-          netProfit: realMetrics.netProfit,
-          averagePerHour: realMetrics.averagePerHour,
-          averagePerKm: realMetrics.averagePerKm,
-          fuelEfficiency: realMetrics.fuelEfficiency,
-          profitMargin: realMetrics.profitMargin
+          totalRevenue,
+          totalExpenses,
+          netProfit,
+          averagePerKm,
+          fuelEfficiency,
+          profitMargin,
+          transactionCount: filteredTransactions.length
         });
 
         console.log('🎉 Dados carregados com sucesso!');
@@ -323,19 +339,7 @@ export function FinancialDashboard() {
             <Mail className="h-4 w-4 mr-2" />
             Email
           </Button>
-          {process.env.NODE_ENV === 'development' && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => {
-                console.log('🔍 Debug removido - não é mais necessário');
-                alert('Debug removido - funcionalidade não é mais necessária');
-              }}
-              className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-            >
-              🐛 Debug
-            </Button>
-          )}
+                     {/* Botão debug removido */}
         </div>
       </div>
 
@@ -370,12 +374,12 @@ export function FinancialDashboard() {
           description="Receita menos despesas"
         />
         
-        <MetricCard
-          title="Média por Hora"
-          value={`R$ ${metrics.averagePerHour.toFixed(2)}`}
-          icon={<Clock className="h-4 w-4" />}
-          description="Lucro médio por hora trabalhada"
-        />
+                 <MetricCard
+           title="Total de Transações"
+           value={metrics.transactionCount.toString()}
+           icon={<BarChart3 className="h-4 w-4" />}
+           description="Número total de transações no período"
+         />
         
         <MetricCard
           title="Eficiência Combustível"
@@ -510,9 +514,8 @@ export function FinancialDashboard() {
                   <th className="text-right p-2">Receita</th>
                   <th className="text-right p-2">Despesas</th>
                   <th className="text-right p-2">Lucro</th>
-                  <th className="text-right p-2">Horas</th>
-                  <th className="text-right p-2">KM</th>
-                  <th className="text-right p-2">Combustível</th>
+                                     <th className="text-right p-2">KM</th>
+                   <th className="text-right p-2">Combustível</th>
                 </tr>
               </thead>
               <tbody>
@@ -526,9 +529,8 @@ export function FinancialDashboard() {
                     }`}>
                       R$ {item.profit.toFixed(2)}
                     </td>
-                    <td className="text-right p-2">{item.hours}h</td>
-                    <td className="text-right p-2">{item.km}km</td>
-                    <td className="text-right p-2">{item.fuel}L</td>
+                                         <td className="text-right p-2">{item.km}km</td>
+                     <td className="text-right p-2">{item.fuel.toFixed(1)}L</td>
                   </tr>
                 ))}
               </tbody>

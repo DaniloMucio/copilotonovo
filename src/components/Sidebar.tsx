@@ -91,28 +91,29 @@ export function Sidebar({ className }: SidebarProps) {
           <Button
             variant="outline"
             size="icon"
-            className="lg:hidden fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm"
+            className="lg:hidden fixed top-3 left-3 z-50 bg-background/95 backdrop-blur-sm border-2 hover:bg-background shadow-lg h-10 w-10"
           >
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
         
-        <SheetContent side="left" className="w-80 p-0">
+        <SheetContent side="left" className="w-[85vw] max-w-sm p-0">
           <div className="flex flex-col h-full">
             {/* Header do menu lateral */}
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-semibold">Menu Principal</h2>
+            <div className="flex items-center justify-between p-3 md:p-4 border-b">
+              <h2 className="text-base md:text-lg font-semibold">Menu Principal</h2>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsOpen(false)}
+                className="h-8 w-8 md:h-10 md:w-10"
               >
                 <X className="h-4 w-4" />
               </Button>
             </div>
             
             {/* Lista de itens do menu */}
-            <nav className="flex-1 p-4 space-y-2">
+            <nav className="flex-1 p-3 md:p-4 space-y-1 md:space-y-2">
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -120,16 +121,16 @@ export function Sidebar({ className }: SidebarProps) {
                     key={item.href}
                     variant={isActive(item.href) ? "default" : "ghost"}
                     className={cn(
-                      "w-full justify-start h-auto p-4",
+                      "w-full justify-start h-auto p-3 md:p-4 text-sm md:text-base",
                       isActive(item.href) && "bg-primary text-primary-foreground"
                     )}
                     onClick={() => handleNavigation(item.href)}
                   >
-                    <div className="flex items-center space-x-3">
-                      <Icon className="h-5 w-5 flex-shrink-0" />
-                      <div className="text-left">
-                        <div className="font-medium">{item.name}</div>
-                        <div className="text-xs opacity-80">{item.description}</div>
+                    <div className="flex items-center space-x-2 md:space-x-3">
+                      <Icon className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+                      <div className="text-left min-w-0 flex-1">
+                        <div className="font-medium truncate">{item.name}</div>
+                        <div className="text-xs opacity-80 truncate">{item.description}</div>
                       </div>
                     </div>
                   </Button>
@@ -140,44 +141,44 @@ export function Sidebar({ className }: SidebarProps) {
         </SheetContent>
       </Sheet>
 
-      {/* Menu lateral fixo para desktop */}
-      <div className={cn(
-        "hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:z-50 lg:bg-background lg:border-r",
-        className
-      )}>
-        <div className="flex flex-col h-full">
-          {/* Header do menu lateral */}
-          <div className="flex items-center p-6 border-b">
-            <h2 className="text-xl font-bold">Co-Piloto</h2>
-          </div>
-          
-          {/* Lista de itens do menu */}
-          <nav className="flex-1 p-4 space-y-2">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Button
-                  key={item.href}
-                  variant={isActive(item.href) ? "default" : "ghost"}
-                  className={cn(
-                    "w-full justify-start h-auto p-4",
-                    isActive(item.href) && "bg-primary text-primary-foreground"
-                  )}
-                  onClick={() => handleNavigation(item.href)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <Icon className="h-5 w-5 flex-shrink-0" />
-                    <div className="text-left">
-                      <div className="font-medium">{item.name}</div>
-                      <div className="text-xs opacity-80">{item.description}</div>
-                    </div>
-                  </div>
-                </Button>
-              );
-            })}
-          </nav>
-        </div>
-      </div>
+             {/* Menu lateral fixo para desktop */}
+       <div className={cn(
+         "hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:z-50 lg:bg-background lg:border-r",
+         className
+       )}>
+         <div className="flex flex-col h-full">
+           {/* Header do menu lateral */}
+           <div className="flex items-center p-4 lg:p-6 border-b">
+             <h2 className="text-lg lg:text-xl font-bold">Co-Piloto</h2>
+           </div>
+           
+           {/* Lista de itens do menu */}
+           <nav className="flex-1 p-3 lg:p-4 space-y-1 lg:space-y-2">
+             {menuItems.map((item) => {
+               const Icon = item.icon;
+               return (
+                 <Button
+                   key={item.href}
+                   variant={isActive(item.href) ? "default" : "ghost"}
+                   className={cn(
+                     "w-full justify-start h-auto p-3 lg:p-4 text-sm lg:text-base",
+                     isActive(item.href) && "bg-primary text-primary-foreground"
+                   )}
+                   onClick={() => handleNavigation(item.href)}
+                 >
+                   <div className="flex items-center space-x-2 lg:space-x-3">
+                     <Icon className="h-4 w-4 lg:h-5 lg:w-5 flex-shrink-0" />
+                     <div className="text-left min-w-0 flex-1">
+                       <div className="font-medium truncate">{item.name}</div>
+                       <div className="text-xs opacity-80 truncate">{item.description}</div>
+                     </div>
+                   </div>
+                 </Button>
+               );
+             })}
+           </nav>
+         </div>
+       </div>
     </>
   );
 }
