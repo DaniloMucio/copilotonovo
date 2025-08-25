@@ -144,7 +144,7 @@ export default function LoginPage() {
                 Cadastre-se
               </Link>
             </p>
-                         <p className="text-xs text-muted-foreground">V.06 - Vercel</p>
+                         <p className="text-xs text-muted-foreground">V.06</p>
           </CardFooter>
         </Card>
       </main>
