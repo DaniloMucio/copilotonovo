@@ -33,7 +33,8 @@ export const PWAInstallButton = ({ canInstall, install, variant = 'icon' }: PWAI
   const isHTTPS = typeof window !== 'undefined' && (window.location.protocol === 'https:' || window.location.hostname === 'localhost');
   const hasServiceWorker = typeof navigator !== 'undefined' && 'serviceWorker' in navigator;
   
-  const shouldShow = canInstall || isDevelopment || (isHTTPS && hasServiceWorker);
+  // Simplifica a lógica para evitar re-renders desnecessários
+  const shouldShow = canInstall || isDevelopment;
   
   if (!shouldShow || (variant === 'banner' && dismissed)) {
     console.log('PWAInstallButton not showing:', { 

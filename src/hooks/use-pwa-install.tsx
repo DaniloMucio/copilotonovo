@@ -80,7 +80,7 @@ export const usePWAInstall = () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       mediaQuery.removeEventListener('change', checkStandalone);
     };
-  }, [installPrompt, isStandalone]);
+  }, []); // Removidas dependências que causam re-renders infinitos
 
   const handleInstall = async () => {
     if (installPrompt) {

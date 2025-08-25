@@ -39,11 +39,13 @@ import { usePWAInstall } from "@/hooks/use-pwa-install";
 export const dynamic = 'force-dynamic';
 
 export default function LoginPage() {
+  // Hooks básicos primeiro
   const router = useRouter();
   const { toast } = useToast();
   const { handleError } = useErrorHandler();
   const toastManager = useToastManager();
-  const { canInstall, install } = usePWAInstall();
+  
+  // Form hook
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -52,6 +54,9 @@ export default function LoginPage() {
       remember: false,
     },
   });
+  
+  // PWA hook por último
+  const { canInstall, install } = usePWAInstall();
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     try {

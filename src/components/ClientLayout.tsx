@@ -13,21 +13,6 @@ interface ClientLayoutProps {
 export default function ClientLayout({ children }: ClientLayoutProps) {
   // Service Worker é registrado automaticamente pelo Next.js PWA
   // Não é necessário registrar manualmente
-  
-  // Garante que só executa no cliente
-  if (typeof window === 'undefined') {
-    return (
-      <ErrorBoundary showDetails={true}>
-        <AuthProvider>
-          <div className="flex-grow flex flex-col">
-            {children}
-          </div>
-          <Toaster />
-          <OfflineIndicator />
-        </AuthProvider>
-      </ErrorBoundary>
-    );
-  }
 
   return (
     <ErrorBoundary showDetails={true}>
