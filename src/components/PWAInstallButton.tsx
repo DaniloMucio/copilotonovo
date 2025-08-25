@@ -16,7 +16,11 @@ export const PWAInstallButton = ({ canInstall, install, variant = 'icon' }: PWAI
   const [showDialog, setShowDialog] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
+  // Debug: mostrar informações sobre o estado do PWA
+  console.log('PWAInstallButton render:', { canInstall, variant, dismissed, userAgent: navigator.userAgent });
+
   if (!canInstall || (variant === 'banner' && dismissed)) {
+    console.log('PWAInstallButton not showing:', { canInstall, variant, dismissed });
     return null;
   }
 

@@ -4,7 +4,8 @@ const withPWA = require('@ducanh2912/next-pwa').default({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
+  disable: false,
+  buildExcludes: [/middleware-manifest\.json$/],
   runtimeCaching: [
     {
       urlPattern: /^https?.*/,
@@ -13,7 +14,7 @@ const withPWA = require('@ducanh2912/next-pwa').default({
         cacheName: 'offlineCache',
         expiration: {
           maxEntries: 200,
-          maxAgeSeconds: 24 * 60 * 60, // 24 horas
+          maxAgeSeconds: 24 * 60 * 60,
         },
       },
     },
@@ -24,7 +25,7 @@ const withPWA = require('@ducanh2912/next-pwa').default({
         cacheName: 'images',
         expiration: {
           maxEntries: 60,
-          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 dias
+          maxAgeSeconds: 30 * 24 * 60 * 60,
         },
       },
     },
@@ -33,31 +34,6 @@ const withPWA = require('@ducanh2912/next-pwa').default({
       handler: 'StaleWhileRevalidate',
       options: {
         cacheName: 'static-resources',
-      },
-    },
-    {
-      urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'google-fonts-cache',
-        expiration: {
-          maxEntries: 10,
-          maxAgeSeconds: 60 * 60 * 24 * 365, // 1 ano
-        },
-        cacheKeyWillBeUsed: async ({ request }) => {
-          return `${request.url}?${Math.round(Date.now() / 1000 / 60 / 60 / 24)}`;
-        },
-      },
-    },
-    {
-      urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'gstatic-fonts-cache',
-        expiration: {
-          maxEntries: 10,
-          maxAgeSeconds: 60 * 60 * 24 * 365, // 1 ano
-        },
       },
     },
   ],
