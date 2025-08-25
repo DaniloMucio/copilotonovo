@@ -17,10 +17,28 @@ export const PWAInstallButton = ({ canInstall, install, variant = 'icon' }: PWAI
   const [dismissed, setDismissed] = useState(false);
 
   // Debug: mostrar informações sobre o estado do PWA
-  console.log('PWAInstallButton render:', { canInstall, variant, dismissed, userAgent: navigator.userAgent });
+  console.log('PWAInstallButton render:', { 
+    canInstall, 
+    variant, 
+    dismissed, 
+    userAgent: navigator.userAgent,
+    location: window.location.href,
+    protocol: window.location.protocol
+  });
 
-  if (!canInstall || (variant === 'banner' && dismissed)) {
-    console.log('PWAInstallButton not showing:', { canInstall, variant, dismissed });
+  // Para debug: sempre mostrar em desenvolvimento
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const shouldShow = canInstall || isDevelopment;
+  
+  if (!shouldShow || (variant === 'banner' && dismissed)) {
+    console.log('PWAInstallButton not showing:', { 
+      canInstall, 
+      variant, 
+      dismissed,
+      shouldShow,
+      isDevelopment,
+      reason: !shouldShow ? 'cannot install' : 'dismissed'
+    });
     return null;
   }
 

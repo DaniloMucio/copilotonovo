@@ -6,6 +6,7 @@ const withPWA = require('@ducanh2912/next-pwa').default({
   skipWaiting: true,
   disable: false,
   buildExcludes: [/middleware-manifest\.json$/],
+  sw: '/sw.js',
   runtimeCaching: [
     {
       urlPattern: /^https?.*/,

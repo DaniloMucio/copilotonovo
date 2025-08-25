@@ -47,11 +47,34 @@ export const usePWAInstall = () => {
       setInstallPrompt((window as any).deferredPrompt);
     }
 
+    // Verifica se o PWA pode ser instalado baseado em outros critérios
+    const checkPWAInstallability = () => {
+      const isHTTPS = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+      const hasServiceWorker = 'serviceWorker' in navigator;
+      const hasPushManager = 'PushManager' in window;
+      
+      console.log('PWA: Installability check:', {
+        isHTTPS,
+        hasServiceWorker,
+        hasPushManager,
+        userAgent: navigator.userAgent
+      });
+
+      // Se estiver em HTTPS e tiver service worker, mas não tiver prompt, 
+      // pode ser que o navegador ainda não tenha disparado o evento
+      if (isHTTPS && hasServiceWorker && !installPrompt && !isStandalone) {
+        console.log('PWA: Conditions met but no prompt yet. Waiting...');
+      }
+    };
+
+    // Executa a verificação após um delay para dar tempo do service worker carregar
+    setTimeout(checkPWAInstallability, 2000);
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       mediaQuery.removeEventListener('change', checkStandalone);
     };
-  }, []);
+  }, [installPrompt, isStandalone]);
 
   const handleInstall = async () => {
     if (!installPrompt) return;
