@@ -107,10 +107,17 @@ export const usePWAInstall = () => {
           const registration = await navigator.serviceWorker.register('/sw.js');
           console.log('Service Worker registered manually:', registration);
           
-          // Mostra instruções para instalação manual
-          if (window.confirm('Para instalar o app:\n\n1. Clique no ícone de instalação no navegador\n2. Ou use Ctrl+Shift+I e clique em "Install"\n\nDeseja ver as instruções completas?')) {
-            window.open('https://web.dev/install-criteria/', '_blank');
-          }
+                // Detecta se o navegador tem botão de instalação
+      const hasInstallButton = window.location.protocol === 'https:' && 
+        (navigator.userAgent.includes('Chrome') || navigator.userAgent.includes('Edge'));
+      
+      if (hasInstallButton) {
+        // Navegador moderno - mostra instruções específicas
+        alert('Para instalar o app:\n\n1. Procure o ícone de instalação (🔽) na barra de endereços\n2. Clique nele e depois em "Instalar"\n3. Ou use o menu do navegador (⋮) → "Instalar Co-Piloto"');
+      } else {
+        // Navegador antigo - mostra instruções gerais
+        alert('Para instalar o app:\n\n1. Use o menu do navegador (⋮)\n2. Procure por "Instalar app" ou "Adicionar à tela inicial"\n3. Ou use Ctrl+Shift+I → Application → Install');
+      }
         } catch (error) {
           console.error('Failed to register service worker manually:', error);
           alert('Instalação automática não disponível. Use o menu do navegador para instalar o app.');

@@ -67,7 +67,12 @@ export const PWAInstallButton = ({ canInstall, install, variant = 'icon' }: PWAI
             <Smartphone className="h-6 w-6" />
             <div>
               <p className="font-semibold text-sm">Instalar Co-Piloto</p>
-              <p className="text-xs opacity-90">Acesso rápido como app nativo</p>
+              <p className="text-xs opacity-90">
+                {typeof window !== 'undefined' && window.location.protocol === 'https:' 
+                  ? 'Clique para ver instruções de instalação' 
+                  : 'Acesso rápido como app nativo'
+                }
+              </p>
             </div>
           </div>
           <div className="flex gap-2">
