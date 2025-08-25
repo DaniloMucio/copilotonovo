@@ -83,20 +83,57 @@ export const usePWAInstall = () => {
   }, [installPrompt, isStandalone]);
 
   const handleInstall = async () => {
-    if (!installPrompt) return;
-    
-    await installPrompt.prompt();
-    
-    const { outcome } = await installPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      console.log('User accepted the install prompt');
-      setInstallPrompt(null);
-      setIsStandalone(true);
+    if (installPrompt) {
+      // Se tiver prompt automático, usa ele
+      await installPrompt.prompt();
+      
+      const { outcome } = await installPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+        setInstallPrompt(null);
+        setIsStandalone(true);
+      } else {
+        console.log('User dismissed the install prompt');
+      }
     } else {
-      console.log('User dismissed the install prompt');
+      // Se não tiver prompt, tenta instalação manual
+      console.log('No install prompt available, trying manual installation...');
+      
+      // Verifica se o navegador suporta instalação manual
+      if ('serviceWorker' in navigator && 'PushManager' in window) {
+        try {
+          // Tenta registrar o service worker manualmente
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          console.log('Service Worker registered manually:', registration);
+          
+          // Mostra instruções para instalação manual
+          if (window.confirm('Para instalar o app:\n\n1. Clique no ícone de instalação no navegador\n2. Ou use Ctrl+Shift+I e clique em "Install"\n\nDeseja ver as instruções completas?')) {
+            window.open('https://web.dev/install-criteria/', '_blank');
+          }
+        } catch (error) {
+          console.error('Failed to register service worker manually:', error);
+          alert('Instalação automática não disponível. Use o menu do navegador para instalar o app.');
+        }
+      } else {
+        alert('Seu navegador não suporta instalação de PWA. Use o menu do navegador para instalar o app.');
+      }
     }
   };
 
-  return { canInstall: !!installPrompt && !isStandalone, install: handleInstall };
+  // Verifica se o PWA pode ser instalado baseado em critérios básicos
+  const canInstallBasic = !isStandalone && 
+    (typeof window !== 'undefined') && 
+    (window.location.protocol === 'https:' || window.location.hostname === 'localhost') &&
+    ('serviceWorker' in navigator);
+
+  // Retorna true se tiver o prompt OU se atender aos critérios básicos
+  const canInstallFinal = !!installPrompt || canInstallBasic;
+
+  return { 
+    canInstall: canInstallFinal, 
+    install: handleInstall,
+    hasPrompt: !!installPrompt,
+    canInstallBasic
+  };
 };
