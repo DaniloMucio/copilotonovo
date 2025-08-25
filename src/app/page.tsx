@@ -35,6 +35,9 @@ import { useToastManager } from "@/lib/toast-manager";
 import { PWAInstallButton } from "@/components/PWAInstallButton";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
 
+// Força a página a ser dinâmica para evitar problemas com hooks do cliente
+export const dynamic = 'force-dynamic';
+
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();

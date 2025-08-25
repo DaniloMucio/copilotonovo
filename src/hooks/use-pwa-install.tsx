@@ -16,6 +16,12 @@ export const usePWAInstall = () => {
   const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
+    // Verifica se está no cliente (browser)
+    if (typeof window === 'undefined') {
+      console.log('PWA: Hook running on server, skipping...');
+      return;
+    }
+
     // Verifica se o app já está rodando em modo standalone (instalado)
     const checkStandalone = () => {
       const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
