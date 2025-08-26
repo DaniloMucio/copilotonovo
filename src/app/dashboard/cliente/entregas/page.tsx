@@ -25,7 +25,8 @@ import {
   CheckCircle, 
   AlertCircle,
   Truck,
-  User as UserIcon
+  User as UserIcon,
+  Plus
 } from 'lucide-react';
 
 function EntregasClienteSkeleton() {
@@ -159,6 +160,10 @@ function EntregasClienteContent() {
             Acompanhe o status e histórico das suas entregas
           </p>
         </div>
+        <Button className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="h-4 w-4 mr-2" />
+          Nova Entrega
+        </Button>
       </div>
 
       {/* Estatísticas */}
