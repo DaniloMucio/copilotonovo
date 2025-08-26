@@ -675,87 +675,110 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-20 relative">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.1)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
-        <div className="container mx-auto px-6 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-            <div className="col-span-1 md:col-span-2">
-              <motion.div 
-                className="flex items-center space-x-3 mb-6"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              >
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
-                  <Car className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold">Co-Piloto Driver</h3>
-                  <p className="text-sm text-gray-400">Sua solução completa</p>
-                </div>
-              </motion.div>
-              <p className="text-gray-400 mb-8 max-w-md leading-relaxed">
-                Ferramenta completa para motoristas autônomos que precisam de controle financeiro, 
-                gestão de jornadas e administração de entregas.
-              </p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-6 text-lg">Produto</h4>
-              <ul className="space-y-3 text-gray-400">
-                {[
-                  "Funcionalidades",
-                  "Preços",
-                  "Documentação",
-                  "API",
-                  { text: "App Android (Em Breve)", icon: "📱" }
-                ].map((item, index) => (
-                  <motion.li 
-                    key={index}
-                    whileHover={{ x: 5 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                  >
-                    <a href="#" className="hover:text-white transition-colors duration-300 flex items-center">
-                      {typeof item === 'string' ? item : (
-                        <>
-                          <span className="mr-2">{item.icon}</span>
-                          {item.text}
-                        </>
-                      )}
-                    </a>
-                  </motion.li>
-                ))}
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-6 text-lg">Suporte</h4>
-              <ul className="space-y-3 text-gray-400">
-                {[
-                  "Central de Ajuda",
-                  "Contato",
-                  "Status",
-                  "Comunidade"
-                ].map((item, index) => (
-                  <motion.li 
-                    key={index}
-                    whileHover={{ x: 5 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                  >
-                    <a href="#" className="hover:text-white transition-colors duration-300">
-                      {item}
-                    </a>
-                  </motion.li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-800 mt-16 pt-8 text-center text-gray-400">
-            <p>&copy; 2025 Co-Piloto Driver. Todos os direitos reservados.</p>
-          </div>
-        </div>
-      </footer>
+             {/* Footer */}
+       <footer className="bg-gray-900 text-white py-20 relative">
+         <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.1)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+         <div className="container mx-auto px-6 relative z-10">
+           <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+             {/* DML WebDev Section */}
+             <div className="col-span-1 md:col-span-2">
+               <motion.div 
+                 className="flex items-center space-x-3 mb-6"
+                 whileHover={{ scale: 1.05 }}
+                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
+               >
+                 <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                   <span className="text-white font-bold text-lg">D</span>
+                 </div>
+                 <div>
+                   <h3 className="text-xl font-semibold">DML WebDev</h3>
+                   <p className="text-sm text-gray-400">Soluções Digitais</p>
+                 </div>
+               </motion.div>
+               <p className="text-gray-400 mb-6 max-w-md leading-relaxed">
+                 Transformando ideias em experiências digitais memoráveis através de tecnologias modernas e design inovador.
+               </p>
+               <div className="flex items-center space-x-4">
+                 <motion.a 
+                   href="https://danmucio.com.br" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   className="text-blue-400 hover:text-blue-300 transition-colors duration-300"
+                   whileHover={{ scale: 1.05 }}
+                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                 >
+                   danmucio.com.br
+                 </motion.a>
+               </div>
+             </div>
+             
+             {/* Links Rápidos */}
+             <div>
+               <h4 className="font-semibold mb-6 text-lg">Links Rápidos</h4>
+               <ul className="space-y-3 text-gray-400">
+                 {[
+                   "Sobre",
+                   "Portfolio", 
+                   "Contato",
+                   "Loja"
+                 ].map((item, index) => (
+                   <motion.li 
+                     key={index}
+                     whileHover={{ x: 5 }}
+                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                   >
+                     <a href="#" className="hover:text-white transition-colors duration-300">
+                       {item}
+                     </a>
+                   </motion.li>
+                 ))}
+               </ul>
+             </div>
+             
+             {/* Contato */}
+             <div>
+               <h4 className="font-semibold mb-6 text-lg">Contato</h4>
+               <ul className="space-y-3 text-gray-400">
+                 <motion.li 
+                   whileHover={{ x: 5 }}
+                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                 >
+                   <a href="tel:+5516997452118" className="hover:text-white transition-colors duration-300 flex items-center">
+                     <span className="mr-2">📞</span>
+                     (16) 99745-2118
+                   </a>
+                 </motion.li>
+                 <motion.li 
+                   whileHover={{ x: 5 }}
+                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                 >
+                   <a href="mailto:danmuciolemos@gmail.com" className="hover:text-white transition-colors duration-300 flex items-center">
+                     <span className="mr-2">✉️</span>
+                     danmuciolemos@gmail.com
+                   </a>
+                 </motion.li>
+               </ul>
+             </div>
+           </div>
+           
+           {/* Copyright Section */}
+           <div className="border-t border-gray-800 mt-16 pt-8">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+               <div className="text-center md:text-left">
+                 <p className="text-gray-400">
+                   &copy; 2025 Co-Piloto Driver. Todos os direitos reservados.
+                 </p>
+               </div>
+               <div className="text-center md:text-right">
+                 <p className="text-gray-400">
+                   Desenvolvido por <span className="text-blue-400 font-medium">Danilo Mucio</span> da{" "}
+                   <span className="text-blue-400 font-medium">DML WebDev</span>
+                 </p>
+               </div>
+             </div>
+           </div>
+         </div>
+       </footer>
     </div>
   );
 }
