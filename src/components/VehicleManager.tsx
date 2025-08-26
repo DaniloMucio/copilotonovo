@@ -32,6 +32,7 @@ import {
   type FuelRecord as RealFuelRecord
 } from '@/services/vehicle';
 import { getTransactions, type Transaction } from '@/services/transactions';
+import { VehicleForm } from '@/components/forms/VehicleForm';
 // Removido - debug não é mais necessário
 
 // Tipos para gestão de veículo (compatibilidade)
@@ -278,6 +279,8 @@ export function VehicleManager() {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isVehicleFormOpen, setIsVehicleFormOpen] = useState(false);
+  const [vehicleToEdit, setVehicleToEdit] = useState<RealVehicleInfo | null>(null);
 
   // Carregar dados reais do Firestore
   useEffect(() => {
@@ -321,6 +324,7 @@ export function VehicleManager() {
             fuelTank: vehicle.fuelTank,
             averageConsumption: vehicle.averageConsumption
           });
+          setVehicleToEdit(vehicle);
         }
 
         // Converter manutenções para formato compatível
@@ -441,6 +445,37 @@ export function VehicleManager() {
     setFuelRecords(prev => prev.filter(record => record.id !== id));
   };
 
+  const handleEditVehicle = () => {
+    setIsVehicleFormOpen(true);
+  };
+
+  const handleVehicleFormSuccess = () => {
+    setIsVehicleFormOpen(false);
+    setVehicleToEdit(null);
+    // Recarregar dados do veículo
+    if (user?.uid) {
+      getUserVehicle(user.uid).then(vehicle => {
+        if (vehicle) {
+          setVehicleInfo({
+            brand: vehicle.brand,
+            model: vehicle.model,
+            year: vehicle.year,
+            plate: vehicle.plate,
+            currentKm: vehicle.currentKm,
+            fuelTank: vehicle.fuelTank,
+            averageConsumption: vehicle.averageConsumption
+          });
+          setVehicleToEdit(vehicle);
+        }
+      });
+    }
+  };
+
+  const handleVehicleFormCancel = () => {
+    setIsVehicleFormOpen(false);
+    setVehicleToEdit(null);
+  };
+
   // Mostrar loading
   if (loading) {
     return (
@@ -509,10 +544,16 @@ export function VehicleManager() {
       {/* Informações do veículo */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Car className="h-5 w-5" />
-            Informações do Veículo
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Car className="h-5 w-5" />
+              Informações do Veículo
+            </CardTitle>
+            <Button onClick={handleEditVehicle} variant="outline" size="sm">
+              <Edit className="h-4 w-4 mr-2" />
+              Editar
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -711,6 +752,14 @@ export function VehicleManager() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Modal de edição de veículo */}
+      <VehicleForm
+        isOpen={isVehicleFormOpen}
+        vehicleToEdit={vehicleToEdit}
+        onSuccess={handleVehicleFormSuccess}
+        onCancel={handleVehicleFormCancel}
+      />
     </div>
   );
 }
