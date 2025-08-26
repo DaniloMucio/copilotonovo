@@ -68,7 +68,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
   const { toast } = useToast();
   
   // PWA hook
-  const { canInstall: pwaCanInstall, install: pwaInstall, isClient } = usePWAInstall();
+  const { canInstall: pwaCanInstall, installApp: pwaInstall } = usePWAInstall();
 
   const defaultTab = searchParams.get('tab') || 'overview';
   
@@ -212,7 +212,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
                 <ChangePasswordForm onFormSubmit={handlePasswordUpdate} />
               </DialogContent>
             </Dialog>
-            <PWAInstallButton canInstall={pwaCanInstall} install={pwaInstall} isClient={isClient} />
+            <PWAInstallButton canInstall={pwaCanInstall} install={pwaInstall} />
           </div>
         </div>
       </div>
