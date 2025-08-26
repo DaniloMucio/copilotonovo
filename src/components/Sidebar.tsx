@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -13,9 +13,13 @@ import {
   Calendar, 
   Radio,
   Menu,
-  X
+  X,
+  Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { auth } from '@/lib/firebase';
+import { getUserDocument, UserData } from '@/services/firestore';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
 interface SidebarProps {
   className?: string;
@@ -23,10 +27,24 @@ interface SidebarProps {
 
 export function Sidebar({ className }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
-  const menuItems = [
+  // Buscar dados do usuário para determinar o tipo
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        const data = await getUserDocument(currentUser.uid);
+        setUserData(data);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Menu para motoristas
+  const motoristaMenuItems = [
     {
       name: 'Visão Geral',
       href: '/dashboard',
@@ -71,6 +89,31 @@ export function Sidebar({ className }: SidebarProps) {
     }
   ];
 
+  // Menu para clientes (apenas as funcionalidades solicitadas)
+  const clienteMenuItems = [
+    {
+      name: 'Visão Geral',
+      href: '/dashboard/cliente',
+      icon: Home,
+      description: 'Resumo geral das atividades'
+    },
+    {
+      name: 'Entregas',
+      href: '/dashboard/cliente/entregas',
+      icon: Package,
+      description: 'Acompanhamento de entregas'
+    },
+    {
+      name: 'Agenda',
+      href: '/dashboard/cliente/agenda',
+      icon: Calendar,
+      description: 'Agendamentos e compromissos'
+    }
+  ];
+
+  // Selecionar menu baseado no tipo de usuário
+  const menuItems = userData?.userType === 'cliente' ? clienteMenuItems : motoristaMenuItems;
+
   const handleNavigation = (href: string) => {
     router.push(href);
     setIsOpen(false);
@@ -79,6 +122,9 @@ export function Sidebar({ className }: SidebarProps) {
   const isActive = (href: string) => {
     if (href === '/dashboard') {
       return pathname === '/dashboard';
+    }
+    if (href === '/dashboard/cliente') {
+      return pathname === '/dashboard/cliente';
     }
     return pathname.startsWith(href);
   };

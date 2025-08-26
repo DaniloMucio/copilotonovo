@@ -22,7 +22,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const handleLogout = useCallback(async () => {
     try {
       await auth.signOut();
-      window.location.href = '/';
+      window.location.href = '/login';
     } catch (error) {
       toast({
         variant: 'destructive',
