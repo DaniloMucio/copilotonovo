@@ -28,6 +28,7 @@ import {
   User as UserIcon,
   Plus
 } from 'lucide-react';
+import { DeliveryForm } from '@/components/forms/DeliveryForm';
 
 function EntregasClienteSkeleton() {
   return (
@@ -69,6 +70,7 @@ function EntregasClienteContent() {
   const [deliveriesToReceive, setDeliveriesToReceive] = useState<Transaction[]>([]);
   const [deliveryHistory, setDeliveryHistory] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const { toast } = useToast();
 
   const fetchData = useCallback(async (uid: string) => {
@@ -116,6 +118,21 @@ function EntregasClienteContent() {
     }
   };
 
+  const handleOpenForm = () => {
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+  };
+
+  const handleFormSuccess = () => {
+    setIsFormOpen(false);
+    if (user) {
+      fetchData(user.uid);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
@@ -160,7 +177,10 @@ function EntregasClienteContent() {
             Acompanhe o status e histórico das suas entregas
           </p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
+        <Button 
+          className="bg-blue-600 hover:bg-blue-700"
+          onClick={handleOpenForm}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Nova Entrega
         </Button>
@@ -425,6 +445,30 @@ function EntregasClienteContent() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Modal do Formulário de Nova Entrega */}
+      {isFormOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold">Nova Entrega</h2>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleCloseForm}
+                >
+                  ✕
+                </Button>
+              </div>
+              <DeliveryForm 
+                onFormSubmit={handleFormSuccess}
+                drivers={[]} // Lista de motoristas disponíveis
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
