@@ -700,9 +700,6 @@ export function VehicleManager() {
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-green-600">R$ {record.cost.toFixed(2)}</p>
-                      <Button variant="outline" size="sm" onClick={() => handleEditFuel(record)}>
-                        <Edit className="h-3 w-3" />
-                      </Button>
                     </div>
                   </div>
                 ))}
