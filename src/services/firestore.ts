@@ -12,6 +12,7 @@ export interface UserData {
   cnh?: string;
   phone?: string;
   companyName?: string;
+  isOnline?: boolean;
 }
 
 /**
@@ -96,17 +97,70 @@ export const updateUserDocument = updateUserProfile;
  * Busca todos os motoristas cadastrados.
  * @returns Uma lista de motoristas.
  */
-export const getDrivers = async () => {
+export const getDrivers = async (): Promise<(UserData & { uid: string })[]> => {
     try {
         const q = query(collection(db, "users"), where("userType", "==", "motorista"));
         const querySnapshot = await getDocs(q);
         const drivers = querySnapshot.docs.map(doc => ({
             uid: doc.id,
             ...doc.data()
-        }));
+        })) as (UserData & { uid: string })[];
         return drivers;
     } catch (error) {
         console.error("Erro ao buscar motoristas:", error);
+        throw error;
+    }
+}
+
+/**
+ * Busca apenas motoristas online.
+ * @returns Uma lista de motoristas online.
+ */
+export const getOnlineDrivers = async (): Promise<(UserData & { uid: string })[]> => {
+    try {
+        const q = query(
+            collection(db, "users"), 
+            where("userType", "==", "motorista"),
+            where("isOnline", "==", true)
+        );
+        const querySnapshot = await getDocs(q);
+        const drivers = querySnapshot.docs.map(doc => ({
+            uid: doc.id,
+            ...doc.data()
+        })) as (UserData & { uid: string })[];
+        return drivers;
+    } catch (error) {
+        console.error("Erro ao buscar motoristas online:", error);
+        throw error;
+    }
+}
+
+
+
+/**
+ * Atualiza o status online/offline de um motorista.
+ * @param userId - ID do usuário
+ * @param isOnline - Status online (true) ou offline (false)
+ */
+export const updateDriverStatus = async (userId: string, isOnline: boolean): Promise<void> => {
+    try {
+        const userRef = doc(db, "users", userId);
+        await updateDoc(userRef, { isOnline });
+        console.log(`Status do motorista ${userId} atualizado para: ${isOnline ? 'online' : 'offline'}`);
+        
+        // Verificar se foi salvo corretamente
+        const updatedDoc = await getDoc(userRef);
+        if (updatedDoc.exists()) {
+            const data = updatedDoc.data();
+            console.log(`✅ Verificação: Status salvo no Firebase:`, {
+                userId,
+                isOnline: data.isOnline,
+                userType: data.userType,
+                displayName: data.displayName
+            });
+        }
+    } catch (error) {
+        console.error("Erro ao atualizar status do motorista:", error);
         throw error;
     }
 }

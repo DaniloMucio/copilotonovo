@@ -17,8 +17,31 @@ if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.proj
     const errorMessage = "❌ ERRO: Configuração Firebase incompleta! Configure todas as variáveis de ambiente.";
     console.error(errorMessage);
     
-    if (process.env.NODE_ENV === 'production') {
+    // Em desenvolvimento ou durante build, usar valores padrão se disponíveis
+    if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined') {
+        // Apenas falhar em produção no cliente (não durante build)
         throw new Error(errorMessage);
+    } else {
+        console.warn("⚠️  Modo de desenvolvimento/build: usando configurações padrão");
+        // Em desenvolvimento ou durante build, usar valores padrão se as variáveis não estiverem configuradas
+        if (!firebaseConfig.apiKey) {
+            firebaseConfig.apiKey = "AIzaSyB2pVLfo_GUrMRNM7G16PhYlEzdbJ4sEVA";
+        }
+        if (!firebaseConfig.authDomain) {
+            firebaseConfig.authDomain = "co-pilotogit.firebaseapp.com";
+        }
+        if (!firebaseConfig.projectId) {
+            firebaseConfig.projectId = "co-pilotogit";
+        }
+        if (!firebaseConfig.storageBucket) {
+            firebaseConfig.storageBucket = "co-pilotogit.firebasestorage.app";
+        }
+        if (!firebaseConfig.messagingSenderId) {
+            firebaseConfig.messagingSenderId = "1004254989892";
+        }
+        if (!firebaseConfig.appId) {
+            firebaseConfig.appId = "1:1004254989892:web:68309b7b10918886743611";
+        }
     }
 }
 

@@ -128,6 +128,7 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [] }: 
             const transactionData: TransactionInput = {
                 userId: userData?.userType === 'cliente' ? values.driverId! : user.uid,
                 clientId: userData?.userType === 'cliente' ? user.uid : undefined,
+                assignedDriverId: userData?.userType === 'cliente' ? values.driverId! : undefined,
                 type: values.paymentType === 'À vista' ? 'receita' : 'informativo',
                 category: 'Entrega',
                 date: new Date(),
@@ -172,7 +173,7 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [] }: 
                                     <SelectContent>
                                         {drivers.map(driver => (
                                             <SelectItem key={driver.uid} value={driver.uid}>
-                                                {driver.name}
+                                                {driver.displayName || driver.name || 'Motorista sem nome'}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>

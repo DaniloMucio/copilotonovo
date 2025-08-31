@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Motoristas</title>
+    <script type="module">
+        // Importar Firebase
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Configuração Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyB2pVLfo_GUrMRNM7G16PhYlEzdbJ4sEVA",
+            authDomain: "co-pilotogit.firebaseapp.com",
+            projectId: "co-pilotogit",
+            storageBucket: "co-pilotogit.firebasestorage.app",
+            messagingSenderId: "1004254989892",
+            appId: "1:1004254989892:web:68309b7b10918886743611"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Função para buscar motoristas
+        async function getDrivers() {
+            try {
+                console.log("🔍 Buscando motoristas...");
+                const q = query(collection(db, "users"), where("userType", "==", "motorista"));
+                const querySnapshot = await getDocs(q);
+                const drivers = querySnapshot.docs.map(doc => ({
+                    uid: doc.id,
+                    ...doc.data()
+                }));
+                console.log("✅ Motoristas encontrados:", drivers);
+                return drivers;
+            } catch (error) {
+                console.error("❌ Erro ao buscar motoristas:", error);
+                throw error;
+            }
+        }
+
+        // Função para buscar todos os usuários
+        async function getAllUsers() {
+            try {
+                console.log("🔍 Buscando todos os usuários...");
+                const q = query(collection(db, "users"));
+                const querySnapshot = await getDocs(q);
+                const users = querySnapshot.docs.map(doc => ({
+                    uid: doc.id,
+                    ...doc.data()
+                }));
+                console.log("✅ Usuários encontrados:", users);
+                return users;
+            } catch (error) {
+                console.error("❌ Erro ao buscar usuários:", error);
+                throw error;
+            }
+        }
+
+        // Executar testes
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log("🚀 Iniciando testes...");
+                
+                // Teste 1: Buscar todos os usuários
+                const allUsers = await getAllUsers();
+                document.getElementById('all-users').textContent = JSON.stringify(allUsers, null, 2);
+                
+                // Teste 2: Buscar apenas motoristas
+                const drivers = await getDrivers();
+                document.getElementById('drivers').textContent = JSON.stringify(drivers, null, 2);
+                
+                console.log("✅ Testes concluídos!");
+            } catch (error) {
+                console.error("❌ Erro nos testes:", error);
+                document.getElementById('error').textContent = error.message;
+            }
+        });
+    </script>
+</head>
+<body>
+    <h1>🧪 Teste de Motoristas - Firebase</h1>
+    
+    <h2>📋 Todos os Usuários:</h2>
+    <pre id="all-users">Carregando...</pre>
+    
+    <h2>🚗 Motoristas:</h2>
+    <pre id="drivers">Carregando...</pre>
+    
+    <h2>❌ Erros:</h2>
+    <pre id="error">Nenhum erro</pre>
+    
+    <p>Abra o console do navegador (F12) para ver os logs detalhados.</p>
+</body>
+</html>

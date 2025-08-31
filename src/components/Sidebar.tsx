@@ -13,13 +13,13 @@ import {
   Calendar, 
   Radio,
   Menu,
-  X,
-  Users
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { auth } from '@/lib/firebase';
 import { getUserDocument, UserData } from '@/services/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
+import { OnlineStatusToggle } from './OnlineStatusToggle';
 
 interface SidebarProps {
   className?: string;
@@ -86,7 +86,8 @@ export function Sidebar({ className }: SidebarProps) {
       href: '/dashboard/radio',
       icon: Radio,
       description: 'Estações de rádio online'
-    }
+    },
+
   ];
 
   // Menu para clientes (apenas as funcionalidades solicitadas)
@@ -158,6 +159,11 @@ export function Sidebar({ className }: SidebarProps) {
               </Button>
             </div>
             
+            {/* Toggle de status online/offline para motoristas */}
+            <div className="px-3 py-2 border-b">
+              <OnlineStatusToggle />
+            </div>
+            
             {/* Lista de itens do menu */}
             <nav className="flex-1 p-3 md:p-4 space-y-1 md:space-y-2">
               {menuItems.map((item) => {
@@ -196,6 +202,11 @@ export function Sidebar({ className }: SidebarProps) {
            {/* Header do menu lateral */}
            <div className="flex items-center p-4 lg:p-6 border-b">
              <h2 className="text-lg lg:text-xl font-bold">Co-Piloto</h2>
+           </div>
+           
+           {/* Toggle de status online/offline para motoristas */}
+           <div className="px-4 py-2 border-b">
+             <OnlineStatusToggle />
            </div>
            
            {/* Lista de itens do menu */}

@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { auth } from '@/lib/firebase';
 import { getTransactions, type Transaction, updateTransaction } from '@/services/transactions';
-import { getUserDocument, type UserData } from '@/services/firestore';
+import { getUserDocument, type UserData, getOnlineDrivers } from '@/services/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -71,6 +71,7 @@ function EntregasClienteContent() {
   const [deliveryHistory, setDeliveryHistory] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [drivers, setDrivers] = useState<(UserData & { uid: string })[]>([]);
   const { toast } = useToast();
 
   const fetchData = useCallback(async (uid: string) => {
@@ -97,6 +98,20 @@ function EntregasClienteContent() {
       });
     } finally {
       setLoading(false);
+    }
+  }, [toast]);
+
+  const fetchDrivers = useCallback(async () => {
+    try {
+      const driversList = await getOnlineDrivers();
+      setDrivers(driversList);
+    } catch (error) {
+      console.error("❌ Erro ao buscar motoristas online:", error);
+      toast({ 
+        variant: 'destructive', 
+        title: 'Erro', 
+        description: 'Não foi possível carregar a lista de motoristas online.'
+      });
     }
   }, [toast]);
 
@@ -141,6 +156,7 @@ function EntregasClienteContent() {
         if (data && data.userType === 'cliente') {
           setUserData(data);
           await fetchData(currentUser.uid);
+          await fetchDrivers(); // Buscar motoristas
         } else {
           toast({
             variant: 'destructive',
@@ -154,7 +170,7 @@ function EntregasClienteContent() {
     });
 
     return () => unsubscribe();
-  }, [router, fetchData, toast]);
+  }, [router, fetchData, fetchDrivers, toast]);
 
   if (loading) {
     return <EntregasClienteSkeleton />;
@@ -461,10 +477,10 @@ function EntregasClienteContent() {
                   ✕
                 </Button>
               </div>
-              <DeliveryForm 
-                onFormSubmit={handleFormSuccess}
-                drivers={[]} // Lista de motoristas disponíveis
-              />
+                             <DeliveryForm 
+                 onFormSubmit={handleFormSuccess}
+                 drivers={drivers} // Lista de motoristas disponíveis
+               />
             </div>
           </div>
         </div>

@@ -21,7 +21,6 @@ import { firestoreCache, CacheStrategies } from "@/lib/firestore-cache";
 export interface Transaction {
     id: string;
     userId: string;
-    clientId?: string;
     type: 'receita' | 'despesa' | 'informativo';
     description: string;
     amount: number;
@@ -42,6 +41,8 @@ export interface Transaction {
     senderAddress?: Address;
     recipientAddress?: Address;
     driverId?: string;
+    clientId?: string; // ID do cliente que criou a entrega
+    assignedDriverId?: string; // ID do motorista selecionado pelo cliente
 }
 
 export interface Address {
@@ -126,6 +127,57 @@ export const deleteTransaction = async (transactionId: string) => {
         await deleteDoc(transactionRef);
     } catch (error) {
         console.error("Erro ao excluir transação: ", error);
+        throw error;
+    }
+}
+
+/**
+ * Busca entregas pendentes atribuídas a um motorista específico.
+ * @param driverId - O ID do motorista.
+ * @returns Lista de entregas pendentes.
+ */
+export const getPendingDeliveriesForDriver = async (driverId: string): Promise<Transaction[]> => {
+    try {
+        const q = query(
+            collection(db, "transactions"),
+            where("category", "==", "Entrega"),
+            where("assignedDriverId", "==", driverId),
+            where("deliveryStatus", "==", "Pendente"),
+            orderBy("date", "desc")
+        );
+        
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as Transaction[];
+    } catch (error) {
+        console.error("Erro ao buscar entregas pendentes para motorista: ", error);
+        throw error;
+    }
+}
+
+/**
+ * Busca todas as entregas atribuídas a um motorista (qualquer status).
+ * @param driverId - O ID do motorista.
+ * @returns Lista de todas as entregas do motorista.
+ */
+export const getAllDeliveriesForDriver = async (driverId: string): Promise<Transaction[]> => {
+    try {
+        const q = query(
+            collection(db, "transactions"),
+            where("category", "==", "Entrega"),
+            where("assignedDriverId", "==", driverId),
+            orderBy("date", "desc")
+        );
+        
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as Transaction[];
+    } catch (error) {
+        console.error("Erro ao buscar todas as entregas do motorista: ", error);
         throw error;
     }
 }
