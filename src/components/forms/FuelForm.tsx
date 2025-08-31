@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FuelRecord } from '@/services/vehicle';
+import { type FuelRecord } from '@/services/vehicle';
 
 interface FuelFormProps {
   isOpen: boolean;
@@ -29,7 +29,9 @@ export function FuelForm({ isOpen, fuelToEdit, onSuccess, onCancel }: FuelFormPr
   useEffect(() => {
     if (fuelToEdit) {
       setFormData({
-        date: fuelToEdit.date,
+        date: fuelToEdit.date instanceof Date ? fuelToEdit.date.toISOString().split('T')[0] : 
+               typeof fuelToEdit.date === 'string' ? fuelToEdit.date : 
+               new Date(fuelToEdit.date).toISOString().split('T')[0],
         liters: fuelToEdit.liters.toString(),
         cost: fuelToEdit.cost.toString(),
         km: fuelToEdit.km.toString(),

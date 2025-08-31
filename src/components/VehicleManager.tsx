@@ -49,15 +49,8 @@ interface MaintenanceItem {
   notes?: string;
 }
 
-interface FuelRecord {
-  id: string;
-  date: string;
-  liters: number;
-  cost: number;
-  km: number;
-  station: string;
-  fuelType: 'gasoline' | 'ethanol' | 'diesel' | 'flex';
-}
+// Usar o tipo real do serviço
+type FuelRecord = RealFuelRecord;
 
 interface VehicleInfo {
   brand: string;
@@ -251,7 +244,7 @@ function FuelRecordCard({ record, onEdit, onDelete }: {
               <Edit className="h-3 w-3 mr-1" />
               Editar
             </Button>
-            <Button variant="outline" size="sm" onClick={() => onDelete(record.id)}>
+            <Button variant="outline" size="sm" onClick={() => onDelete(record.id || '')}>
               <Trash2 className="h-3 w-3 mr-1" />
               Excluir
             </Button>
@@ -345,13 +338,13 @@ export function VehicleManager() {
 
         // Converter registros de combustível para formato compatível
         const convertedFuel: FuelRecord[] = fuel.map(record => ({
+          ...record,
           id: record.id || '',
-          date: format(record.date, 'yyyy-MM-dd'),
-          liters: record.liters,
-          cost: record.cost,
-          km: record.km,
-          station: record.station,
-          fuelType: record.fuelType
+          userId: record.userId || user.uid,
+          vehicleId: record.vehicleId || '',
+          pricePerLiter: record.pricePerLiter || 0,
+          createdAt: record.createdAt || new Date(),
+          updatedAt: record.updatedAt || new Date()
         }));
 
         // Adicionar transações de combustível das despesas
@@ -359,13 +352,18 @@ export function VehicleManager() {
           .filter(t => t.type === 'despesa' && t.category === 'Combustível' && t.km && t.pricePerLiter)
           .map(t => ({
             id: `fuel_${t.id}`,
-            date: format(t.date instanceof Date ? t.date : t.date.toDate(), 'yyyy-MM-dd'),
+            userId: user.uid,
+            vehicleId: '',
+            date: t.date instanceof Date ? t.date : t.date.toDate(),
             liters: t.amount / (t.pricePerLiter || 1),
             cost: t.amount,
             km: t.km || 0,
             station: 'Posto (Transação)',
-            fuelType: 'gasoline' as any
-          }));
+            fuelType: 'gasoline' as any,
+            pricePerLiter: t.pricePerLiter || 0,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          } as FuelRecord));
 
         // Combinar dados de combustível
         const allFuelRecords = [...convertedFuel, ...fuelTransactions];
@@ -487,13 +485,13 @@ export function VehicleManager() {
       getFuelRecords(user.uid).then(fuel => {
         if (fuel) {
           const convertedFuel: FuelRecord[] = fuel.map(record => ({
+            ...record,
             id: record.id || '',
-            date: format(record.date, 'yyyy-MM-dd'),
-            liters: record.liters,
-            cost: record.cost,
-            km: record.km,
-            station: record.station,
-            fuelType: record.fuelType
+            userId: record.userId || user.uid,
+            vehicleId: record.vehicleId || '',
+            pricePerLiter: record.pricePerLiter || 0,
+            createdAt: record.createdAt || new Date(),
+            updatedAt: record.updatedAt || new Date()
           }));
           setFuelRecords(convertedFuel);
         }
