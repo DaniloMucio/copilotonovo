@@ -33,6 +33,7 @@ import {
 } from '@/services/vehicle';
 import { getTransactions, type Transaction } from '@/services/transactions';
 import { VehicleForm } from '@/components/forms/VehicleForm';
+import { FuelForm } from '@/components/forms/FuelForm';
 // Removido - debug não é mais necessário
 
 // Tipos para gestão de veículo (compatibilidade)
@@ -281,6 +282,8 @@ export function VehicleManager() {
   const [error, setError] = useState<string | null>(null);
   const [isVehicleFormOpen, setIsVehicleFormOpen] = useState(false);
   const [vehicleToEdit, setVehicleToEdit] = useState<RealVehicleInfo | null>(null);
+  const [isFuelFormOpen, setIsFuelFormOpen] = useState(false);
+  const [fuelToEdit, setFuelToEdit] = useState<FuelRecord | null>(null);
 
   // Carregar dados reais do Firestore
   useEffect(() => {
@@ -433,8 +436,8 @@ export function VehicleManager() {
   };
 
   const handleEditFuel = (record: FuelRecord) => {
-    // Implementar modal de edição
-    console.log('Editar combustível:', record);
+    setFuelToEdit(record);
+    setIsFuelFormOpen(true);
   };
 
   const handleDeleteMaintenance = (id: string) => {
@@ -474,6 +477,33 @@ export function VehicleManager() {
   const handleVehicleFormCancel = () => {
     setIsVehicleFormOpen(false);
     setVehicleToEdit(null);
+  };
+
+  const handleFuelFormSuccess = () => {
+    setIsFuelFormOpen(false);
+    setFuelToEdit(null);
+    // Recarregar dados de combustível
+    if (user?.uid) {
+      getFuelRecords(user.uid).then(fuel => {
+        if (fuel) {
+          const convertedFuel: FuelRecord[] = fuel.map(record => ({
+            id: record.id || '',
+            date: format(record.date, 'yyyy-MM-dd'),
+            liters: record.liters,
+            cost: record.cost,
+            km: record.km,
+            station: record.station,
+            fuelType: record.fuelType
+          }));
+          setFuelRecords(convertedFuel);
+        }
+      });
+    }
+  };
+
+  const handleFuelFormCancel = () => {
+    setIsFuelFormOpen(false);
+    setFuelToEdit(null);
   };
 
   // Mostrar loading
@@ -756,6 +786,14 @@ export function VehicleManager() {
         vehicleToEdit={vehicleToEdit}
         onSuccess={handleVehicleFormSuccess}
         onCancel={handleVehicleFormCancel}
+      />
+
+      {/* Modal de edição de combustível */}
+      <FuelForm
+        isOpen={isFuelFormOpen}
+        fuelToEdit={fuelToEdit}
+        onSuccess={handleFuelFormSuccess}
+        onCancel={handleFuelFormCancel}
       />
     </div>
   );
