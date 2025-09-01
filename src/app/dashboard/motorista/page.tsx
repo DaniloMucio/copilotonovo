@@ -5,6 +5,7 @@ import { Suspense, useEffect, useState, useCallback } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -154,6 +155,38 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
     }
   }
 
+  const getCurrentMonthInterval = () => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    return { start: startOfMonth, end: endOfMonth };
+  };
+
+  const incomeTransactions = transactions.filter((t) => t.type === 'receita');
+  const expenseTransactions = transactions.filter((t) => t.type === 'despesa');
+  const totalIncome = incomeTransactions.reduce((acc, curr) => acc + curr.amount, 0);
+  const totalExpenses = expenseTransactions.reduce((acc, curr) => acc + curr.amount, 0);
+  const netBalance = totalIncome - totalExpenses;
+  const recentTransactions = transactions.slice(0, 5);
+
+  const currentMonthIncome = incomeTransactions.filter(
+    (t) => {
+      const transactionDate = t.date.toDate();
+      const { start, end } = getCurrentMonthInterval();
+      return transactionDate >= start && transactionDate <= end;
+    }
+  ).reduce((acc, curr) => acc + curr.amount, 0);
+
+  const currentMonthExpenses = expenseTransactions.filter(
+    (t) => {
+      const transactionDate = t.date.toDate();
+      const { start, end } = getCurrentMonthInterval();
+      return transactionDate >= start && transactionDate <= end;
+    }
+  ).reduce((acc, curr) => acc + curr.amount, 0);
+
+  const currentMonthNetBalance = currentMonthIncome - currentMonthExpenses;
+
   if (loading || !user) {
     return (
       <div className="space-y-6">
@@ -181,13 +214,6 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
     );
   }
   
-  const incomeTransactions = transactions.filter((t) => t.type === 'receita');
-  const expenseTransactions = transactions.filter((t) => t.type === 'despesa');
-  const totalIncome = incomeTransactions.reduce((acc, curr) => acc + curr.amount, 0);
-  const totalExpenses = expenseTransactions.reduce((acc, curr) => acc + curr.amount, 0);
-  const netBalance = totalIncome - totalExpenses;
-  const recentTransactions = transactions.slice(0, 5);
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">
@@ -229,17 +255,47 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
           <div className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               <Card className="shadow-sm border-emerald-200 bg-emerald-50/50">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-emerald-800">Receita Total</CardTitle><TrendingUp className="h-4 w-4 text-emerald-600" /></CardHeader>
-                <CardContent><div className="text-2xl font-bold text-emerald-600">{totalIncome.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div></CardContent>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-emerald-800">Receita Total</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-emerald-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-emerald-600">
+                    {currentMonthIncome.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Mês atual</p>
+                </CardContent>
               </Card>
               <Card className="shadow-sm border-rose-200 bg-rose-50/50">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-rose-800">Despesa Total</CardTitle><TrendingDown className="h-4 w-4 text-rose-600" /></CardHeader>
-                <CardContent><div className="text-2xl font-bold text-rose-600">{totalExpenses.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div></CardContent>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-rose-800">Despesa Total</CardTitle>
+                  <TrendingDown className="h-4 w-4 text-rose-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-rose-600">
+                    {currentMonthExpenses.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Mês atual</p>
+                </CardContent>
               </Card>
               <Card className="shadow-sm border-stone-200 bg-stone-50/50">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Saldo Líquido</CardTitle><DollarSign className="h-4 w-4 text-muted-foreground" /></CardHeader>
-                <CardContent><div className="text-2xl font-bold">{netBalance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div></CardContent>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Saldo Líquido</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl font-bold ${currentMonthNetBalance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {currentMonthNetBalance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Mês atual</p>
+                </CardContent>
               </Card>
+            </div>
+            {/* Indicador do período atual */}
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                Período: {format(getCurrentMonthInterval().start, 'MMMM/yyyy', { locale: ptBR })}
+              </div>
             </div>
             <Card className="shadow-lg">
               <CardHeader><CardTitle>Transações Recentes</CardTitle></CardHeader>
