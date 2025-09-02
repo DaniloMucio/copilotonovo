@@ -63,6 +63,25 @@ const nextConfig = {
       },
     ],
   },
+  // Excluir arquivos das Cloud Functions do build do Next.js
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    
+    // Excluir pasta functions do build
+    config.module.rules.push({
+      test: /functions\/.*\.ts$/,
+      use: 'ignore-loader',
+    });
+    
+    return config;
+  },
 };
 
 module.exports = withPWA(nextConfig);

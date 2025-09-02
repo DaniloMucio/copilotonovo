@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { AuthProvider } from '@/context/AuthContext';
+import { NotificationProvider } from '@/context/NotificationContext';
 import ErrorBoundary from './ErrorBoundary';
 
 interface ClientLayoutProps {
@@ -17,11 +18,13 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   return (
     <ErrorBoundary showDetails={true}>
       <AuthProvider>
-        <div className="flex-grow flex flex-col">
-          {children}
-        </div>
-        <Toaster />
-        <OfflineIndicator />
+        <NotificationProvider>
+          <div className="flex-grow flex flex-col">
+            {children}
+          </div>
+          <Toaster />
+          <OfflineIndicator />
+        </NotificationProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

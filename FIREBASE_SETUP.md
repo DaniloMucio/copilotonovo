@@ -1,61 +1,100 @@
-# 🔥 Configuração Firebase para Produção
+# 🔥 Configuração Firebase para Notificações
 
-## ⚠️ **IMPORTANTE: Credenciais de Desenvolvimento Removidas**
+## 1. Gerar Chave VAPID
 
-O projeto foi configurado para **NÃO** usar credenciais de desenvolvimento em produção. Agora você deve configurar as variáveis de ambiente corretamente.
+### Passo 1: Acessar Firebase Console
+1. Acesse [Firebase Console](https://console.firebase.google.com/)
+2. Selecione o projeto `co-pilotogit`
+3. Vá para **Project Settings** (ícone de engrenagem)
 
-## 🚀 **Configuração no Vercel**
+### Passo 2: Configurar Cloud Messaging
+1. Na aba **Cloud Messaging**
+2. Clique em **Generate new private key**
+3. Baixe o arquivo JSON com as chaves
+4. Copie a chave pública VAPID
 
-### 1. Acesse o painel do Vercel
-- Vá para seu projeto no [vercel.com](https://vercel.com)
-- Clique em **Settings** > **Environment Variables**
+### Passo 3: Atualizar Código
+Substitua a chave VAPID no arquivo `src/services/notifications.ts`:
 
-### 2. Adicione as seguintes variáveis:
+```typescript
+// Substitua esta linha:
+const VAPID_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa40HI8F7j1Ow09cW-4gX3fx2HvFYhIBkMW3SDcMjS6Xy6pOwa1iDee5U8Xo2E';
 
-```
-NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyB2pVLfo_GUrMRNM7G16PhYlEzdbJ4sEVA
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=co-pilotogit.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=co-pilotogit
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=co-pilotogit.firebasestorage.app
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=1004254989892
-NEXT_PUBLIC_FIREBASE_APP_ID=1:1004254989892:web:68309b7b10918886743611
-```
-
-### 3. Configure para todos os ambientes:
-- ✅ **Production**
-- ✅ **Preview** 
-- ✅ **Development**
-
-## 🔧 **Configuração Local (Desenvolvimento)**
-
-Para desenvolvimento local, use o arquivo `.env.local`:
-
-```bash
-# .env.local
-NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyB2pVLfo_GUrMRNM7G16PhYlEzdbJ4sEVA
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=co-pilotogit.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=co-pilotogit
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=co-pilotogit.firebasestorage.app
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=1004254989892
-NEXT_PUBLIC_FIREBASE_APP_ID=1:1004254989892:web:68309b7b10918886743611
+// Por sua chave real:
+const VAPID_KEY = 'SUA_CHAVE_VAPID_REAL_AQUI';
 ```
 
-## ✅ **Verificação**
+## 2. Configurar Regras do Firestore
 
-Após configurar as variáveis:
+### Adicionar ao arquivo `firestore.rules`:
 
-1. **Local:** `npm run dev` deve funcionar
-2. **Produção:** `npm run build` deve compilar sem erros
-3. **Deploy:** O Vercel deve fazer o build com sucesso
+```javascript
+// Regras para notificações
+match /notifications/{notificationId} {
+  allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+  allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+}
 
-## 🚨 **Segurança**
+match /notificationSettings/{userId} {
+  allow read, write: if request.auth != null && request.auth.uid == userId;
+}
 
-- ✅ **NUNCA** commite credenciais reais no Git
-- ✅ **SEMPRE** use variáveis de ambiente
-- ✅ **VERIFIQUE** se as credenciais estão corretas antes do deploy
+match /fcmTokens/{userId} {
+  allow read, write: if request.auth != null && request.auth.uid == userId;
+}
+```
 
-## 📝 **Notas**
+## 3. Configurar Variáveis de Ambiente
 
-- O arquivo `src/lib/firebase.ts` agora falha imediatamente se as credenciais não estiverem configuradas
-- Isso previne o uso acidental de credenciais de desenvolvimento em produção
-- O erro de build é intencional e será resolvido quando as variáveis estiverem configuradas
+### Adicionar ao arquivo `.env.local`:
+
+```env
+# Firebase Cloud Messaging
+NEXT_PUBLIC_FCM_VAPID_KEY=sua_chave_vapid_aqui
+NEXT_PUBLIC_FCM_SENDER_ID=1004254989892
+```
+
+## 4. Testar Notificações
+
+### Em Desenvolvimento:
+1. Execute `npm run dev`
+2. Acesse a dashboard do motorista
+3. Clique em "Ativar Notificações"
+4. Clique em "Testar Notificação"
+
+### Em Produção:
+1. Faça deploy da aplicação
+2. Acesse em HTTPS (obrigatório para notificações)
+3. Teste as notificações push
+
+## 5. Monitoramento
+
+### Firebase Console:
+- **Analytics** > **Events** para ver estatísticas de notificações
+- **Cloud Messaging** para ver histórico de envios
+- **Firestore** para ver dados de notificações
+
+## 6. Troubleshooting
+
+### Problemas Comuns:
+
+1. **"Request is missing required authentication credential"**
+   - Verifique se a chave VAPID está correta
+   - Confirme se o usuário está autenticado
+
+2. **"Missing or insufficient permissions"**
+   - Verifique as regras do Firestore
+   - Confirme se o usuário tem permissões
+
+3. **Notificações não aparecem**
+   - Verifique se o site está em HTTPS
+   - Confirme se as permissões foram concedidas
+   - Verifique o console do navegador
+
+### Logs Úteis:
+```javascript
+// Adicionar ao console para debug
+console.log('FCM Token:', await getToken(messaging));
+console.log('Notification Permission:', Notification.permission);
+console.log('Service Worker:', navigator.serviceWorker);
+```

@@ -36,3 +36,8 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# firebase functions
+/functions/lib
+/functions/node_modules
+/functions/.runtimeconfig.json

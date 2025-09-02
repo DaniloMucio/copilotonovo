@@ -20,6 +20,7 @@ import { auth } from '@/lib/firebase';
 import { getUserDocument, UserData } from '@/services/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { OnlineStatusToggle } from './OnlineStatusToggle';
+import { NotificationCenter } from './NotificationCenter';
 
 interface SidebarProps {
   className?: string;
@@ -149,14 +150,17 @@ export function Sidebar({ className }: SidebarProps) {
             {/* Header do menu lateral */}
             <div className="flex items-center justify-between p-3 md:p-4 border-b">
               <h2 className="text-base md:text-lg font-semibold">Menu Principal</h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsOpen(false)}
-                className="h-8 w-8 md:h-10 md:w-10"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <NotificationCenter />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsOpen(false)}
+                  className="h-8 w-8 md:h-10 md:w-10"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             
             {/* Toggle de status online/offline para motoristas */}
@@ -200,8 +204,9 @@ export function Sidebar({ className }: SidebarProps) {
        )}>
          <div className="flex flex-col h-full">
            {/* Header do menu lateral */}
-           <div className="flex items-center p-4 lg:p-6 border-b">
+           <div className="flex items-center justify-between p-4 lg:p-6 border-b">
              <h2 className="text-lg lg:text-xl font-bold">Co-Piloto</h2>
+             <NotificationCenter />
            </div>
            
            {/* Toggle de status online/offline para motoristas */}

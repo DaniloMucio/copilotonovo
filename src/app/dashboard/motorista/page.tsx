@@ -49,6 +49,7 @@ import { ReportsManager } from '@/components/ReportsManager';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
 import { usePWAInstall } from '@/hooks/use-pwa-install';
 
+
 interface MotoristaDashboardProps {
   canInstall?: boolean;
   install?: () => void;

@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { firestoreCache, CacheStrategies } from "@/lib/firestore-cache";
+import { notificationService } from "./notifications";
 
 // Estrutura de dados para transação no Firestore
 export interface Transaction {
@@ -81,6 +82,19 @@ export const addTransaction = async (transactionData: TransactionInput) => {
         const cleanedData = cleanData(dataToSave);
         const docRef = await addDoc(collection(db, "transactions"), cleanedData);
         
+        // Enviar notificação se for uma entrega
+        if (transactionData.category === 'Entrega' && transactionData.clientId && transactionData.assignedDriverId) {
+            try {
+                await notificationService.notifyDeliveryCreated(
+                    docRef.id,
+                    transactionData.clientId,
+                    transactionData.assignedDriverId
+                );
+            } catch (error) {
+                console.error('Erro ao enviar notificação de entrega criada:', error);
+            }
+        }
+        
         // Invalidar cache do usuário
         firestoreCache.invalidate(`transactions_{"userId":"${transactionData.userId}"}`);
         
@@ -107,6 +121,45 @@ export const updateTransaction = async (transactionId: string, transactionData: 
 
         const cleanedData = cleanData(dataToUpdate);
         await updateDoc(transactionRef, cleanedData);
+        
+        // Enviar notificações baseadas no tipo de atualização
+        if (transactionData.deliveryStatus) {
+            try {
+                // Buscar dados da transação para obter clientId e driverId
+                const transactionDoc = await getDoc(transactionRef);
+                if (transactionDoc.exists()) {
+                    const transaction = transactionDoc.data() as Transaction;
+                    
+                    if (transaction.clientId && transaction.assignedDriverId) {
+                        switch (transactionData.deliveryStatus) {
+                            case 'Confirmada':
+                                await notificationService.notifyDeliveryAccepted(
+                                    transactionId,
+                                    transaction.clientId,
+                                    transaction.assignedDriverId
+                                );
+                                break;
+                            case 'Recusada':
+                                await notificationService.notifyDeliveryRejected(
+                                    transactionId,
+                                    transaction.clientId,
+                                    transaction.assignedDriverId
+                                );
+                                break;
+                            case 'Entregue':
+                                await notificationService.notifyDeliveryCompleted(
+                                    transactionId,
+                                    transaction.clientId,
+                                    transaction.assignedDriverId
+                                );
+                                break;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao enviar notificação de atualização de entrega:', error);
+            }
+        }
         
         // Invalidar cache relacionado (pode ser de qualquer usuário)
         firestoreCache.invalidate('transactions');

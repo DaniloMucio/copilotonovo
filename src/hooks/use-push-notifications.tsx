@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { notificationService } from '@/services/notifications';
 
 export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
@@ -32,7 +33,8 @@ export function usePushNotifications() {
         title: "Notificações habilitadas",
         description: "Você receberá notificações sobre suas jornadas e transações.",
       });
-      await subscribeToPush();
+      // Usar o novo serviço de notificações
+      await notificationService.initialize();
       return true;
     } else {
       toast({
