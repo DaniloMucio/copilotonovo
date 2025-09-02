@@ -269,8 +269,7 @@ export const getTransactions = async (userId: string, useCache: boolean = true):
 export const getDeliveriesByClient = (clientId: string, callback: (deliveries: Transaction[]) => void) => {
     const q = query(
         collection(db, "transactions"),
-        where("clientId", "==", clientId),
-        orderBy("date", "desc")
+        where("clientId", "==", clientId)
     );
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -278,10 +277,54 @@ export const getDeliveriesByClient = (clientId: string, callback: (deliveries: T
         querySnapshot.forEach((doc) => {
             deliveries.push({ id: doc.id, ...doc.data() } as Transaction);
         });
+        
+        // Ordenar no cliente por data (mais recente primeiro)
+        deliveries.sort((a, b) => {
+            const dateA = a.date instanceof Date ? a.date : a.date.toDate();
+            const dateB = b.date instanceof Date ? b.date : b.date.toDate();
+            return dateB.getTime() - dateA.getTime();
+        });
+        
         callback(deliveries);
+    }, (error) => {
+        console.error("Erro ao buscar entregas do cliente:", error);
+        callback([]);
     });
 
     return unsubscribe;
+};
+
+/**
+ * Busca todas as entregas de um cliente específico (versão síncrona).
+ * @param clientId - O ID do cliente.
+ * @returns Uma Promise com as entregas do cliente.
+ */
+export const getDeliveriesByClientSync = async (clientId: string): Promise<Transaction[]> => {
+    try {
+        // Query sem orderBy para evitar necessidade de índice
+        const q = query(
+            collection(db, "transactions"),
+            where("clientId", "==", clientId)
+        );
+
+        const querySnapshot = await getDocs(q);
+        const deliveries: Transaction[] = [];
+        querySnapshot.forEach((doc) => {
+            deliveries.push({ id: doc.id, ...doc.data() } as Transaction);
+        });
+        
+        // Ordenar no cliente por data (mais recente primeiro)
+        deliveries.sort((a, b) => {
+            const dateA = a.date instanceof Date ? a.date : a.date.toDate();
+            const dateB = b.date instanceof Date ? b.date : b.date.toDate();
+            return dateB.getTime() - dateA.getTime();
+        });
+        
+        return deliveries;
+    } catch (error) {
+        console.error("Erro ao buscar entregas do cliente:", error);
+        return [];
+    }
 };
 
 /**

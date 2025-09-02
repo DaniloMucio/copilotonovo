@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { auth } from '@/lib/firebase';
-import { getTransactions, type Transaction } from '@/services/transactions';
+import { getTransactions, getDeliveriesByClientSync, deleteTransaction, type Transaction } from '@/services/transactions';
 import { getUserDocument, type UserData } from '@/services/firestore';
 import { 
   Package, 
@@ -22,10 +22,12 @@ import {
   MapPin,
   CheckCircle,
   AlertCircle,
-  Clock as ClockIcon
+  Clock as ClockIcon,
+  Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
 import { usePWAInstall } from '@/hooks/use-pwa-install';
 import { Timestamp } from 'firebase/firestore';
@@ -90,17 +92,24 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
   }, []);
 
   const fetchTransactions = useCallback(async (uid: string) => {
-    const userTransactions = await getTransactions(uid);
-    setTransactions(userTransactions);
-  }, []);
+    // Para clientes, buscar entregas pelo clientId
+    if (userData?.userType === 'cliente') {
+      const clientDeliveries = await getDeliveriesByClientSync(uid);
+      setTransactions(clientDeliveries);
+    } else {
+      // Para outros tipos de usuário, usar a função padrão
+      const userTransactions = await getTransactions(uid);
+      setTransactions(userTransactions);
+    }
+  }, [userData?.userType]);
 
   const refreshAllData = useCallback(async (uid: string) => {
     setLoading(true);
     try {
-      await Promise.all([
-        fetchUserData(uid),
-        fetchTransactions(uid),
-      ]);
+      // Primeiro carregar os dados do usuário
+      await fetchUserData(uid);
+      // Depois carregar as transações (que depende do userData)
+      await fetchTransactions(uid);
     } catch (error) {
       console.error("Erro ao carregar dados do dashboard:", error);
       toast({
@@ -112,6 +121,27 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
       setLoading(false);
     }
   }, [fetchUserData, fetchTransactions, toast]);
+
+  const handleDeleteDelivery = async (deliveryId: string) => {
+    try {
+      await deleteTransaction(deliveryId);
+      toast({
+        title: 'Sucesso!',
+        description: 'Entrega excluída com sucesso.'
+      });
+      // Recarregar os dados após exclusão
+      if (user) {
+        await fetchTransactions(user.uid);
+      }
+    } catch (error) {
+      console.error("Erro ao excluir entrega:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro',
+        description: 'Não foi possível excluir a entrega.'
+      });
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -133,6 +163,8 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
   if (!user || !userData) {
     return null;
   }
+
+
 
   // Filtrar transações relevantes para clientes
   const deliveryTransactions = transactions.filter(t => t.category === 'Entrega');
@@ -239,11 +271,39 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
                             {format(delivery.date instanceof Timestamp ? delivery.date.toDate() : delivery.date, 'dd/MM/yyyy', { locale: ptBR })}
                           </p>
                         </div>
-                        <Badge 
-                          variant={delivery.deliveryStatus === 'Entregue' ? 'default' : 'secondary'}
-                        >
-                          {delivery.deliveryStatus}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge 
+                            variant={delivery.deliveryStatus === 'Entregue' ? 'default' : 'secondary'}
+                          >
+                            {delivery.deliveryStatus}
+                          </Badge>
+                          {delivery.deliveryStatus === 'Pendente' && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Excluir Entrega</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Tem certeza que deseja excluir esta entrega? Esta ação não pode ser desfeita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleDeleteDelivery(delivery.id!)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Excluir
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -336,6 +396,32 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
                           <span className="font-semibold text-sm">
                             R$ {delivery.amount?.toFixed(2) || '0.00'}
                           </span>
+                          {delivery.deliveryStatus === 'Pendente' && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Excluir Entrega</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Tem certeza que deseja excluir esta entrega? Esta ação não pode ser desfeita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleDeleteDelivery(delivery.id!)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Excluir
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
                         </div>
                       </div>
                     ))}

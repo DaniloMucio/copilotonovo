@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { auth } from '@/lib/firebase';
-import { getTransactions, type Transaction, updateTransaction } from '@/services/transactions';
+import { getTransactions, getDeliveriesByClientSync, deleteTransaction, type Transaction, updateTransaction } from '@/services/transactions';
 import { getUserDocument, type UserData, getOnlineDrivers } from '@/services/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -26,9 +26,11 @@ import {
   AlertCircle,
   Truck,
   User as UserIcon,
-  Plus
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { DeliveryForm } from '@/components/forms/DeliveryForm';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 function EntregasClienteSkeleton() {
   return (
@@ -77,9 +79,10 @@ function EntregasClienteContent() {
   const fetchData = useCallback(async (uid: string) => {
     setLoading(true);
     try {
-      const allTransactions = await getTransactions(uid);
+      // Para clientes, buscar entregas pelo clientId
+      const clientDeliveries = await getDeliveriesByClientSync(uid);
 
-      const deliveryTransactions = allTransactions.filter(
+      const deliveryTransactions = clientDeliveries.filter(
         (t) => t.category === 'Entrega'
       );
       
@@ -115,23 +118,7 @@ function EntregasClienteContent() {
     }
   }, [toast]);
 
-  const handleDeliveryRequest = async (deliveryId: string, accept: boolean) => {
-    try {
-      const status = accept ? 'Confirmada' : 'Recusada';
-      await updateTransaction(deliveryId, { deliveryStatus: status as any });
-      toast({ 
-        title: 'Sucesso!', 
-        description: `Entrega ${status.toLowerCase()}.` 
-      });
-      fetchData(user!.uid);
-    } catch (error) {
-      toast({ 
-        variant: 'destructive', 
-        title: 'Erro', 
-        description: 'Não foi possível processar a solicitação.'
-      });
-    }
-  };
+  
 
   const handleOpenForm = () => {
     setIsFormOpen(true);
@@ -145,6 +132,27 @@ function EntregasClienteContent() {
     setIsFormOpen(false);
     if (user) {
       fetchData(user.uid);
+    }
+  };
+
+  const handleDeleteDelivery = async (deliveryId: string) => {
+    try {
+      await deleteTransaction(deliveryId);
+      toast({
+        title: 'Sucesso!',
+        description: 'Entrega excluída com sucesso.'
+      });
+      // Recarregar os dados após exclusão
+      if (user) {
+        fetchData(user.uid);
+      }
+    } catch (error) {
+      console.error("Erro ao excluir entrega:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro',
+        description: 'Não foi possível excluir a entrega.'
+      });
     }
   };
 
@@ -299,24 +307,31 @@ function EntregasClienteContent() {
                           <Badge variant="secondary" className="text-orange-600 border-orange-200">
                             {delivery.deliveryStatus}
                           </Badge>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() => handleDeliveryRequest(delivery.id!, true)}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              Confirmar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleDeliveryRequest(delivery.id!, false)}
-                            >
-                              <AlertCircle className="h-3 w-3 mr-1" />
-                              Recusar
-                            </Button>
-                          </div>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                <Trash2 className="h-3 w-3 mr-1" />
+                                Excluir
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir Entrega</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir esta entrega? Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleDeleteDelivery(delivery.id!)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </div>
                     </div>
