@@ -23,6 +23,7 @@ import {
 import { format, addDays, addMonths, isAfter, isBefore, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import { 
   getUserVehicle, 
   getUserVehicles,
@@ -261,6 +262,7 @@ function FuelRecordCard({ record, onEdit, onDelete }: {
 // Componente principal de gestão de veículo
 export function VehicleManager() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [maintenanceItems, setMaintenanceItems] = useState<MaintenanceItem[]>([]);
   const [fuelRecords, setFuelRecords] = useState<FuelRecord[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -833,7 +835,7 @@ export function VehicleManager() {
                 item={item}
                 onEdit={handleEditMaintenance}
                 onDelete={handleDeleteMaintenance}
-                currentKm={vehicleInfo.currentKm}
+                currentKm={selectedVehicle?.currentKm || 0}
               />
             ))}
           </div>

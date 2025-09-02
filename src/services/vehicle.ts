@@ -92,8 +92,7 @@ export async function getUserVehicles(userId: string): Promise<VehicleInfo[]> {
   try {
     const q = query(
       collection(db, 'vehicles'),
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
+      where('userId', '==', userId)
     );
     
     const querySnapshot = await getDocs(q);
@@ -117,7 +116,8 @@ export async function getUserVehicles(userId: string): Promise<VehicleInfo[]> {
       } as VehicleInfo);
     });
     
-    return vehicles;
+    // Ordenar localmente por data de criação (mais recente primeiro)
+    return vehicles.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   } catch (error) {
     console.error('Erro ao buscar veículos:', error);
     throw new Error('Falha ao carregar informações dos veículos');
