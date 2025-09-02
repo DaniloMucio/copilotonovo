@@ -76,45 +76,55 @@ export interface FuelRecord {
   updatedAt: Date;
 }
 
-// Buscar informações do veículo do usuário
+// Buscar informações do veículo do usuário (primeiro veículo - compatibilidade)
 export async function getUserVehicle(userId: string): Promise<VehicleInfo | null> {
   try {
-    const q = query(
-      collection(db, 'vehicles'),
-      where('userId', '==', userId),
-      limit(1)
-    );
-    
-    const querySnapshot = await getDocs(q);
-    
-    if (querySnapshot.empty) {
-      return null;
-    }
-    
-    const doc = querySnapshot.docs[0];
-    const data = doc.data();
-    
-    return {
-      id: doc.id,
-      ...data,
-      createdAt: data.createdAt ? data.createdAt.toDate() : new Date(),
-      updatedAt: data.updatedAt ? data.updatedAt.toDate() : new Date(),
-      insurance: data.insurance ? {
-        ...data.insurance,
-        expiry: data.insurance.expiry ? data.insurance.expiry.toDate() : new Date()
-      } : undefined,
-              registration: data.registration ? {
-          ...data.registration,
-          expiry: data.registration.expiry ? data.registration.expiry.toDate() : new Date()
-        } : undefined
-    } as VehicleInfo;
+    const vehicles = await getUserVehicles(userId);
+    return vehicles.length > 0 ? vehicles[0] : null;
   } catch (error) {
     console.error('Erro ao buscar veículo:', error);
     throw new Error('Falha ao carregar informações do veículo');
   }
 }
 
-// Criar ou atualizar informações do veículo
+// Buscar todos os veículos do usuário
+export async function getUserVehicles(userId: string): Promise<VehicleInfo[]> {
+  try {
+    const q = query(
+      collection(db, 'vehicles'),
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const vehicles: VehicleInfo[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      vehicles.push({
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt ? data.createdAt.toDate() : new Date(),
+        updatedAt: data.updatedAt ? data.updatedAt.toDate() : new Date(),
+        insurance: data.insurance ? {
+          ...data.insurance,
+          expiry: data.insurance.expiry ? data.insurance.expiry.toDate() : new Date()
+        } : undefined,
+        registration: data.registration ? {
+          ...data.registration,
+          expiry: data.registration.expiry ? data.registration.expiry.toDate() : new Date()
+        } : undefined
+      } as VehicleInfo);
+    });
+    
+    return vehicles;
+  } catch (error) {
+    console.error('Erro ao buscar veículos:', error);
+    throw new Error('Falha ao carregar informações dos veículos');
+  }
+}
+
+// Criar novo veículo
 export async function saveVehicleInfo(vehicleInfo: Omit<VehicleInfo, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   try {
     const now = new Date();
@@ -124,22 +134,38 @@ export async function saveVehicleInfo(vehicleInfo: Omit<VehicleInfo, 'id' | 'cre
       updatedAt: now,
     };
 
-    // Se já existe um veículo, atualizar
-    const existingVehicle = await getUserVehicle(vehicleInfo.userId);
-    if (existingVehicle?.id) {
-      await updateDoc(doc(db, 'vehicles', existingVehicle.id), {
-        ...vehicleData,
-        updatedAt: now,
-      });
-      return existingVehicle.id;
-    } else {
-      // Criar novo veículo
-      const docRef = await addDoc(collection(db, 'vehicles'), vehicleData);
-      return docRef.id;
-    }
+    // Sempre criar um novo veículo
+    const docRef = await addDoc(collection(db, 'vehicles'), vehicleData);
+    return docRef.id;
   } catch (error) {
     console.error('Erro ao salvar veículo:', error);
     throw new Error('Falha ao salvar informações do veículo');
+  }
+}
+
+// Atualizar informações do veículo
+export async function updateVehicleInfo(vehicleId: string, vehicleInfo: Partial<VehicleInfo>): Promise<void> {
+  try {
+    const now = new Date();
+    const vehicleData = {
+      ...vehicleInfo,
+      updatedAt: now,
+    };
+
+    await updateDoc(doc(db, 'vehicles', vehicleId), vehicleData);
+  } catch (error) {
+    console.error('Erro ao atualizar veículo:', error);
+    throw new Error('Falha ao atualizar informações do veículo');
+  }
+}
+
+// Excluir veículo
+export async function deleteVehicle(vehicleId: string): Promise<void> {
+  try {
+    await deleteDoc(doc(db, 'vehicles', vehicleId));
+  } catch (error) {
+    console.error('Erro ao excluir veículo:', error);
+    throw new Error('Falha ao excluir veículo');
   }
 }
 

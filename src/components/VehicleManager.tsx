@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Car, 
@@ -24,9 +25,11 @@ import { ptBR } from 'date-fns/locale';
 import { useAuth } from '@/context/AuthContext';
 import { 
   getUserVehicle, 
+  getUserVehicles,
   getVehicleMaintenance, 
   getFuelRecords, 
   calculateVehicleStats,
+  deleteVehicle,
   type VehicleInfo as RealVehicleInfo,
   type MaintenanceItem as RealMaintenanceItem,
   type FuelRecord as RealFuelRecord
@@ -261,15 +264,8 @@ export function VehicleManager() {
   const [maintenanceItems, setMaintenanceItems] = useState<MaintenanceItem[]>([]);
   const [fuelRecords, setFuelRecords] = useState<FuelRecord[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [vehicleInfo, setVehicleInfo] = useState<VehicleInfo>({
-    brand: '',
-    model: '',
-    year: 0,
-    plate: '',
-    currentKm: 0,
-    fuelTank: 0,
-    averageConsumption: 0
-  });
+  const [vehicles, setVehicles] = useState<RealVehicleInfo[]>([]);
+  const [selectedVehicle, setSelectedVehicle] = useState<RealVehicleInfo | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -295,8 +291,8 @@ export function VehicleManager() {
         console.log('🔍 Carregando dados em paralelo...');
         
         // Carregar dados em paralelo
-        const [vehicle, maintenance, fuel, stats, transactions] = await Promise.all([
-          getUserVehicle(user.uid),
+        const [userVehicles, maintenance, fuel, stats, transactions] = await Promise.all([
+          getUserVehicles(user.uid),
           getVehicleMaintenance(user.uid),
           getFuelRecords(user.uid),
           calculateVehicleStats(user.uid),
@@ -304,23 +300,15 @@ export function VehicleManager() {
         ]);
 
         console.log('✅ Dados carregados:', { 
-          vehicle: !!vehicle, 
+          vehicles: userVehicles.length, 
           maintenance: maintenance.length, 
           fuel: fuel.length 
         });
 
-        // Atualizar informações do veículo
-        if (vehicle) {
-          setVehicleInfo({
-            brand: vehicle.brand,
-            model: vehicle.model,
-            year: vehicle.year,
-            plate: vehicle.plate,
-            currentKm: vehicle.currentKm,
-            fuelTank: vehicle.fuelTank,
-            averageConsumption: vehicle.averageConsumption
-          });
-          setVehicleToEdit(vehicle);
+        // Atualizar lista de veículos
+        setVehicles(userVehicles);
+        if (userVehicles.length > 0) {
+          setSelectedVehicle(userVehicles[0]); // Selecionar o primeiro veículo por padrão
         }
 
         // Converter manutenções para formato compatível
@@ -414,7 +402,7 @@ export function VehicleManager() {
   
   const urgentMaintenance = maintenanceItems.filter(item => {
     const daysUntilNext = differenceInDays(new Date(item.nextDate), new Date());
-    const kmUntilNext = item.nextKm - vehicleInfo.currentKm;
+    const kmUntilNext = item.nextKm - (selectedVehicle?.currentKm || 0);
     return daysUntilNext <= 7 || kmUntilNext <= 1000;
   });
 
@@ -446,29 +434,61 @@ export function VehicleManager() {
     setFuelRecords(prev => prev.filter(record => record.id !== id));
   };
 
-  const handleEditVehicle = () => {
+  const handleAddVehicle = () => {
+    setVehicleToEdit(null);
     setIsVehicleFormOpen(true);
   };
 
-  const handleVehicleFormSuccess = () => {
+  const handleEditVehicle = (vehicle: RealVehicleInfo) => {
+    setVehicleToEdit(vehicle);
+    setIsVehicleFormOpen(true);
+  };
+
+  const handleDeleteVehicle = async (vehicleId: string) => {
+    if (!user) return;
+    
+    try {
+      await deleteVehicle(vehicleId);
+      toast({
+        title: 'Sucesso!',
+        description: 'Veículo excluído com sucesso.',
+      });
+      
+      // Recarregar lista de veículos
+      const updatedVehicles = await getUserVehicles(user.uid);
+      setVehicles(updatedVehicles);
+      
+      // Se o veículo excluído era o selecionado, selecionar outro
+      if (selectedVehicle?.id === vehicleId) {
+        setSelectedVehicle(updatedVehicles.length > 0 ? updatedVehicles[0] : null);
+      }
+    } catch (error) {
+      console.error('Erro ao excluir veículo:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro',
+        description: 'Não foi possível excluir o veículo.',
+      });
+    }
+  };
+
+  const handleVehicleFormSuccess = async () => {
     setIsVehicleFormOpen(false);
     setVehicleToEdit(null);
-    // Recarregar dados do veículo
+    
+    // Recarregar lista de veículos
     if (user?.uid) {
-      getUserVehicle(user.uid).then(vehicle => {
-        if (vehicle) {
-          setVehicleInfo({
-            brand: vehicle.brand,
-            model: vehicle.model,
-            year: vehicle.year,
-            plate: vehicle.plate,
-            currentKm: vehicle.currentKm,
-            fuelTank: vehicle.fuelTank,
-            averageConsumption: vehicle.averageConsumption
-          });
-          setVehicleToEdit(vehicle);
+      try {
+        const updatedVehicles = await getUserVehicles(user.uid);
+        setVehicles(updatedVehicles);
+        
+        // Se não há veículo selecionado, selecionar o primeiro
+        if (!selectedVehicle && updatedVehicles.length > 0) {
+          setSelectedVehicle(updatedVehicles[0]);
         }
-      });
+      } catch (error) {
+        console.error('Erro ao recarregar veículos:', error);
+      }
     }
   };
 
@@ -569,39 +589,101 @@ export function VehicleManager() {
                  {/* Botão debug removido */}
       </div>
 
-      {/* Informações do veículo */}
+      {/* Lista de veículos */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Car className="h-5 w-5" />
-              Informações do Veículo
+              Meus Veículos ({vehicles.length})
             </CardTitle>
-            <Button onClick={handleEditVehicle} variant="outline" size="sm">
-              <Edit className="h-4 w-4 mr-2" />
-              Editar
+            <Button onClick={handleAddVehicle} variant="outline" size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Veículo
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <Label className="text-muted-foreground">Veículo</Label>
-              <p className="font-medium">{vehicleInfo.brand} {vehicleInfo.model} {vehicleInfo.year}</p>
+          {vehicles.length > 0 ? (
+            <div className="space-y-4">
+              {vehicles.map((vehicle) => (
+                <div 
+                  key={vehicle.id} 
+                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                    selectedVehicle?.id === vehicle.id 
+                      ? 'border-primary bg-primary/5' 
+                      : 'hover:bg-muted/50'
+                  }`}
+                  onClick={() => setSelectedVehicle(vehicle)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-semibold text-lg">
+                          {vehicle.brand} {vehicle.model} {vehicle.year}
+                        </h3>
+                        {selectedVehicle?.id === vehicle.id && (
+                          <Badge variant="default" className="text-xs">Ativo</Badge>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <Label className="text-muted-foreground">Placa</Label>
+                          <p className="font-medium font-mono">{vehicle.plate}</p>
+                        </div>
+                        <div>
+                          <Label className="text-muted-foreground">KM Atual</Label>
+                          <p className="font-medium">{vehicle.currentKm.toLocaleString()} km</p>
+                        </div>
+                        <div>
+                          <Label className="text-muted-foreground">Consumo Médio</Label>
+                          <p className="font-medium">{vehicle.averageConsumption} km/L</p>
+                        </div>
+                        <div>
+                          <Label className="text-muted-foreground">Tanque</Label>
+                          <p className="font-medium">{vehicle.fuelTank}L</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 ml-4">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditVehicle(vehicle);
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteVehicle(vehicle.id!);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div>
-              <Label className="text-muted-foreground">Placa</Label>
-              <p className="font-medium font-mono">{vehicleInfo.plate}</p>
+          ) : (
+            <div className="text-center py-8">
+              <Car className="h-16 w-16 mx-auto mb-4 opacity-50" />
+              <h3 className="text-lg font-semibold mb-2">Nenhum veículo cadastrado</h3>
+              <p className="text-muted-foreground mb-4">
+                Cadastre seu primeiro veículo para começar a controlar manutenções e combustível.
+              </p>
+              <Button onClick={handleAddVehicle}>
+                <Plus className="h-4 w-4 mr-2" />
+                Cadastrar Primeiro Veículo
+              </Button>
             </div>
-            <div>
-              <Label className="text-muted-foreground">KM Atual</Label>
-              <p className="font-medium">{vehicleInfo.currentKm.toLocaleString()} km</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Consumo Médio</Label>
-              <p className="font-medium">{vehicleInfo.averageConsumption} km/L</p>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
@@ -659,7 +741,7 @@ export function VehicleManager() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {vehicleInfo.averageConsumption}
+              {selectedVehicle?.averageConsumption || 0}
             </div>
             <p className="text-xs text-muted-foreground">
               km/L médio

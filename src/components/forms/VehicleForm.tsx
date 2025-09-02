@@ -20,7 +20,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { saveVehicleInfo, type VehicleInfo } from '@/services/vehicle';
+import { saveVehicleInfo, updateVehicleInfo, type VehicleInfo } from '@/services/vehicle';
 import { useAuth } from '@/context/AuthContext';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -161,7 +161,13 @@ export function VehicleForm({ vehicleToEdit, onSuccess, onCancel, isOpen }: Vehi
         }),
       };
 
-      await saveVehicleInfo(vehicleData);
+      if (vehicleToEdit?.id) {
+        // Atualizar veículo existente
+        await updateVehicleInfo(vehicleToEdit.id, vehicleData);
+      } else {
+        // Criar novo veículo
+        await saveVehicleInfo(vehicleData);
+      }
 
       toast({
         title: 'Sucesso',

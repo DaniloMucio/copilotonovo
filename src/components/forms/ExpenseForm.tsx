@@ -20,7 +20,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { addTransaction, updateTransaction, type Transaction, type TransactionInput } from '@/services/transactions';
-import { getUserVehicle, type VehicleInfo } from '@/services/vehicle';
+import { getUserVehicles, type VehicleInfo } from '@/services/vehicle';
 import { auth } from '@/lib/firebase';
 import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
@@ -68,7 +68,7 @@ interface ExpenseFormProps {
 export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [vehicle, setVehicle] = useState<VehicleInfo | null>(null);
+  const [vehicles, setVehicles] = useState<VehicleInfo[]>([]);
 
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
@@ -86,20 +86,20 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
 
   const categoryWatcher = form.watch("category");
 
-  // Carregar dados do veículo
+  // Carregar dados dos veículos
   useEffect(() => {
-    const loadVehicle = async () => {
+    const loadVehicles = async () => {
       const user = auth.currentUser;
       if (user) {
         try {
-          const vehicleData = await getUserVehicle(user.uid);
-          setVehicle(vehicleData);
+          const vehiclesData = await getUserVehicles(user.uid);
+          setVehicles(vehiclesData);
         } catch (error) {
-          console.error('Erro ao carregar veículo:', error);
+          console.error('Erro ao carregar veículos:', error);
         }
       }
     };
-    loadVehicle();
+    loadVehicles();
   }, []);
 
   useEffect(() => {
@@ -243,7 +243,7 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
         
         {categoryWatcher === 'Combustível' && (
             <>
-                {vehicle ? (
+                {vehicles.length > 0 ? (
                     <FormField
                         control={form.control}
                         name="vehicleId"
@@ -257,9 +257,11 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                <SelectItem value={vehicle.id || ''}>
-                                    {vehicle.brand} {vehicle.model} {vehicle.year} - {vehicle.plate}
-                                </SelectItem>
+                                {vehicles.map((vehicle) => (
+                                    <SelectItem key={vehicle.id} value={vehicle.id || ''}>
+                                        {vehicle.brand} {vehicle.model} {vehicle.year} - {vehicle.plate}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                             </Select>
                             <FormMessage />
