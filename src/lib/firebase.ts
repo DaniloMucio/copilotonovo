@@ -26,22 +26,22 @@ if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.proj
         console.warn("⚠️  Modo de desenvolvimento/build: usando configurações padrão");
         // Em desenvolvimento ou durante build, usar valores padrão se as variáveis não estiverem configuradas
         if (!firebaseConfig.apiKey) {
-            firebaseConfig.apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "";
+            firebaseConfig.apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "demo-api-key";
         }
         if (!firebaseConfig.authDomain) {
-            firebaseConfig.authDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "";
+            firebaseConfig.authDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "demo-project.firebaseapp.com";
         }
         if (!firebaseConfig.projectId) {
-            firebaseConfig.projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "";
+            firebaseConfig.projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "demo-project";
         }
         if (!firebaseConfig.storageBucket) {
-            firebaseConfig.storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "";
+            firebaseConfig.storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "demo-project.appspot.com";
         }
         if (!firebaseConfig.messagingSenderId) {
-            firebaseConfig.messagingSenderId = process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "";
+            firebaseConfig.messagingSenderId = process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "123456789012";
         }
         if (!firebaseConfig.appId) {
-            firebaseConfig.appId = process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "";
+            firebaseConfig.appId = process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:123456789012:web:demo";
         }
     }
 }
