@@ -48,11 +48,14 @@ export function usePWAInstall(): UsePWAInstallReturn {
       setCanInstall(true);
       setShowInstallButton(true);
       
-      toast({
-        title: "App Disponível para Instalação! 📱",
-        description: "Clique em 'Instalar App' para adicionar o Co-Piloto Driver à sua tela inicial.",
-        duration: 5000,
-      });
+      // Mostrar toast apenas se não estiver em desenvolvimento
+      if (process.env.NODE_ENV !== 'development') {
+        toast({
+          title: "App Disponível para Instalação! 📱",
+          description: "Clique em 'Instalar App' para adicionar o Co-Piloto Driver à sua tela inicial.",
+          duration: 5000,
+        });
+      }
     };
 
     // Verificar se a instalação foi concluída
@@ -91,7 +94,6 @@ export function usePWAInstall(): UsePWAInstallReturn {
 
   const installApp = async (): Promise<void> => {
     if (!installPrompt) {
-      console.log('Prompt de instalação não disponível');
       return;
     }
 
@@ -103,7 +105,6 @@ export function usePWAInstall(): UsePWAInstallReturn {
       const choiceResult = await installPrompt.userChoice;
       
       if (choiceResult.outcome === 'accepted') {
-        console.log('Usuário aceitou a instalação');
         setIsInstalled(true);
         setCanInstall(false);
         setShowInstallButton(false);
@@ -114,8 +115,6 @@ export function usePWAInstall(): UsePWAInstallReturn {
           duration: 5000,
         });
       } else {
-        console.log('Usuário rejeitou a instalação');
-        
         toast({
           title: "Instalação Cancelada",
           description: "Você pode instalar o app a qualquer momento clicando em 'Instalar App'.",

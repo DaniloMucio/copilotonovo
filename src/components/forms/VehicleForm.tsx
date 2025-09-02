@@ -144,17 +144,21 @@ export function VehicleForm({ vehicleToEdit, onSuccess, onCancel, isOpen }: Vehi
         currentKm: values.currentKm,
         fuelTank: values.fuelTank,
         averageConsumption: values.averageConsumption,
-        color: values.color || undefined,
-        vin: values.vin || undefined,
-        insurance: values.insuranceCompany && values.insurancePolicy && values.insuranceExpiry ? {
-          company: values.insuranceCompany,
-          policy: values.insurancePolicy,
-          expiry: values.insuranceExpiry,
-        } : undefined,
-        registration: values.registrationNumber && values.registrationExpiry ? {
-          number: values.registrationNumber,
-          expiry: values.registrationExpiry,
-        } : undefined,
+        ...(values.color && { color: values.color }),
+        ...(values.vin && { vin: values.vin }),
+        ...(values.insuranceCompany && values.insurancePolicy && values.insuranceExpiry && {
+          insurance: {
+            company: values.insuranceCompany,
+            policy: values.insurancePolicy,
+            expiry: values.insuranceExpiry,
+          }
+        }),
+        ...(values.registrationNumber && values.registrationExpiry && {
+          registration: {
+            number: values.registrationNumber,
+            expiry: values.registrationExpiry,
+          }
+        }),
       };
 
       await saveVehicleInfo(vehicleData);

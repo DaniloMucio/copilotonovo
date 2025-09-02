@@ -16,37 +16,10 @@ export const PWAInstallButton = ({ canInstall, install, variant = 'icon' }: PWAI
   const [showDialog, setShowDialog] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
-  // Debug: mostrar informações sobre o estado do PWA (só no cliente)
-  if (typeof window !== 'undefined') {
-    console.log('PWAInstallButton render:', {
-      canInstall, 
-      variant, 
-      dismissed,
-      userAgent: navigator.userAgent,
-      location: window.location.href,
-      protocol: window.location.protocol
-    });
-  }
-
-  // Para debug: sempre mostrar em desenvolvimento ou se atender critérios básicos
-  const isDevelopment = typeof process !== 'undefined' && process.env.NODE_ENV === 'development';
-  const isHTTPS = typeof window !== 'undefined' && (window.location.protocol === 'https:' || window.location.hostname === 'localhost');
-  const hasServiceWorker = typeof navigator !== 'undefined' && 'serviceWorker' in navigator;
+  // Verificar se deve mostrar o botão
+  const shouldShow = canInstall && !(variant === 'banner' && dismissed);
   
-  // Simplifica a lógica para evitar re-renders desnecessários
-  const shouldShow = canInstall || isDevelopment;
-  
-  if (!shouldShow || (variant === 'banner' && dismissed)) {
-    console.log('PWAInstallButton not showing:', { 
-      canInstall, 
-      variant, 
-      dismissed,
-      shouldShow,
-      isDevelopment,
-      isHTTPS,
-      hasServiceWorker,
-      reason: !shouldShow ? 'cannot install' : 'dismissed'
-    });
+  if (!shouldShow) {
     return null;
   }
 
