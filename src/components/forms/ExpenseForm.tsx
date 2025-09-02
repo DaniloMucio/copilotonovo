@@ -20,6 +20,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { addTransaction, updateTransaction, type Transaction, type TransactionInput } from '@/services/transactions';
+import { getUserVehicle, type VehicleInfo } from '@/services/vehicle';
 import { auth } from '@/lib/firebase';
 import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
@@ -43,6 +44,7 @@ const expenseSchema = z.object({
   observations: z.string().optional(),
   km: z.coerce.number().optional(),
   pricePerLiter: z.coerce.number().optional(),
+  vehicleId: z.string().optional(),
 });
 
 type ExpenseFormValues = z.infer<typeof expenseSchema>;
@@ -66,6 +68,7 @@ interface ExpenseFormProps {
 export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [vehicle, setVehicle] = useState<VehicleInfo | null>(null);
 
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
@@ -77,10 +80,27 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
         observations: '',
         km: undefined,
         pricePerLiter: undefined,
+        vehicleId: undefined,
     },
   });
 
   const categoryWatcher = form.watch("category");
+
+  // Carregar dados do veículo
+  useEffect(() => {
+    const loadVehicle = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          const vehicleData = await getUserVehicle(user.uid);
+          setVehicle(vehicleData);
+        } catch (error) {
+          console.error('Erro ao carregar veículo:', error);
+        }
+      }
+    };
+    loadVehicle();
+  }, []);
 
   useEffect(() => {
     if (transactionToEdit) {
@@ -102,6 +122,7 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
             observations: '',
             km: undefined,
             pricePerLiter: undefined,
+            vehicleId: undefined,
         });
     }
   }, [transactionToEdit, form]);
@@ -219,6 +240,41 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
             </FormItem>
             )}
         />
+        
+        {categoryWatcher === 'Combustível' && (
+            <>
+                {vehicle ? (
+                    <FormField
+                        control={form.control}
+                        name="vehicleId"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Veículo</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder="Selecione o veículo" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value={vehicle.id || ''}>
+                                    {vehicle.brand} {vehicle.model} {vehicle.year} - {vehicle.plate}
+                                </SelectItem>
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                ) : (
+                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                        <p className="text-sm text-yellow-800">
+                            ⚠️ Nenhum veículo cadastrado. Cadastre um veículo primeiro para registrar gastos com combustível.
+                        </p>
+                    </div>
+                )}
+            </>
+        )}
         
         {(categoryWatcher === 'Combustível' || categoryWatcher === 'Manutenção') && (
             <FormField
