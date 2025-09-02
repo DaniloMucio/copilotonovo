@@ -4,7 +4,7 @@ importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compa
 
 // Initialize Firebase
 firebase.initializeApp({
-  apiKey: "AIzaSyB2pVLfo_GUrMRNM7G16PhYlEzdbJ4sEVA",
+  apiKey: "AIzaSyB2pVLfo_GUrMRNM7G16PhYlEzdbJ4sEVA", // Esta chave será substituída em build time
   authDomain: "co-pilotogit.firebaseapp.com",
   projectId: "co-pilotogit",
   storageBucket: "co-pilotogit.firebasestorage.app",
@@ -88,7 +88,7 @@ self.addEventListener('pushsubscriptionchange', (event) => {
   event.waitUntil(
     self.registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: 'BEl62iUYgUivxIkv69yViEuiBIa40HI8F7j1Ow09cW-4gX3fx2HvFYhIBkMW3SDcMjS6Xy6pOwa1iDee5U8Xo2E'
+      applicationServerKey: 'BEl62iUYgUivxIkv69yViEuiBIa40HI8F7j1Ow09cW-4gX3fx2HvFYhIBkMW3SDcMjS6Xy6pOwa1iDee5U8Xo2E' // Esta chave será substituída em build time
     }).then((subscription) => {
       // Send new subscription to server
       return fetch('/api/update-subscription', {

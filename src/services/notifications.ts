@@ -35,7 +35,7 @@ export interface NotificationSettings {
 }
 
   // Chave VAPID para push notifications
-  const VAPID_KEY = 'zjebaTmbHF8rm7I_f1iZdvx_m8v9jMmRhUiwNHr725E';
+  const VAPID_KEY = process.env.NEXT_PUBLIC_FCM_VAPID_KEY || '';
 
 class NotificationService {
   private static instance: NotificationService;

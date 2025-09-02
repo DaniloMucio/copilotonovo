@@ -26,22 +26,22 @@ if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.proj
         console.warn("⚠️  Modo de desenvolvimento/build: usando configurações padrão");
         // Em desenvolvimento ou durante build, usar valores padrão se as variáveis não estiverem configuradas
         if (!firebaseConfig.apiKey) {
-            firebaseConfig.apiKey = "AIzaSyB2pVLfo_GUrMRNM7G16PhYlEzdbJ4sEVA";
+            firebaseConfig.apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "";
         }
         if (!firebaseConfig.authDomain) {
-            firebaseConfig.authDomain = "co-pilotogit.firebaseapp.com";
+            firebaseConfig.authDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "";
         }
         if (!firebaseConfig.projectId) {
-            firebaseConfig.projectId = "co-pilotogit";
+            firebaseConfig.projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "";
         }
         if (!firebaseConfig.storageBucket) {
-            firebaseConfig.storageBucket = "co-pilotogit.firebasestorage.app";
+            firebaseConfig.storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "";
         }
         if (!firebaseConfig.messagingSenderId) {
-            firebaseConfig.messagingSenderId = "1004254989892";
+            firebaseConfig.messagingSenderId = process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "";
         }
         if (!firebaseConfig.appId) {
-            firebaseConfig.appId = "1:1004254989892:web:68309b7b10918886743611";
+            firebaseConfig.appId = process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "";
         }
     }
 }
