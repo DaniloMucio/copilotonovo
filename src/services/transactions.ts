@@ -14,6 +14,7 @@ import {
     onSnapshot,
     getDoc,
 } from "firebase/firestore";
+import { startOfMonth, endOfMonth } from "date-fns";
 import { db } from "@/lib/firebase";
 import { firestoreCache, CacheStrategies } from "@/lib/firestore-cache";
 import { notificationService } from "./notifications";
@@ -462,4 +463,122 @@ export const hasDailyFeeBeenCharged = async (userId: string, senderCompany: stri
 
     const querySnapshot = await getDocs(q);
     return !querySnapshot.empty;
+};
+
+// Função para filtrar transações do mês atual
+export const getCurrentMonthTransactions = (transactions: Transaction[]): Transaction[] => {
+    const now = new Date();
+    const startOfCurrentMonth = startOfMonth(now);
+    const endOfCurrentMonth = endOfMonth(now);
+    
+    return transactions.filter(transaction => {
+        const transactionDate = transaction.date.toDate();
+        return transactionDate >= startOfCurrentMonth && transactionDate <= endOfCurrentMonth;
+    });
+};
+
+// Função para buscar transações do mês atual (otimizada)
+export const getCurrentMonthTransactionsSync = async (userId: string): Promise<Transaction[]> => {
+    const cacheKey = firestoreCache.generateKey('currentMonthTransactions', { userId });
+    
+    // Verificar cache primeiro
+    const cached = firestoreCache.get<Transaction[]>(cacheKey);
+    if (cached) {
+        return cached;
+    }
+
+    try {
+        const now = new Date();
+        const startOfCurrentMonth = startOfMonth(now);
+        const endOfCurrentMonth = endOfMonth(now);
+        
+        // Query otimizada para buscar apenas transações do mês atual
+        let q = query(
+            collection(db, "transactions"), 
+            where("userId", "==", userId),
+            where("date", ">=", Timestamp.fromDate(startOfCurrentMonth)),
+            where("date", "<=", Timestamp.fromDate(endOfCurrentMonth)),
+            orderBy("date", "desc")
+        );
+
+        let querySnapshot;
+        let transactions: Transaction[] = [];
+        
+        try {
+            querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                transactions.push({ id: doc.id, ...doc.data() } as Transaction);
+            });
+        } catch (indexError: any) {
+            // Se falhar por falta de índice, busca todas e filtra no cliente
+            if (indexError.code === 'failed-precondition') {
+                console.warn("⚠️ Índice não encontrado, buscando todas as transações e filtrando no cliente");
+                const allTransactions = await getTransactions(userId, false);
+                transactions = getCurrentMonthTransactions(allTransactions);
+            } else {
+                throw indexError;
+            }
+        }
+
+        // Cachear resultado por 5 minutos
+        firestoreCache.set(cacheKey, transactions, 5 * 60 * 1000);
+        
+        return transactions;
+    } catch (error) {
+        console.error("❌ Erro ao buscar transações do mês atual:", error);
+        throw error;
+    }
+};
+
+// Função para buscar entregas do cliente do mês atual
+export const getCurrentMonthDeliveriesByClient = async (clientId: string): Promise<Transaction[]> => {
+    const cacheKey = firestoreCache.generateKey('currentMonthClientDeliveries', { clientId });
+    
+    // Verificar cache primeiro
+    const cached = firestoreCache.get<Transaction[]>(cacheKey);
+    if (cached) {
+        return cached;
+    }
+
+    try {
+        const now = new Date();
+        const startOfCurrentMonth = startOfMonth(now);
+        const endOfCurrentMonth = endOfMonth(now);
+        
+        // Query otimizada para buscar apenas entregas do mês atual
+        let q = query(
+            collection(db, "transactions"), 
+            where("clientId", "==", clientId),
+            where("date", ">=", Timestamp.fromDate(startOfCurrentMonth)),
+            where("date", "<=", Timestamp.fromDate(endOfCurrentMonth)),
+            orderBy("date", "desc")
+        );
+
+        let querySnapshot;
+        let transactions: Transaction[] = [];
+        
+        try {
+            querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                transactions.push({ id: doc.id, ...doc.data() } as Transaction);
+            });
+        } catch (indexError: any) {
+            // Se falhar por falta de índice, busca todas e filtra no cliente
+            if (indexError.code === 'failed-precondition') {
+                console.warn("⚠️ Índice não encontrado, buscando todas as entregas e filtrando no cliente");
+                const allDeliveries = await getDeliveriesByClientSync(clientId);
+                transactions = getCurrentMonthTransactions(allDeliveries);
+            } else {
+                throw indexError;
+            }
+        }
+
+        // Cachear resultado por 5 minutos
+        firestoreCache.set(cacheKey, transactions, 5 * 60 * 1000);
+        
+        return transactions;
+    } catch (error) {
+        console.error("❌ Erro ao buscar entregas do cliente do mês atual:", error);
+        throw error;
+    }
 };

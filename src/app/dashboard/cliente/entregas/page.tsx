@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { auth } from '@/lib/firebase';
-import { getTransactions, getDeliveriesByClientSync, deleteTransaction, type Transaction, updateTransaction } from '@/services/transactions';
+import { getCurrentMonthDeliveriesByClient, deleteTransaction, type Transaction, updateTransaction } from '@/services/transactions';
 import { getUserDocument, type UserData, getOnlineDrivers } from '@/services/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -79,8 +79,8 @@ function EntregasClienteContent() {
   const fetchData = useCallback(async (uid: string) => {
     setLoading(true);
     try {
-      // Para clientes, buscar entregas pelo clientId
-      const clientDeliveries = await getDeliveriesByClientSync(uid);
+      // Para clientes, buscar entregas do mês atual pelo clientId
+      const clientDeliveries = await getCurrentMonthDeliveriesByClient(uid);
 
       const deliveryTransactions = clientDeliveries.filter(
         (t) => t.category === 'Entrega'
@@ -267,14 +267,20 @@ function EntregasClienteContent() {
 
         {/* Entregas Pendentes */}
         <TabsContent value="pending" className="space-y-6">
+          <div className="mb-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+            </div>
+          </div>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-orange-600" />
-                Entregas Pendentes
+                Entregas Pendentes (Mês Atual)
               </CardTitle>
               <CardDescription>
-                Entregas aguardando confirmação ou em andamento
+                Entregas aguardando confirmação ou em andamento no mês atual
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -350,14 +356,20 @@ function EntregasClienteContent() {
 
         {/* Entregas Concluídas */}
         <TabsContent value="completed" className="space-y-6">
+          <div className="mb-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+            </div>
+          </div>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 text-green-600" />
-                Entregas Concluídas
+                Entregas Concluídas (Mês Atual)
               </CardTitle>
               <CardDescription>
-                Histórico de todas as entregas realizadas
+                Entregas realizadas no mês atual
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -417,14 +429,20 @@ function EntregasClienteContent() {
 
         {/* Pagamentos Pendentes */}
         <TabsContent value="payment" className="space-y-6">
+          <div className="mb-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+            </div>
+          </div>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5 text-blue-600" />
-                Pagamentos Pendentes
+                Pagamentos Pendentes (Mês Atual)
               </CardTitle>
               <CardDescription>
-                Entregas concluídas aguardando pagamento
+                Entregas concluídas aguardando pagamento no mês atual
               </CardDescription>
             </CardHeader>
             <CardContent>

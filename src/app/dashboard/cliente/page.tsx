@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { auth } from '@/lib/firebase';
-import { getTransactions, getDeliveriesByClientSync, deleteTransaction, type Transaction } from '@/services/transactions';
+import { getCurrentMonthDeliveriesByClient, deleteTransaction, type Transaction } from '@/services/transactions';
 import { getUserDocument, type UserData } from '@/services/firestore';
 import { 
   Package, 
@@ -92,14 +92,14 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
   }, []);
 
   const fetchTransactions = useCallback(async (uid: string) => {
-    // Para clientes, buscar entregas pelo clientId
+    // Para clientes, buscar entregas do mês atual pelo clientId
     if (userData?.userType === 'cliente') {
-      const clientDeliveries = await getDeliveriesByClientSync(uid);
+      const clientDeliveries = await getCurrentMonthDeliveriesByClient(uid);
       setTransactions(clientDeliveries);
     } else {
-      // Para outros tipos de usuário, usar a função padrão
-      const userTransactions = await getTransactions(uid);
-      setTransactions(userTransactions);
+      // Para outros tipos de usuário, usar a função padrão (não deveria acontecer no dashboard cliente)
+      console.warn("Tipo de usuário não é cliente no dashboard cliente");
+      setTransactions([]);
     }
   }, [userData?.userType]);
 
@@ -242,7 +242,7 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="deliveries">Entregas</TabsTrigger>
+          <TabsTrigger value="deliveries">Entregas (Mês Atual)</TabsTrigger>
           <TabsTrigger value="agenda">Agenda</TabsTrigger>
         </TabsList>
 
@@ -353,14 +353,20 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
 
         {/* Entregas */}
         <TabsContent value="deliveries" className="space-y-6">
+          <div className="mb-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+            </div>
+          </div>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                Todas as Entregas
+                Entregas do Mês Atual
               </CardTitle>
               <CardDescription>
-                Histórico completo das suas entregas
+                Entregas registradas no mês atual
               </CardDescription>
             </CardHeader>
             <CardContent>

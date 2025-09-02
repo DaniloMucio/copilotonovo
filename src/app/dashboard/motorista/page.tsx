@@ -19,9 +19,9 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { auth } from '@/lib/firebase';
-import { getTransactions, type Transaction } from '@/services/transactions';
+import { getCurrentMonthTransactionsSync, type Transaction } from '@/services/transactions';
 import { getShifts, type WorkShift } from '@/services/workShifts';
-import { DollarSign, TrendingDown, TrendingUp, Pencil as PencilIcon, KeyRound } from 'lucide-react';
+import { DollarSign, TrendingDown, TrendingUp, Pencil as PencilIcon, KeyRound, Calendar } from 'lucide-react';
 import { ExpenseManager } from '@/components/ExpenseManager';
 import { IncomeManager } from '@/components/IncomeManager';
 import { Button } from '@/components/ui/button';
@@ -80,7 +80,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
   }, []);
 
   const fetchTransactions = useCallback(async (uid: string) => {
-    const userTransactions = await getTransactions(uid);
+    const userTransactions = await getCurrentMonthTransactionsSync(uid);
     setTransactions(userTransactions);
   }, []);
 
@@ -247,8 +247,8 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
       <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 md:grid-cols-4">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="receitas">Receitas</TabsTrigger>
-          <TabsTrigger value="despesas">Despesas</TabsTrigger>
+          <TabsTrigger value="receitas">Receitas (Mês Atual)</TabsTrigger>
+          <TabsTrigger value="despesas">Despesas (Mês Atual)</TabsTrigger>
           <TabsTrigger value="reports">Relatórios</TabsTrigger>
         </TabsList>
 
@@ -340,8 +340,24 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
             </Card>
           </div>
         </TabsContent>
-        <TabsContent value="receitas"><IncomeManager user={user} transactions={incomeTransactions} onAction={() => fetchTransactions(user.uid)} /></TabsContent>
-        <TabsContent value="despesas"><ExpenseManager user={user} transactions={expenseTransactions} onAction={() => fetchTransactions(user.uid)} /></TabsContent>
+        <TabsContent value="receitas">
+          <div className="mb-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+            </div>
+          </div>
+          <IncomeManager user={user} transactions={incomeTransactions} onAction={() => fetchTransactions(user.uid)} />
+        </TabsContent>
+        <TabsContent value="despesas">
+          <div className="mb-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+            </div>
+          </div>
+          <ExpenseManager user={user} transactions={expenseTransactions} onAction={() => fetchTransactions(user.uid)} />
+        </TabsContent>
         <TabsContent value="reports"><ReportsManager transactions={transactions} shifts={shifts} user={user} /></TabsContent>
       </Tabs>
     </div>
