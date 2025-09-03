@@ -31,6 +31,7 @@ import {
   getFuelRecords, 
   calculateVehicleStats,
   deleteVehicle,
+  deleteMaintenance,
   type VehicleInfo as RealVehicleInfo,
   type MaintenanceItem as RealMaintenanceItem,
   type FuelRecord as RealFuelRecord
@@ -38,6 +39,8 @@ import {
 import { getTransactions, type Transaction } from '@/services/transactions';
 import { VehicleForm } from '@/components/forms/VehicleForm';
 import { FuelForm } from '@/components/forms/FuelForm';
+import { MaintenanceForm } from '@/components/forms/MaintenanceForm';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 // Removido - debug não é mais necessário
 
 // Tipos para gestão de veículo (compatibilidade)
@@ -276,6 +279,9 @@ export function VehicleManager() {
   const [isFuelFormOpen, setIsFuelFormOpen] = useState(false);
   const [fuelToEdit, setFuelToEdit] = useState<FuelRecord | null>(null);
 
+  const [maintenanceToEdit, setMaintenanceToEdit] = useState<RealMaintenanceItem | null>(null);
+  const [isMaintenanceFormOpen, setIsMaintenanceFormOpen] = useState(false);
+
   // Carregar dados reais do Firestore
   useEffect(() => {
     if (!user?.uid) return;
@@ -408,19 +414,35 @@ export function VehicleManager() {
     return daysUntilNext <= 7 || kmUntilNext <= 1000;
   });
 
-  const handleAddMaintenance = () => {
-    // Implementar modal de adição
-    console.log('Adicionar manutenção');
-  };
-
   const handleAddFuel = () => {
     // Implementar modal de adição
     console.log('Adicionar combustível');
   };
 
+  const handleAddMaintenance = () => {
+    setMaintenanceToEdit(null);
+    setIsMaintenanceFormOpen(true);
+  };
+
   const handleEditMaintenance = (item: MaintenanceItem) => {
-    // Implementar modal de edição
-    console.log('Editar manutenção:', item);
+    // Converter para o tipo real
+    const realMaintenance: RealMaintenanceItem = {
+      id: item.id,
+      userId: user?.uid || '',
+      vehicleId: selectedVehicle?.id || '',
+      type: item.type === 'other' ? 'other' : item.type,
+      description: item.description,
+      date: new Date(item.date),
+      nextDate: new Date(item.nextDate),
+      cost: item.cost,
+      km: item.km,
+      nextKm: item.nextKm,
+      notes: item.notes,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    setMaintenanceToEdit(realMaintenance);
+    setIsMaintenanceFormOpen(true);
   };
 
   const handleEditFuel = (record: FuelRecord) => {
@@ -428,12 +450,72 @@ export function VehicleManager() {
     setIsFuelFormOpen(true);
   };
 
-  const handleDeleteMaintenance = (id: string) => {
-    setMaintenanceItems(prev => prev.filter(item => item.id !== id));
+  const handleDeleteMaintenance = async (id: string) => {
+    try {
+      await deleteMaintenance(id);
+      toast({
+        title: 'Manutenção excluída!',
+        description: 'A manutenção foi excluída com sucesso.',
+      });
+      // Recarregar dados
+      if (user?.uid) {
+        const maintenance = await getVehicleMaintenance(user.uid);
+        const convertedMaintenance: MaintenanceItem[] = maintenance.map(item => ({
+          id: item.id || '',
+          type: item.type === 'coolant' || item.type === 'battery' ? 'other' : item.type,
+          description: item.description,
+          date: format(item.date, 'yyyy-MM-dd'),
+          nextDate: format(item.nextDate, 'yyyy-MM-dd'),
+          cost: item.cost,
+          km: item.km,
+          nextKm: item.nextKm,
+          notes: item.notes
+        }));
+        setMaintenanceItems(convertedMaintenance);
+      }
+    } catch (error) {
+      console.error('Erro ao excluir manutenção:', error);
+      toast({
+        title: 'Erro ao excluir manutenção',
+        description: 'Não foi possível excluir a manutenção.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleDeleteFuel = (id: string) => {
     setFuelRecords(prev => prev.filter(record => record.id !== id));
+  };
+
+  const handleMaintenanceFormSuccess = async () => {
+    setIsMaintenanceFormOpen(false);
+    setMaintenanceToEdit(null);
+    
+    // Recarregar dados de manutenção
+    if (user?.uid) {
+      try {
+        const maintenance = await getVehicleMaintenance(user.uid);
+        const convertedMaintenance: MaintenanceItem[] = maintenance.map(item => ({
+          id: item.id || '',
+          type: item.type === 'coolant' || item.type === 'battery' ? 'other' : item.type,
+          description: item.description,
+          date: format(item.date, 'yyyy-MM-dd'),
+          nextDate: format(item.nextDate, 'yyyy-MM-dd'),
+          cost: item.cost,
+          km: item.km,
+          nextKm: item.nextKm,
+          notes: item.notes
+        }));
+        setMaintenanceItems(convertedMaintenance);
+      } catch (error) {
+        console.error('Erro ao recarregar manutenções:', error);
+      }
+    }
+  };
+
+  const handleMaintenanceFormCancel = () => {
+    setIsMaintenanceFormOpen(false);
+    setMaintenanceToEdit(null);
   };
 
   const handleAddVehicle = () => {
@@ -658,16 +740,42 @@ export function VehicleManager() {
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteVehicle(vehicle.id!);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir Veículo</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja excluir o veículo <strong>{vehicle.brand} {vehicle.model}</strong> (placa: <strong>{vehicle.plate}</strong>)?
+                              <br /><br />
+                              Esta ação não pode ser desfeita e excluirá permanentemente:
+                              <ul className="list-disc list-inside mt-2 space-y-1">
+                                <li>Dados do veículo</li>
+                                <li>Histórico de manutenções</li>
+                                <li>Registros de combustível</li>
+                                <li>Transações relacionadas</li>
+                              </ul>
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => handleDeleteVehicle(vehicle.id!)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Excluir Veículo
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </div>
@@ -821,11 +929,17 @@ export function VehicleManager() {
         </TabsContent>
         
                  <TabsContent value="maintenance" className="space-y-4">
-           <div>
-             <h3 className="text-lg font-semibold">Controle de Manutenção</h3>
-             <p className="text-sm text-muted-foreground mt-1">
-               Manutenções registradas através da agenda e formulário de despesas
-             </p>
+           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+             <div>
+               <h3 className="text-lg font-semibold">Controle de Manutenção</h3>
+               <p className="text-sm text-muted-foreground mt-1">
+                 Registre e acompanhe as manutenções do seu veículo
+               </p>
+             </div>
+             <Button onClick={handleAddMaintenance} className="bg-blue-600 hover:bg-blue-700">
+               <Plus className="h-4 w-4 mr-2" />
+               Nova Manutenção
+             </Button>
            </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -876,6 +990,14 @@ export function VehicleManager() {
         fuelToEdit={fuelToEdit}
         onSuccess={handleFuelFormSuccess}
         onCancel={handleFuelFormCancel}
+      />
+
+      {/* Modal de manutenção */}
+      <MaintenanceForm
+        isOpen={isMaintenanceFormOpen}
+        maintenanceToEdit={maintenanceToEdit}
+        onSuccess={handleMaintenanceFormSuccess}
+        onCancel={handleMaintenanceFormCancel}
       />
     </div>
   );

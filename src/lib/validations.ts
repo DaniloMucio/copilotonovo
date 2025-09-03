@@ -188,7 +188,7 @@ export const appointmentSchema = z.object({
     .string()
     .min(1, { message: "Título é obrigatório." })
     .max(100, { message: "Título deve ter no máximo 100 caracteres." }),
-  type: z.enum(['maintenance', 'general'], {
+  type: z.enum(['general'], {
     errorMap: () => ({ message: "Tipo de agendamento inválido." })
   }),
   date: z.string().min(1, { message: "Data é obrigatória." }),
@@ -196,16 +196,6 @@ export const appointmentSchema = z.object({
     .string()
     .max(500, { message: "Observações devem ter no máximo 500 caracteres." })
     .optional(),
-  mileage: kmSchema.optional(),
-}).refine((data) => {
-  // Se o tipo for manutenção, quilometragem é obrigatória
-  if (data.type === 'maintenance') {
-    return data.mileage !== undefined;
-  }
-  return true;
-}, {
-  message: "Para agendamentos de manutenção, a quilometragem é obrigatória.",
-  path: ['mileage'],
 });
 
 // Funções de validação utilitárias

@@ -247,8 +247,8 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
       <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 md:grid-cols-4">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="receitas">Receitas (Mês Atual)</TabsTrigger>
-          <TabsTrigger value="despesas">Despesas (Mês Atual)</TabsTrigger>
+          <TabsTrigger value="receitas">Receitas</TabsTrigger>
+          <TabsTrigger value="despesas">Despesas</TabsTrigger>
           <TabsTrigger value="reports">Relatórios</TabsTrigger>
         </TabsList>
 

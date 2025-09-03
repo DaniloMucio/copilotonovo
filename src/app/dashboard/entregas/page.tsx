@@ -13,6 +13,10 @@ import { getTransactions, type Transaction, updateTransaction } from '@/services
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { DateRangePicker } from '@/components/ui/daterangepicker';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import type { DateRange } from 'react-day-picker';
 
 function EntregasSkeleton() {
     return (
@@ -53,11 +57,18 @@ function EntregasSkeleton() {
 
 function EntregasContent() {
     const [user, setUser] = useState<User | null>(null);
+    const [allDeliveries, setAllDeliveries] = useState<Transaction[]>([]);
     const [pendingDeliveries, setPendingDeliveries] = useState<Transaction[]>([]);
     const [deliveriesToReceive, setDeliveriesToReceive] = useState<Transaction[]>([]);
     const [deliveryHistory, setDeliveryHistory] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
+    
+    // Estado para o seletor de data - padrão: mês atual
+    const [dateRange, setDateRange] = useState<DateRange | undefined>({
+        from: startOfMonth(new Date()),
+        to: endOfMonth(new Date()),
+    });
 
     const fetchData = useCallback(async (uid: string) => {
         setLoading(true);
@@ -68,11 +79,11 @@ function EntregasContent() {
                 (t) => t.category === 'Entrega'
             );
             
-            setPendingDeliveries(deliveryTransactions.filter(d => d.deliveryStatus === 'Pendente'));
-            setDeliveryHistory(deliveryTransactions.filter(d => d.deliveryStatus !== 'Pendente'));
-            setDeliveriesToReceive(deliveryTransactions.filter(
-                (d) => d.deliveryStatus === 'Entregue' && d.paymentStatus === 'Pendente'
-            ));
+            // Armazenar todas as entregas
+            setAllDeliveries(deliveryTransactions);
+            
+            // Filtrar entregas por data
+            filterDeliveriesByDate(deliveryTransactions);
 
         } catch (error) {
             console.error("Erro ao buscar dados de entregas:", error);
@@ -81,6 +92,47 @@ function EntregasContent() {
             setLoading(false);
         }
     }, [toast]);
+
+    // Função para filtrar entregas por período
+    const filterDeliveriesByDate = useCallback((deliveries: Transaction[]) => {
+        if (!dateRange?.from) {
+            // Se não há filtro de data, mostrar todas
+            setPendingDeliveries(deliveries.filter(d => d.deliveryStatus === 'Pendente'));
+            setDeliveryHistory(deliveries.filter(d => d.deliveryStatus !== 'Pendente'));
+            setDeliveriesToReceive(deliveries.filter(
+                (d) => d.deliveryStatus === 'Entregue' && d.paymentStatus === 'Pendente'
+            ));
+            return;
+        }
+
+        const filteredDeliveries = deliveries.filter(delivery => {
+            const deliveryDate = delivery.date.toDate();
+            const fromDate = dateRange.from!;
+            const toDate = dateRange.to || dateRange.from!;
+            
+            // Ajustar horário para incluir o dia inteiro
+            const startOfDay = new Date(fromDate);
+            startOfDay.setHours(0, 0, 0, 0);
+            
+            const endOfDay = new Date(toDate);
+            endOfDay.setHours(23, 59, 59, 999);
+            
+            return deliveryDate >= startOfDay && deliveryDate <= endOfDay;
+        });
+
+        setPendingDeliveries(filteredDeliveries.filter(d => d.deliveryStatus === 'Pendente'));
+        setDeliveryHistory(filteredDeliveries.filter(d => d.deliveryStatus !== 'Pendente'));
+        setDeliveriesToReceive(filteredDeliveries.filter(
+            (d) => d.deliveryStatus === 'Entregue' && d.paymentStatus === 'Pendente'
+        ));
+    }, [dateRange]);
+
+    // Efeito para refiltrar quando a data mudar
+    useEffect(() => {
+        if (allDeliveries.length > 0) {
+            filterDeliveriesByDate(allDeliveries);
+        }
+    }, [dateRange, allDeliveries, filterDeliveriesByDate]);
 
     const handleDeliveryRequest = async (deliveryId: string, accept: boolean) => {
         try {
@@ -154,7 +206,19 @@ function EntregasContent() {
                 <TabsContent value="history">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Histórico de Entregas</CardTitle>
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div>
+                                    <CardTitle>Histórico de Entregas</CardTitle>
+                                    <CardDescription>
+                                        {dateRange?.from ? format(dateRange.from, "PPP", { locale: ptBR }) : ''}
+                                        {dateRange?.to ? ` - ${format(dateRange.to, "PPP", { locale: ptBR })}` : ''}
+                                    </CardDescription>
+                                </div>
+                                <DateRangePicker 
+                                    date={dateRange} 
+                                    onDateChange={setDateRange} 
+                                />
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <DeliveryHistory 

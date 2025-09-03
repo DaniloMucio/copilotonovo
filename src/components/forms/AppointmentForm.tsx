@@ -13,13 +13,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Textarea } from "@/components/ui/textarea";
 import { Appointment, createAppointment } from "@/services/appointments";
 import { useToast } from "@/hooks/use-toast";
@@ -27,14 +21,10 @@ import { useToast } from "@/hooks/use-toast";
 const formSchema = z.object({
   title: z.string().min(1, "O título é obrigatório."),
   date: z.string().min(1, "A data é obrigatória."),
-  type: z.enum(["maintenance", "general"], {
+  type: z.enum(["general"], {
     required_error: "O tipo de agendamento é obrigatório.",
   }),
   observations: z.string().optional(),
-  mileage: z
-    .number()
-    .optional()
-    .transform((val) => (val === undefined ? undefined : Number(val))),
 });
 
 interface AppointmentFormProps {
@@ -51,7 +41,6 @@ export function AppointmentForm({ userId, onSuccess }: AppointmentFormProps) {
       date: "",
       type: "general",
       observations: "",
-      mileage: undefined,
     },
   });
 
@@ -105,53 +94,7 @@ export function AppointmentForm({ userId, onSuccess }: AppointmentFormProps) {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tipo</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo de agendamento" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="general">Geral</SelectItem>
-                  <SelectItem value="maintenance">Manutenção</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        {form.watch("type") === "maintenance" && (
-          <FormField
-            control={form.control}
-            name="mileage"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>KM da Revisão</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="Ex: 50000"
-                    {...field}
-                    onChange={(e) =>
-                      field.onChange(
-                        e.target.value === ""
-                          ? undefined
-                          : parseInt(e.target.value, 10)
-                      )
-                    }
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+
         <FormField
           control={form.control}
           name="observations"

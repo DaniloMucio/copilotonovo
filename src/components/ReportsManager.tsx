@@ -6,6 +6,8 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { format, formatDistanceToNowStrict } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -17,6 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { WorkShift } from '@/services/workShifts';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
+import { Download, Mail, MessageCircle } from 'lucide-react';
 
 interface ReportsManagerProps {
     transactions: Transaction[];
@@ -257,6 +260,271 @@ export function ReportsManager({ transactions, shifts, user }: ReportsManagerPro
         doc.save(`relatorio_completo_${user.displayName?.replace(/\s/g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
     }
 
+    const exportToExcel = () => {
+        try {
+            // Criar workbook
+            const wb = XLSX.utils.book_new();
+            
+            // Dados do resumo
+            const summaryData = [];
+            if (includeIncome || includeExpenses) {
+                summaryData.push(['Resumo Financeiro do Período']);
+                summaryData.push(['']);
+                if (includeIncome) {
+                    summaryData.push(['Receita Total', totalIncome]);
+                }
+                if (includeExpenses) {
+                    summaryData.push(['Despesa Total', totalExpenses]);
+                }
+                if (includeIncome && includeExpenses) {
+                    summaryData.push(['Saldo Líquido', netBalance]);
+                }
+                summaryData.push(['']);
+                summaryData.push(['Período', `${dateRange?.from ? format(dateRange.from, 'P', { locale: ptBR }) : ''} a ${dateRange?.to ? format(dateRange.to, 'P', { locale: ptBR }) : ''}`]);
+                summaryData.push(['Gerado em', format(new Date(), 'dd/MM/yyyy HH:mm')]);
+            }
+            
+            const summaryWS = XLSX.utils.aoa_to_sheet(summaryData);
+            XLSX.utils.book_append_sheet(wb, summaryWS, 'Resumo');
+            
+            // Dados das transações
+            if (includeIncome || includeExpenses) {
+                const transData = [
+                    ['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor']
+                ];
+                
+                const transactionsToExport = filteredTransactions.filter(transaction => {
+                    if (includeIncome && transaction.type === 'receita') return true;
+                    if (includeExpenses && transaction.type === 'despesa') return true;
+                    return false;
+                });
+                
+                transactionsToExport.forEach(transaction => {
+                    transData.push([
+                        format(transaction.date.toDate(), 'dd/MM/yyyy'),
+                        transaction.description,
+                        transaction.category,
+                        transaction.type === 'receita' ? 'Receita' : 'Despesa',
+                        transaction.amount.toString()
+                    ]);
+                });
+                
+                const transWS = XLSX.utils.aoa_to_sheet(transData);
+                XLSX.utils.book_append_sheet(wb, transWS, 'Transações');
+            }
+            
+            // Dados das entregas
+            if (includePaidDeliveries || includeUnpaidDeliveries) {
+                const deliveriesData = [
+                    ['Data', 'Descrição', 'Remetente', 'Destinatário', 'Status Pgto.', 'Valor']
+                ];
+                
+                const deliveriesToExport = filteredTransactions.filter(transaction => {
+                    if (transaction.category !== 'Entrega') return false;
+                    if (includePaidDeliveries && transaction.paymentStatus === 'Pago') return true;
+                    if (includeUnpaidDeliveries && transaction.paymentStatus === 'Pendente') return true;
+                    return false;
+                });
+                
+                deliveriesToExport.forEach(delivery => {
+                    deliveriesData.push([
+                        format(delivery.date.toDate(), 'dd/MM/yyyy'),
+                        delivery.description || '',
+                        delivery.senderCompany || '',
+                        delivery.recipientCompany || '',
+                        delivery.paymentStatus || '',
+                        delivery.amount.toString()
+                    ]);
+                });
+                
+                const deliveriesWS = XLSX.utils.aoa_to_sheet(deliveriesData);
+                XLSX.utils.book_append_sheet(wb, deliveriesWS, 'Entregas');
+            }
+            
+            // Dados das jornadas
+            if (includeShifts) {
+                const shiftsData = [
+                    ['Data', 'Duração', 'KM Inicial', 'KM Final', 'KM Rodados', 'Status']
+                ];
+                
+                filteredShifts.forEach(shift => {
+                    const kmRodados = shift.endKm && shift.startKm ? shift.endKm - shift.startKm : 0;
+                    shiftsData.push([
+                        format(shift.startTime.toDate(), 'dd/MM/yyyy'),
+                        formatDuration(shift.startTime.toDate(), shift.endTime ? shift.endTime.toDate() : null),
+                        shift.startKm.toString(),
+                        shift.endKm ? shift.endKm.toString() : '',
+                        kmRodados.toString(),
+                        shift.status === 'completed' ? 'Finalizada' : 'Ativa'
+                    ]);
+                });
+                
+                const shiftsWS = XLSX.utils.aoa_to_sheet(shiftsData);
+                XLSX.utils.book_append_sheet(wb, shiftsWS, 'Jornadas');
+            }
+            
+            // Salvar arquivo
+            const fileName = `relatorio_completo_${user.displayName?.replace(/\s/g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+        } catch (error) {
+            console.error('Erro ao exportar Excel:', error);
+            alert('Erro ao exportar Excel. Tente novamente.');
+        }
+    };
+
+    const sendReport = () => {
+        try {
+            // Gerar PDF temporário
+            const doc = new jsPDF();
+            const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
+            let finalY = 0;
+
+            // Title
+            doc.setFontSize(18);
+            doc.text(`Relatório Financeiro e de Jornadas - ${user.displayName}`, 14, 22);
+            
+            // Subtitle
+            doc.setFontSize(11);
+            doc.setTextColor(100);
+            const fromDate = dateRange?.from ? format(dateRange.from, 'P', { locale: ptBR }) : '';
+            const toDate = dateRange?.to ? format(dateRange.to, 'P', { locale: ptBR }) : fromDate;
+            doc.text(`Período: ${fromDate} a ${toDate}`, 14, 30);
+            
+            // Summary
+            if (includeIncome || includeExpenses) {
+                doc.setFontSize(12);
+                doc.text('Resumo Financeiro do Período', 14, 45);
+                
+                const summaryLines = [];
+                if (includeIncome) {
+                    summaryLines.push(`Receita Total: ${totalIncome.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
+                }
+                if (includeExpenses) {
+                    summaryLines.push(`Despesa Total: ${totalExpenses.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
+                }
+                if (includeIncome && includeExpenses) {
+                    summaryLines.push(`Saldo Líquido: ${netBalance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
+                }
+                
+                const summaryText = summaryLines.join('\n');
+                doc.setFontSize(10);
+                doc.text(summaryText, 14, 52);
+            }
+
+            // Converter para blob
+            const pdfBlob = doc.output('blob');
+            
+            // Criar link de email
+            const subject = encodeURIComponent('Relatório Completo - Dashboard');
+            const body = encodeURIComponent(`
+Olá,
+
+Segue em anexo o relatório completo do período ${fromDate} a ${toDate}.
+
+Resumo:
+${includeIncome ? `- Receita Total: ${totalIncome.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : ''}
+${includeExpenses ? `- Despesa Total: ${totalExpenses.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : ''}
+${includeIncome && includeExpenses ? `- Saldo Líquido: ${netBalance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : ''}
+
+Atenciosamente,
+Sistema de Dashboard
+            `);
+            
+            const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+            
+            // Abrir cliente de email
+            window.open(mailtoLink);
+            
+            // Simular anexo (em um ambiente real, você enviaria via API)
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(pdfBlob);
+                link.download = `relatorio_completo_${user.displayName?.replace(/\s/g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+                link.click();
+            }, 1000);
+            
+        } catch (error) {
+            console.error('Erro ao enviar relatório:', error);
+            alert('Erro ao enviar relatório. Tente novamente.');
+        }
+    };
+
+    const sendViaWhatsApp = () => {
+        try {
+            // Gerar PDF temporário
+            const doc = new jsPDF();
+            const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
+            let finalY = 0;
+
+            // Title
+            doc.setFontSize(18);
+            doc.text(`Relatório Financeiro e de Jornadas - ${user.displayName}`, 14, 22);
+            
+            // Subtitle
+            doc.setFontSize(11);
+            doc.setTextColor(100);
+            const fromDate = dateRange?.from ? format(dateRange.from, 'P', { locale: ptBR }) : '';
+            const toDate = dateRange?.to ? format(dateRange.to, 'P', { locale: ptBR }) : fromDate;
+            doc.text(`Período: ${fromDate} a ${toDate}`, 14, 30);
+            
+            // Summary
+            if (includeIncome || includeExpenses) {
+                doc.setFontSize(12);
+                doc.text('Resumo Financeiro do Período', 14, 45);
+                
+                const summaryLines = [];
+                if (includeIncome) {
+                    summaryLines.push(`Receita Total: ${totalIncome.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
+                }
+                if (includeExpenses) {
+                    summaryLines.push(`Despesa Total: ${totalExpenses.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
+                }
+                if (includeIncome && includeExpenses) {
+                    summaryLines.push(`Saldo Líquido: ${netBalance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
+                }
+                
+                const summaryText = summaryLines.join('\n');
+                doc.setFontSize(10);
+                doc.text(summaryText, 14, 52);
+            }
+
+            // Converter para blob
+            const pdfBlob = doc.output('blob');
+            
+            // Criar link do WhatsApp
+            const message = encodeURIComponent(`
+📊 *Relatório Completo - Dashboard*
+
+Período: ${fromDate} a ${toDate}
+
+💰 *Resumo:*
+${includeIncome ? `• Receita Total: ${totalIncome.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : ''}
+${includeExpenses ? `• Despesa Total: ${totalExpenses.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : ''}
+${includeIncome && includeExpenses ? `• Saldo Líquido: ${netBalance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : ''}
+
+📄 O relatório completo em PDF será enviado em seguida.
+            `);
+            
+            const whatsappLink = `https://wa.me/?text=${message}`;
+            
+            // Abrir WhatsApp
+            window.open(whatsappLink, '_blank');
+            
+            // Fazer download do PDF automaticamente
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(pdfBlob);
+                link.download = `relatorio_completo_${user.displayName?.replace(/\s/g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+                link.click();
+            }, 1000);
+            
+        } catch (error) {
+            console.error('Erro ao enviar via WhatsApp:', error);
+            alert('Erro ao enviar via WhatsApp. Tente novamente.');
+        }
+    };
+
     const transactionsToDisplay = filteredTransactions.filter(t => {
         if (t.category === 'Entrega') return false;
         if (includeIncome && t.type === 'receita') return true;
@@ -281,7 +549,24 @@ export function ReportsManager({ transactions, shifts, user }: ReportsManagerPro
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <DateRangePicker date={dateRange} onDateChange={setDateRange} />
-                    <Button onClick={exportPDF}>Exportar PDF</Button>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={exportPDF}>
+                            <Download className="h-4 w-4 mr-2" />
+                            PDF
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={exportToExcel}>
+                            <Download className="h-4 w-4 mr-2" />
+                            Excel
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={sendReport}>
+                            <Mail className="h-4 w-4 mr-2" />
+                            Email
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={sendViaWhatsApp} className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700">
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            WhatsApp
+                        </Button>
+                    </div>
                 </div>
                 <div className="flex flex-wrap items-center space-x-4">
                     <div className="flex items-center space-x-2">

@@ -16,7 +16,8 @@ import {
   Mail,
   BarChart3,
   PieChart,
-  Activity
+  Activity,
+  MessageCircle
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { format, subDays, subWeeks, subMonths, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
@@ -26,6 +27,10 @@ import {
   getTransactions,
   type Transaction
 } from '@/services/transactions';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 // Removido - debug não é mais necessário
 
 // Tipos para os dados financeiros
@@ -250,18 +255,322 @@ export function FinancialDashboard() {
 
   // Funções de exportação
   const exportToPDF = () => {
-    // Implementar exportação para PDF
-    console.log('Exportando para PDF...');
+    try {
+      const doc = new jsPDF();
+      
+      // Título
+      doc.setFontSize(20);
+      doc.text('Relatório Financeiro', 20, 20);
+      
+      // Período
+      doc.setFontSize(12);
+      doc.text(`Período: ${timeRange === '7d' ? 'Últimos 7 dias' : timeRange === '30d' ? 'Últimos 30 dias' : 'Últimos 90 dias'}`, 20, 35);
+      doc.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 20, 45);
+      
+      // Métricas principais
+      doc.setFontSize(14);
+      doc.text('Métricas Principais', 20, 65);
+      
+      const metricsData = [
+        ['Receita Total', `R$ ${metrics.totalRevenue.toFixed(2)}`],
+        ['Lucro Líquido', `R$ ${metrics.netProfit.toFixed(2)}`],
+        ['Total de Transações', metrics.transactionCount.toString()],
+        ['Eficiência Combustível', `${metrics.fuelEfficiency.toFixed(1)} km/L`]
+      ];
+      
+      autoTable(doc, {
+        startY: 75,
+        head: [['Métrica', 'Valor']],
+        body: metricsData,
+        theme: 'grid',
+        headStyles: { fillColor: [16, 185, 129] },
+        styles: { fontSize: 10 }
+      });
+      
+      // Dados detalhados
+      doc.setFontSize(14);
+      doc.text('Dados Detalhados', 20, 140);
+      
+      const tableData = financialData.map(item => [
+        format(new Date(item.date), 'dd/MM/yyyy'),
+        `R$ ${item.revenue.toFixed(2)}`,
+        `R$ ${item.expenses.toFixed(2)}`,
+        `R$ ${item.profit.toFixed(2)}`,
+        `${item.km}km`,
+        `${item.fuel.toFixed(1)}L`
+      ]);
+      
+      autoTable(doc, {
+        startY: 150,
+        head: [['Data', 'Receita', 'Despesas', 'Lucro', 'KM', 'Combustível']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [16, 185, 129] },
+        styles: { fontSize: 8 },
+        columnStyles: {
+          1: { halign: 'right' },
+          2: { halign: 'right' },
+          3: { halign: 'right' },
+          4: { halign: 'right' },
+          5: { halign: 'right' }
+        }
+      });
+      
+      // Salvar arquivo
+      const fileName = `relatorio-financeiro-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+      doc.save(fileName);
+      
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      alert('Erro ao exportar PDF. Tente novamente.');
+    }
   };
 
   const exportToExcel = () => {
-    // Implementar exportação para Excel
-    console.log('Exportando para Excel...');
+    try {
+      // Criar workbook
+      const wb = XLSX.utils.book_new();
+      
+      // Dados das métricas
+      const metricsSheet = [
+        ['Métrica', 'Valor'],
+        ['Receita Total', `R$ ${metrics.totalRevenue.toFixed(2)}`],
+        ['Lucro Líquido', `R$ ${metrics.netProfit.toFixed(2)}`],
+        ['Total de Transações', metrics.transactionCount],
+        ['Eficiência Combustível', `${metrics.fuelEfficiency.toFixed(1)} km/L`],
+        ['Período', timeRange === '7d' ? 'Últimos 7 dias' : timeRange === '30d' ? 'Últimos 30 dias' : 'Últimos 90 dias'],
+        ['Gerado em', format(new Date(), 'dd/MM/yyyy HH:mm')]
+      ];
+      
+      const metricsWS = XLSX.utils.aoa_to_sheet(metricsSheet);
+      XLSX.utils.book_append_sheet(wb, metricsWS, 'Métricas');
+      
+      // Dados detalhados
+      const detailsSheet = [
+        ['Data', 'Receita', 'Despesas', 'Lucro', 'KM', 'Combustível'],
+        ...financialData.map(item => [
+          format(new Date(item.date), 'dd/MM/yyyy'),
+          item.revenue,
+          item.expenses,
+          item.profit,
+          item.km,
+          item.fuel
+        ])
+      ];
+      
+      const detailsWS = XLSX.utils.aoa_to_sheet(detailsSheet);
+      XLSX.utils.book_append_sheet(wb, detailsWS, 'Dados Detalhados');
+      
+      // Salvar arquivo
+      const fileName = `relatorio-financeiro-${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+      
+    } catch (error) {
+      console.error('Erro ao exportar Excel:', error);
+      alert('Erro ao exportar Excel. Tente novamente.');
+    }
   };
 
   const sendReport = () => {
-    // Implementar envio por email
-    console.log('Enviando relatório por email...');
+    try {
+      // Gerar PDF temporário
+      const doc = new jsPDF();
+      
+      // Título
+      doc.setFontSize(20);
+      doc.text('Relatório Financeiro', 20, 20);
+      
+      // Período
+      doc.setFontSize(12);
+      doc.text(`Período: ${timeRange === '7d' ? 'Últimos 7 dias' : timeRange === '30d' ? 'Últimos 30 dias' : 'Últimos 90 dias'}`, 20, 35);
+      doc.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 20, 45);
+      
+      // Métricas principais
+      doc.setFontSize(14);
+      doc.text('Métricas Principais', 20, 65);
+      
+      const metricsData = [
+        ['Receita Total', `R$ ${metrics.totalRevenue.toFixed(2)}`],
+        ['Lucro Líquido', `R$ ${metrics.netProfit.toFixed(2)}`],
+        ['Total de Transações', metrics.transactionCount.toString()],
+        ['Eficiência Combustível', `${metrics.fuelEfficiency.toFixed(1)} km/L`]
+      ];
+      
+      autoTable(doc, {
+        startY: 75,
+        head: [['Métrica', 'Valor']],
+        body: metricsData,
+        theme: 'grid',
+        headStyles: { fillColor: [16, 185, 129] },
+        styles: { fontSize: 10 }
+      });
+      
+      // Dados detalhados
+      doc.setFontSize(14);
+      doc.text('Dados Detalhados', 20, 140);
+      
+      const tableData = financialData.map(item => [
+        format(new Date(item.date), 'dd/MM/yyyy'),
+        `R$ ${item.revenue.toFixed(2)}`,
+        `R$ ${item.expenses.toFixed(2)}`,
+        `R$ ${item.profit.toFixed(2)}`,
+        `${item.km}km`,
+        `${item.fuel.toFixed(1)}L`
+      ]);
+      
+      autoTable(doc, {
+        startY: 150,
+        head: [['Data', 'Receita', 'Despesas', 'Lucro', 'KM', 'Combustível']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [16, 185, 129] },
+        styles: { fontSize: 8 },
+        columnStyles: {
+          1: { halign: 'right' },
+          2: { halign: 'right' },
+          3: { halign: 'right' },
+          4: { halign: 'right' },
+          5: { halign: 'right' }
+        }
+      });
+      
+      // Converter para blob
+      const pdfBlob = doc.output('blob');
+      
+      // Criar link de email
+      const subject = encodeURIComponent('Relatório Financeiro - Dashboard');
+      const body = encodeURIComponent(`
+Olá,
+
+Segue em anexo o relatório financeiro do período ${timeRange === '7d' ? 'últimos 7 dias' : timeRange === '30d' ? 'últimos 30 dias' : 'últimos 90 dias'}.
+
+Resumo:
+- Receita Total: R$ ${metrics.totalRevenue.toFixed(2)}
+- Lucro Líquido: R$ ${metrics.netProfit.toFixed(2)}
+- Total de Transações: ${metrics.transactionCount}
+- Eficiência Combustível: ${metrics.fuelEfficiency.toFixed(1)} km/L
+
+Atenciosamente,
+Sistema de Dashboard Financeiro
+      `);
+      
+      const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+      
+      // Abrir cliente de email
+      window.open(mailtoLink);
+      
+      // Simular anexo (em um ambiente real, você enviaria via API)
+      setTimeout(() => {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(pdfBlob);
+        link.download = `relatorio-financeiro-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+        link.click();
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Erro ao enviar relatório:', error);
+      alert('Erro ao enviar relatório. Tente novamente.');
+    }
+  };
+
+  const sendViaWhatsApp = () => {
+    try {
+      // Gerar PDF temporário
+      const doc = new jsPDF();
+      
+      // Título
+      doc.setFontSize(20);
+      doc.text('Relatório Financeiro', 20, 20);
+      
+      // Período
+      doc.setFontSize(12);
+      doc.text(`Período: ${timeRange === '7d' ? 'Últimos 7 dias' : timeRange === '30d' ? 'Últimos 30 dias' : 'Últimos 90 dias'}`, 20, 35);
+      doc.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 20, 45);
+      
+      // Métricas principais
+      doc.setFontSize(14);
+      doc.text('Métricas Principais', 20, 65);
+      
+      const metricsData = [
+        ['Receita Total', `R$ ${metrics.totalRevenue.toFixed(2)}`],
+        ['Lucro Líquido', `R$ ${metrics.netProfit.toFixed(2)}`],
+        ['Total de Transações', metrics.transactionCount.toString()],
+        ['Eficiência Combustível', `${metrics.fuelEfficiency.toFixed(1)} km/L`]
+      ];
+      
+      autoTable(doc, {
+        startY: 75,
+        head: [['Métrica', 'Valor']],
+        body: metricsData,
+        theme: 'grid',
+        headStyles: { fillColor: [16, 185, 129] },
+        styles: { fontSize: 10 }
+      });
+      
+      // Dados detalhados
+      doc.setFontSize(14);
+      doc.text('Dados Detalhados', 20, 140);
+      
+      const tableData = financialData.map(item => [
+        format(new Date(item.date), 'dd/MM/yyyy'),
+        `R$ ${item.revenue.toFixed(2)}`,
+        `R$ ${item.expenses.toFixed(2)}`,
+        `R$ ${item.profit.toFixed(2)}`,
+        `${item.km}km`,
+        `${item.fuel.toFixed(1)}L`
+      ]);
+      
+      autoTable(doc, {
+        startY: 150,
+        head: [['Data', 'Receita', 'Despesas', 'Lucro', 'KM', 'Combustível']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [16, 185, 129] },
+        styles: { fontSize: 8 },
+        columnStyles: {
+          1: { halign: 'right' },
+          2: { halign: 'right' },
+          3: { halign: 'right' },
+          4: { halign: 'right' },
+          5: { halign: 'right' }
+        }
+      });
+      
+      // Converter para blob
+      const pdfBlob = doc.output('blob');
+      
+      // Criar link do WhatsApp
+      const message = encodeURIComponent(`
+📊 *Relatório Financeiro*
+
+Período: ${timeRange === '7d' ? 'Últimos 7 dias' : timeRange === '30d' ? 'Últimos 30 dias' : 'Últimos 90 dias'}
+
+💰 *Resumo:*
+• Receita Total: R$ ${metrics.totalRevenue.toFixed(2)}
+• Lucro Líquido: R$ ${metrics.netProfit.toFixed(2)}
+• Total de Transações: ${metrics.transactionCount}
+• Eficiência Combustível: ${metrics.fuelEfficiency.toFixed(1)} km/L
+
+📄 O relatório completo em PDF será enviado em seguida.
+      `);
+      
+      const whatsappLink = `https://wa.me/?text=${message}`;
+      
+      // Abrir WhatsApp
+      window.open(whatsappLink, '_blank');
+      
+      // Fazer download do PDF automaticamente
+      setTimeout(() => {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(pdfBlob);
+        link.download = `relatorio-financeiro-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+        link.click();
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Erro ao enviar via WhatsApp:', error);
+      alert('Erro ao enviar via WhatsApp. Tente novamente.');
+    }
   };
 
   // Mostrar loading
@@ -339,7 +648,10 @@ export function FinancialDashboard() {
             <Mail className="h-4 w-4 mr-2" />
             Email
           </Button>
-                     {/* Botão debug removido */}
+          <Button variant="outline" size="sm" onClick={sendViaWhatsApp} className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700">
+            <MessageCircle className="h-4 w-4 mr-2" />
+            WhatsApp
+          </Button>
         </div>
       </div>
 
