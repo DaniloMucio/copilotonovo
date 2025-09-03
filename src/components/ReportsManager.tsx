@@ -546,10 +546,10 @@ ${includeIncome && includeExpenses ? `• Saldo Líquido: ${netBalance.toLocaleS
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <h1 className="text-3xl font-bold tracking-tight">Relatórios</h1>
             </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                     <DateRangePicker date={dateRange} onDateChange={setDateRange} />
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <Button variant="outline" size="sm" onClick={exportPDF}>
                             <Download className="h-4 w-4 mr-2" />
                             PDF
@@ -568,7 +568,7 @@ ${includeIncome && includeExpenses ? `• Saldo Líquido: ${netBalance.toLocaleS
                         </Button>
                     </div>
                 </div>
-                <div className="flex flex-wrap items-center space-x-4">
+                <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center space-x-2">
                         <Checkbox id="includeIncome" checked={includeIncome} onCheckedChange={(c) => setIncludeIncome(c as boolean)} />
                         <Label htmlFor="includeIncome">Receitas</Label>
