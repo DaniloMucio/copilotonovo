@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { auth } from '@/lib/firebase';
-import { getCurrentMonthTransactionsSync, type Transaction } from '@/services/transactions';
+import { getCurrentMonthTransactionsSync, getTransactions, type Transaction } from '@/services/transactions';
 import { getShifts, type WorkShift } from '@/services/workShifts';
 import { DollarSign, TrendingDown, TrendingUp, Pencil as PencilIcon, KeyRound, Calendar } from 'lucide-react';
 import { ExpenseManager } from '@/components/ExpenseManager';
@@ -61,6 +61,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [shifts, setShifts] = useState<WorkShift[]>([]);
   const [loading, setLoading] = useState(true);
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
@@ -84,6 +85,11 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
     setTransactions(userTransactions);
   }, []);
 
+  const fetchAllTransactions = useCallback(async (uid: string) => {
+    const allUserTransactions = await getTransactions(uid);
+    setAllTransactions(allUserTransactions);
+  }, []);
+
   const fetchShifts = useCallback(async (uid: string) => {
     const userShifts = await getShifts(uid);
     setShifts(userShifts);
@@ -95,6 +101,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
       await Promise.all([
         fetchUserData(uid),
         fetchTransactions(uid),
+        fetchAllTransactions(uid),
         fetchShifts(uid),
       ]);
     } catch (error) {
@@ -107,7 +114,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
     } finally {
       setLoading(false);
     }
-  }, [fetchUserData, fetchTransactions, fetchShifts, toast]);
+  }, [fetchUserData, fetchTransactions, fetchAllTransactions, fetchShifts, toast]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -358,7 +365,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
           </div>
           <ExpenseManager user={user} transactions={expenseTransactions} onAction={() => fetchTransactions(user.uid)} />
         </TabsContent>
-        <TabsContent value="reports"><ReportsManager transactions={transactions} shifts={shifts} user={user} /></TabsContent>
+        <TabsContent value="reports"><ReportsManager transactions={allTransactions} shifts={shifts} user={user} /></TabsContent>
       </Tabs>
     </div>
   );
