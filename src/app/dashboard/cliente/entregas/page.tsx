@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { auth } from '@/lib/firebase';
 import { getCurrentMonthDeliveriesByClient, deleteTransaction, type Transaction, updateTransaction } from '@/services/transactions';
 import { getUserDocument, type UserData, getOnlineDrivers } from '@/services/firestore';
+import { getRecipientsByUser, type Recipient } from '@/services/recipients';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -74,13 +75,17 @@ function EntregasClienteContent() {
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [drivers, setDrivers] = useState<(UserData & { uid: string })[]>([]);
+  const [recipients, setRecipients] = useState<Recipient[]>([]);
   const { toast } = useToast();
 
   const fetchData = useCallback(async (uid: string) => {
     setLoading(true);
     try {
-      // Para clientes, buscar entregas do mês atual pelo clientId
-      const clientDeliveries = await getCurrentMonthDeliveriesByClient(uid);
+      // Para clientes, buscar entregas do mês atual pelo clientId e destinatários
+      const [clientDeliveries, recipientsList] = await Promise.all([
+        getCurrentMonthDeliveriesByClient(uid),
+        getRecipientsByUser(uid)
+      ]);
 
       const deliveryTransactions = clientDeliveries.filter(
         (t) => t.category === 'Entrega'
@@ -91,6 +96,7 @@ function EntregasClienteContent() {
       setDeliveriesToReceive(deliveryTransactions.filter(
         (d) => d.deliveryStatus === 'Entregue' && d.paymentStatus === 'Pendente'
       ));
+      setRecipients(recipientsList);
 
     } catch (error) {
       console.error("Erro ao buscar dados de entregas:", error);
@@ -513,6 +519,7 @@ function EntregasClienteContent() {
                              <DeliveryForm 
                  onFormSubmit={handleFormSuccess}
                  drivers={drivers} // Lista de motoristas disponíveis
+                 recipients={recipients} // Lista de destinatários disponíveis
                />
             </div>
           </div>

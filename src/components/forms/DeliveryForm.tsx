@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { addTransaction, updateTransaction, type Transaction, type TransactionInput } from '@/services/transactions';
 import { getAddressFromCEP } from '@/services/viacep';
+import { getRecipientsByUser, findOrCreateRecipient, type Recipient } from '@/services/recipients';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ const deliveryFormSchema = z.object({
     amount: z.coerce.number().positive('O valor deve ser positivo.'),
     paymentType: z.enum(['À vista', 'A receber']),
     senderCompany: z.string().min(1, "Nome/Empresa do remetente é obrigatório"),
+    recipientId: z.string().optional(),
     recipientCompany: z.string().min(1, "Nome/Empresa do destinatário é obrigatório"),
     senderAddress: addressSchema,
     recipientAddress: addressSchema,
@@ -46,14 +48,16 @@ interface DeliveryFormProps {
     onFormSubmit: () => void;
     transactionToEdit?: Transaction | null;
     drivers?: any[];
+    recipients?: Recipient[];
 }
 
-export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [] }: DeliveryFormProps) {
+export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], recipients = [] }: DeliveryFormProps) {
     const { toast } = useToast();
     const { userData } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isFetchingSenderCep, setIsFetchingSenderCep] = useState(false);
     const [isFetchingRecipientCep, setIsFetchingRecipientCep] = useState(false);
+    const [selectedRecipient, setSelectedRecipient] = useState<Recipient | null>(null);
     
     const form = useForm<DeliveryFormValues>({
         resolver: zodResolver(deliveryFormSchema),
@@ -62,6 +66,7 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [] }: 
             amount: 0,
             paymentType: 'A receber',
             senderCompany: '',
+            recipientId: '',
             recipientCompany: '',
             senderAddress: { cep: '', street: '', number: '', neighborhood: '', city: '', state: '' },
             recipientAddress: { cep: '', street: '', number: '', neighborhood: '', city: '', state: '' },
@@ -111,6 +116,26 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [] }: 
         }
     };
 
+    const handleRecipientChange = (recipientId: string) => {
+        if (recipientId === 'new-recipient') {
+            setSelectedRecipient(null);
+            form.setValue('recipientId', '');
+            form.setValue('recipientCompany', '');
+            form.setValue('recipientAddress', { cep: '', street: '', number: '', neighborhood: '', city: '', state: '' });
+        } else {
+            const recipient = recipients.find(r => r.id === recipientId);
+            if (recipient) {
+                setSelectedRecipient(recipient);
+                form.setValue('recipientId', recipient.id);
+                form.setValue('recipientCompany', recipient.name);
+                form.setValue('recipientAddress', recipient.address);
+            } else {
+                setSelectedRecipient(null);
+                form.setValue('recipientId', '');
+            }
+        }
+    };
+
     const onSubmit = async (values: DeliveryFormValues) => {
         const user = auth.currentUser;
         if (!user) {
@@ -124,6 +149,51 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [] }: 
                 setIsSubmitting(false);
                 return;
             }
+
+            // Lógica para buscar ou criar destinatário automaticamente
+            let finalRecipientData = {
+                recipientCompany: values.recipientCompany,
+                recipientAddress: values.recipientAddress,
+            };
+
+            // Se não há recipientId selecionado, mas há dados do destinatário, busca ou cria automaticamente
+            console.log('🔍 Verificando condições para criar destinatário:');
+            console.log('- recipientId:', values.recipientId);
+            console.log('- recipientCompany:', values.recipientCompany);
+            console.log('- recipientAddress.cep:', values.recipientAddress.cep);
+            console.log('- recipientAddress completo:', values.recipientAddress);
+            
+            if (!values.recipientId && values.recipientCompany && values.recipientAddress.cep && values.recipientAddress.cep.length >= 8) {
+                console.log('✅ Condições atendidas! Criando/buscando destinatário...');
+                try {
+                    const recipient = await findOrCreateRecipient(
+                        user.uid,
+                        values.recipientCompany,
+                        values.recipientAddress
+                    );
+                    finalRecipientData = {
+                        recipientCompany: recipient.name,
+                        recipientAddress: recipient.address,
+                    };
+                    toast({ 
+                        title: 'Destinatário processado!', 
+                        description: recipient.name === values.recipientCompany ? 
+                            'Destinatário encontrado nos registros.' : 
+                            'Novo destinatário cadastrado automaticamente.' 
+                    });
+                } catch (error) {
+                    console.error('Erro ao processar destinatário:', error);
+                    // Continua com os dados originais se houver erro
+                }
+            } else {
+                console.log('❌ Condições NÃO atendidas para criar destinatário');
+                console.log('- Motivo: recipientId existe OU dados incompletos');
+                console.log('- Verificações:');
+                console.log('  - !recipientId:', !values.recipientId);
+                console.log('  - recipientCompany:', !!values.recipientCompany);
+                console.log('  - recipientAddress.cep:', !!values.recipientAddress.cep);
+                console.log('  - cep.length >= 8:', values.recipientAddress.cep?.length >= 8);
+            }
             
             const transactionData: TransactionInput = {
                 userId: userData?.userType === 'cliente' ? values.driverId! : user.uid,
@@ -135,12 +205,11 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [] }: 
                 deliveryStatus: userData?.userType === 'cliente' ? 'Pendente' : 'Confirmada',
                 paymentStatus: values.paymentType === 'À vista' ? 'Pago' : 'Pendente',
                 ...values,
+                ...finalRecipientData,
             };
 
-
-
             if (transactionToEdit) {
-                await updateTransaction(transactionToEdit.id, { ...values });
+                await updateTransaction(transactionToEdit.id, { ...values, ...finalRecipientData });
                 toast({ title: 'Sucesso!', description: 'Entrega atualizada.' });
             } else {
                 await addTransaction(transactionData);
@@ -148,6 +217,7 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [] }: 
             }
             onFormSubmit();
             form.reset();
+            setSelectedRecipient(null);
         } catch (error) {
             console.error("Erro detalhado ao salvar entrega:", error);
             toast({ variant: 'destructive', title: 'Erro ao salvar entrega.', description: 'Verifique o console para mais detalhes' });
@@ -185,6 +255,32 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [] }: 
                         )}
                     />
                 )}
+
+                <FormField
+                    control={form.control}
+                    name="recipientId"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Destinatário</FormLabel>
+                            <Select onValueChange={handleRecipientChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecione um destinatário ou deixe em branco para novo" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="new-recipient">Novo destinatário</SelectItem>
+                                    {recipients.map(recipient => (
+                                        <SelectItem key={recipient.id} value={recipient.id}>
+                                            {recipient.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={form.control} name="description" render={({ field }) => (
                         <FormItem><FormLabel>Descrição da Entrega</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
@@ -257,33 +353,104 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [] }: 
                         <h3 className="font-semibold text-lg">Remetente</h3>
                         <Separator />
                         <FormField control={form.control} name="senderCompany" render={({ field }) => (
-                            <FormItem><FormLabel>Empresa/Nome</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem>
+                                <FormLabel>Empresa/Nome</FormLabel>
+                                <FormControl>
+                                    <Input 
+                                        {...field} 
+                                        disabled={false}
+                                        className=""
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
                         )} />
                         <FormField control={form.control} name="senderAddress.cep" render={({ field }) => (
-                             <FormItem><FormLabel>CEP</FormLabel><FormControl>
-                                <div className="flex items-center gap-2">
-                                    <Input {...field} type="tel" inputMode="numeric" onBlur={(e) => handleCepSearch(e.target.value, 'sender')}/>
-                                    {isFetchingSenderCep && <Loader2 className="animate-spin h-4 w-4" />}
-                                </div>
-                             </FormControl><FormMessage /></FormItem>
+                             <FormItem>
+                                <FormLabel>CEP</FormLabel>
+                                <FormControl>
+                                    <div className="flex items-center gap-2">
+                                        <Input 
+                                            {...field} 
+                                            type="tel" 
+                                            inputMode="numeric" 
+                                            disabled={false}
+                                            className=""
+                                            onBlur={(e) => handleCepSearch(e.target.value, 'sender')}
+                                        />
+                                        {isFetchingSenderCep && <Loader2 className="animate-spin h-4 w-4" />}
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                             </FormItem>
                         )} />
                         <FormField control={form.control} name="senderAddress.street" render={({ field }) => (
-                            <FormItem><FormLabel>Rua</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem>
+                                <FormLabel>Rua</FormLabel>
+                                <FormControl>
+                                    <Input 
+                                        {...field} 
+                                        disabled={false}
+                                        className=""
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
                         )} />
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                              <FormField control={form.control} name="senderAddress.number" render={({ field }) => (
-                                <FormItem><FormLabel>Número</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>Número</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            {...field} 
+                                            disabled={false}
+                                            className=""
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                              <FormField control={form.control} name="senderAddress.neighborhood" render={({ field }) => (
-                                <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>Bairro</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            {...field} 
+                                            disabled={false}
+                                            className=""
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                         </div>
                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <FormField control={form.control} name="senderAddress.city" render={({ field }) => (
-                                <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>Cidade</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            {...field} 
+                                            disabled={false}
+                                            className=""
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                              <FormField control={form.control} name="senderAddress.state" render={({ field }) => (
-                                <FormItem><FormLabel>Estado</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>Estado</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            {...field} 
+                                            disabled={false}
+                                            className=""
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                         </div>
                     </div>
@@ -292,33 +459,104 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [] }: 
                         <h3 className="font-semibold text-lg">Destinatário</h3>
                         <Separator />
                         <FormField control={form.control} name="recipientCompany" render={({ field }) => (
-                            <FormItem><FormLabel>Empresa/Nome</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem>
+                                <FormLabel>Empresa/Nome</FormLabel>
+                                <FormControl>
+                                    <Input 
+                                        {...field} 
+                                        disabled={selectedRecipient !== null}
+                                        className={selectedRecipient ? 'bg-gray-100' : ''}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
                         )} />
                         <FormField control={form.control} name="recipientAddress.cep" render={({ field }) => (
-                            <FormItem><FormLabel>CEP</FormLabel><FormControl>
-                                <div className="flex items-center gap-2">
-                                     <Input {...field} type="tel" inputMode="numeric" onBlur={(e) => handleCepSearch(e.target.value, 'recipient')}/>
-                                     {isFetchingRecipientCep && <Loader2 className="animate-spin h-4 w-4" />}
-                                </div>
-                            </FormControl><FormMessage /></FormItem>
+                            <FormItem>
+                                <FormLabel>CEP</FormLabel>
+                                <FormControl>
+                                    <div className="flex items-center gap-2">
+                                        <Input 
+                                            {...field} 
+                                            type="tel" 
+                                            inputMode="numeric" 
+                                            disabled={selectedRecipient !== null}
+                                            className={selectedRecipient ? 'bg-gray-100' : ''}
+                                            onBlur={(e) => !selectedRecipient && handleCepSearch(e.target.value, 'recipient')}
+                                        />
+                                        {isFetchingRecipientCep && <Loader2 className="animate-spin h-4 w-4" />}
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
                         )} />
                         <FormField control={form.control} name="recipientAddress.street" render={({ field }) => (
-                            <FormItem><FormLabel>Rua</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem>
+                                <FormLabel>Rua</FormLabel>
+                                <FormControl>
+                                    <Input 
+                                        {...field} 
+                                        disabled={selectedRecipient !== null}
+                                        className={selectedRecipient ? 'bg-gray-100' : ''}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
                         )} />
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <FormField control={form.control} name="recipientAddress.number" render={({ field }) => (
-                                <FormItem><FormLabel>Número</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>Número</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            {...field} 
+                                            disabled={selectedRecipient !== null}
+                                            className={selectedRecipient ? 'bg-gray-100' : ''}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                             <FormField control={form.control} name="recipientAddress.neighborhood" render={({ field }) => (
-                                <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>Bairro</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            {...field} 
+                                            disabled={selectedRecipient !== null}
+                                            className={selectedRecipient ? 'bg-gray-100' : ''}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                            <FormField control={form.control} name="recipientAddress.city" render={({ field }) => (
-                                <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>Cidade</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            {...field} 
+                                            disabled={selectedRecipient !== null}
+                                            className={selectedRecipient ? 'bg-gray-100' : ''}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                             <FormField control={form.control} name="recipientAddress.state" render={({ field }) => (
-                                <FormItem><FormLabel>Estado</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>Estado</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            {...field} 
+                                            disabled={selectedRecipient !== null}
+                                            className={selectedRecipient ? 'bg-gray-100' : ''}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                         </div>
                     </div>

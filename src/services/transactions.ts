@@ -173,12 +173,21 @@ export const updateTransaction = async (transactionId: string, transactionData: 
 
 /**
  * Exclui uma transação do Firestore.
+ * IMPORTANTE: Esta função remove APENAS a transação da entrega.
+ * Os destinatários permanecem salvos na coleção 'recipients' para uso futuro.
  * @param transactionId - O ID da transação a ser excluída.
  */
 export const deleteTransaction = async (transactionId: string) => {
     try {
         const transactionRef = doc(db, "transactions", transactionId);
+        
+        // Log para debug: verificar se está removendo apenas a transação
+        console.log('🗑️ Excluindo apenas a transação:', transactionId);
+        console.log('✅ DESTINATÁRIOS PRESERVADOS: Destinatários permanecem salvos para reuso');
+        
         await deleteDoc(transactionRef);
+        
+        console.log('✅ Transação excluída com sucesso. Destinatários mantidos.');
     } catch (error) {
         console.error("Erro ao excluir transação: ", error);
         throw error;

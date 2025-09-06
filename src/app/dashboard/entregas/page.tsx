@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { getTransactions, type Transaction, updateTransaction } from '@/services/transactions';
+import { getRecipientsByUser, type Recipient } from '@/services/recipients';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -61,6 +62,7 @@ function EntregasContent() {
     const [pendingDeliveries, setPendingDeliveries] = useState<Transaction[]>([]);
     const [deliveriesToReceive, setDeliveriesToReceive] = useState<Transaction[]>([]);
     const [deliveryHistory, setDeliveryHistory] = useState<Transaction[]>([]);
+    const [recipients, setRecipients] = useState<Recipient[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
     
@@ -73,14 +75,18 @@ function EntregasContent() {
     const fetchData = useCallback(async (uid: string) => {
         setLoading(true);
         try {
-            const allTransactions = await getTransactions(uid);
+            const [allTransactions, recipientsList] = await Promise.all([
+                getTransactions(uid),
+                getRecipientsByUser(uid)
+            ]);
 
             const deliveryTransactions = allTransactions.filter(
                 (t) => t.category === 'Entrega'
             );
             
-            // Armazenar todas as entregas
+            // Armazenar todas as entregas e destinatários
             setAllDeliveries(deliveryTransactions);
+            setRecipients(recipientsList);
             
             // Filtrar entregas por data
             filterDeliveriesByDate(deliveryTransactions);
@@ -171,7 +177,8 @@ function EntregasContent() {
                 </CardHeader>
                 <CardContent>
                     <DeliveryForm 
-                        onFormSubmit={handleAction} 
+                        onFormSubmit={handleAction}
+                        recipients={recipients}
                     />
                 </CardContent>
             </Card>
