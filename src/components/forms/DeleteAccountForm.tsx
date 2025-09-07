@@ -44,7 +44,7 @@ const deleteAccountSchema = z.object({
 // Schema para o formulário que aceita string vazia inicialmente
 const deleteAccountFormSchema = z.object({
   password: z.string().min(1, 'Senha é obrigatória.'),
-  confirmation: z.string().refine((val) => val === 'EXCLUIR', {
+  confirmation: z.union([z.literal(''), z.literal('EXCLUIR')]).refine((val) => val === 'EXCLUIR', {
     message: 'Digite EXCLUIR para confirmar a exclusão.',
   }),
 });
