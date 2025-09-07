@@ -6,7 +6,7 @@ import type { User } from 'firebase/auth';
 export interface UserData {
   displayName: string;
   email: string;
-  userType: 'motorista' | 'cliente';
+  userType: 'motorista' | 'cliente' | 'admin';
   cpf?: string;
   cnpj?: string;
   cnh?: string;

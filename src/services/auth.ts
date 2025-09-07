@@ -11,7 +11,7 @@ import {
 import { createUserDocument } from './firestore';
 import { AppErrorHandler } from '@/lib/errors';
 
-export type UserType = "motorista" | "cliente";
+export type UserType = "motorista" | "cliente" | "admin";
 
 export const signUp = async (email: string, password: string, displayName: string, userType: UserType) => {
   try {

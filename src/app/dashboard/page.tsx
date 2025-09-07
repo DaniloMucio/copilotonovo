@@ -22,6 +22,8 @@ function DashboardRedirect() {
               router.replace('/dashboard/motorista');
             } else if (data.userType === 'cliente') {
               router.replace('/dashboard/cliente');
+            } else if (data.userType === 'admin') {
+              router.replace('/dashboard/admin');
             } else {
               console.warn("Tipo de usuário desconhecido. Redirecionando para o login.");
               router.push('/login');

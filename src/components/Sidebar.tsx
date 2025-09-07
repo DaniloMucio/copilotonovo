@@ -14,7 +14,11 @@ import {
   Radio,
   Settings,
   Menu,
-  X
+  X,
+  Shield,
+  BarChart3,
+  Users,
+  Activity
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { auth } from '@/lib/firebase';
@@ -126,8 +130,64 @@ export function Sidebar({ className }: SidebarProps) {
     }
   ];
 
+  // Menu para administradores
+  const adminMenuItems = [
+    {
+      name: 'Dashboard Admin',
+      href: '/dashboard/admin',
+      icon: Shield,
+      description: 'Painel administrativo principal'
+    },
+    {
+      name: 'Usuários',
+      href: '/dashboard/admin/users',
+      icon: Users,
+      description: 'Gestão de usuários'
+    },
+    {
+      name: 'Entregas',
+      href: '/dashboard/admin/deliveries',
+      icon: Package,
+      description: 'Gestão de entregas'
+    },
+    {
+      name: 'Financeiro',
+      href: '/dashboard/admin/financial',
+      icon: DollarSign,
+      description: 'Relatórios financeiros'
+    },
+    {
+      name: 'Relatórios',
+      href: '/dashboard/admin/reports',
+      icon: BarChart3,
+      description: 'Relatórios e análises'
+    },
+    {
+      name: 'Monitoramento',
+      href: '/dashboard/admin/monitoring',
+      icon: Activity,
+      description: 'Monitoramento do sistema'
+    },
+    {
+      name: 'Configurações',
+      href: '/dashboard/configuracoes',
+      icon: Settings,
+      description: 'Configurações do sistema'
+    }
+  ];
+
   // Selecionar menu baseado no tipo de usuário
-  const menuItems = userData?.userType === 'cliente' ? clienteMenuItems : motoristaMenuItems;
+  const getMenuItems = () => {
+    if (userData?.userType === 'admin') {
+      return adminMenuItems;
+    } else if (userData?.userType === 'cliente') {
+      return clienteMenuItems;
+    } else {
+      return motoristaMenuItems;
+    }
+  };
+  
+  const menuItems = getMenuItems();
 
   const handleNavigation = (href: string) => {
     router.push(href);
@@ -140,6 +200,9 @@ export function Sidebar({ className }: SidebarProps) {
     }
     if (href === '/dashboard/cliente') {
       return pathname === '/dashboard/cliente';
+    }
+    if (href === '/dashboard/admin') {
+      return pathname === '/dashboard/admin';
     }
     return pathname.startsWith(href);
   };

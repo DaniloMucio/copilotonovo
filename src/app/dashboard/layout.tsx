@@ -42,7 +42,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           const updatedUserData = { ...doc, currentMileage: simulatedMileage };
           setUserData(updatedUserData);
 
-          if (doc.userType !== 'motorista' && doc.userType !== 'cliente') {
+          if (doc.userType !== 'motorista' && doc.userType !== 'cliente' && doc.userType !== 'admin') {
             handleLogout();
             toast({
               title: 'Acesso restrito',
