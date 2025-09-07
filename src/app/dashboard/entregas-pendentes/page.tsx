@@ -124,7 +124,7 @@ function EntregasPendentesContent() {
           router.push('/dashboard');
         }
       } else {
-        router.push('/');
+        router.push('/login');
       }
     });
 

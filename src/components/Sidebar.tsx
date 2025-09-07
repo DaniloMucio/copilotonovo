@@ -12,6 +12,7 @@ import {
   Package, 
   Calendar, 
   Radio,
+  Settings,
   Menu,
   X
 } from 'lucide-react';
@@ -88,6 +89,12 @@ export function Sidebar({ className }: SidebarProps) {
       icon: Radio,
       description: 'Estações de rádio online'
     },
+    {
+      name: 'Configurações',
+      href: '/dashboard/configuracoes',
+      icon: Settings,
+      description: 'Perfil, senha e preferências'
+    },
 
   ];
 
@@ -110,6 +117,12 @@ export function Sidebar({ className }: SidebarProps) {
       href: '/dashboard/cliente/agenda',
       icon: Calendar,
       description: 'Agendamentos e compromissos'
+    },
+    {
+      name: 'Configurações',
+      href: '/dashboard/configuracoes',
+      icon: Settings,
+      description: 'Perfil, senha e preferências'
     }
   ];
 

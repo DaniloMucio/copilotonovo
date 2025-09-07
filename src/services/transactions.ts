@@ -187,6 +187,9 @@ export const deleteTransaction = async (transactionId: string) => {
         
         await deleteDoc(transactionRef);
         
+        // Invalidar cache relacionado
+        firestoreCache.invalidate('transactions');
+        
         console.log('✅ Transação excluída com sucesso. Destinatários mantidos.');
     } catch (error) {
         console.error("Erro ao excluir transação: ", error);

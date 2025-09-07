@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import ClientLayout from '@/components/ClientLayout';
+import { ThemeProvider } from '@/components/ThemeProvider';
 import { metadata } from './metadata';
 
 export { metadata };
@@ -21,9 +22,11 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-cp-192x192.svg" />
       </head>
       <body className="font-body antialiased flex flex-col min-h-screen">
-        <ClientLayout>
-          {children}
-        </ClientLayout>
+        <ThemeProvider>
+          <ClientLayout>
+            {children}
+          </ClientLayout>
+        </ThemeProvider>
       </body>
     </html>
   );

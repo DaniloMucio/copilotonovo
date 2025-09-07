@@ -170,7 +170,9 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
                 date: dataToSave.date || new Date(),
                 ...dataToSave,
             };
+            console.log('💾 ExpenseForm: Salvando nova despesa:', transactionData);
             await addTransaction(transactionData);
+            console.log('✅ ExpenseForm: Despesa salva com sucesso!');
             toast({
                 title: 'Sucesso!',
                 description: 'Despesa adicionada.',

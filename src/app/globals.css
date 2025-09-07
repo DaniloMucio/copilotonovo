@@ -29,25 +29,25 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 210 100% 70%;
+    --primary-foreground: 240 10% 3.9%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 210 100% 70%;
   }
 }
 
@@ -232,4 +232,233 @@
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+/* Dark Mode Improvements */
+.dark .loading-shimmer {
+  background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Better contrast for dark mode */
+.dark {
+  color-scheme: dark;
+}
+
+.dark .text-muted-foreground {
+  color: hsl(240 5% 64.9%);
+}
+
+.dark .border {
+  border-color: hsl(240 3.7% 15.9%);
+}
+
+.dark .bg-muted {
+  background-color: hsl(240 3.7% 15.9%);
+}
+
+.dark .bg-card {
+  background-color: hsl(240 10% 3.9%);
+}
+
+.dark .bg-popover {
+  background-color: hsl(240 10% 3.9%);
+}
+
+/* Improved scrollbar for dark mode */
+.dark ::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+}
+
+/* Better selection colors for dark mode */
+.dark ::selection {
+  background: rgba(96, 165, 250, 0.3);
+  color: #f9fafb;
+}
+
+/* Improved focus states for dark mode */
+.dark .focus-ring:focus {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+/* Better hover effects for dark mode */
+.dark .hover-lift:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.dark .hover-glow:hover {
+  box-shadow: 0 0 30px rgba(96, 165, 250, 0.4);
+}
+
+/* Card improvements for dark mode */
+.dark .card-hover:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Button improvements for dark mode */
+.dark .btn-gradient {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+}
+
+.dark .btn-gradient:hover {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  box-shadow: 0 10px 20px rgba(96, 165, 250, 0.4);
+}
+
+/* Glass effect for dark mode */
+.dark .glass {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Button improvements for dark mode */
+.dark .btn-primary {
+  background-color: hsl(210 100% 70%);
+  color: hsl(240 10% 3.9%);
+  border: 1px solid hsl(210 100% 70%);
+}
+
+.dark .btn-primary:hover {
+  background-color: hsl(210 100% 60%);
+  border-color: hsl(210 100% 60%);
+}
+
+.dark .btn-outline {
+  background-color: transparent;
+  color: hsl(0 0% 98%);
+  border: 1px solid hsl(240 3.7% 15.9%);
+}
+
+.dark .btn-outline:hover {
+  background-color: hsl(240 3.7% 15.9%);
+  color: hsl(0 0% 98%);
+}
+
+.dark .btn-secondary {
+  background-color: hsl(240 3.7% 15.9%);
+  color: hsl(0 0% 98%);
+  border: 1px solid hsl(240 3.7% 15.9%);
+}
+
+.dark .btn-secondary:hover {
+  background-color: hsl(240 3.7% 20%);
+  border-color: hsl(240 3.7% 20%);
+}
+
+.dark .btn-ghost {
+  color: hsl(0 0% 98%);
+}
+
+.dark .btn-ghost:hover {
+  background-color: hsl(240 3.7% 15.9%);
+  color: hsl(0 0% 98%);
+}
+
+/* Input improvements for dark mode */
+.dark .input {
+  background-color: hsl(240 3.7% 15.9%);
+  color: hsl(0 0% 98%);
+  border: 1px solid hsl(240 3.7% 15.9%);
+}
+
+.dark .input:focus {
+  border-color: hsl(210 100% 70%);
+  box-shadow: 0 0 0 2px hsl(210 100% 70% / 0.2);
+}
+
+/* Badge improvements for dark mode */
+.dark .badge {
+  background-color: hsl(240 3.7% 15.9%);
+  color: hsl(0 0% 98%);
+}
+
+.dark .badge-primary {
+  background-color: hsl(210 100% 70%);
+  color: hsl(240 10% 3.9%);
+}
+
+/* Alert improvements for dark mode */
+.dark .alert {
+  background-color: hsl(240 3.7% 15.9%);
+  color: hsl(0 0% 98%);
+  border: 1px solid hsl(240 3.7% 15.9%);
+}
+
+.dark .alert-destructive {
+  background-color: hsl(0 62.8% 30.6%);
+  color: hsl(0 0% 98%);
+  border-color: hsl(0 62.8% 30.6%);
+}
+
+/* Table improvements for dark mode */
+.dark .table {
+  background-color: hsl(240 10% 3.9%);
+}
+
+.dark .table th {
+  background-color: hsl(240 3.7% 15.9%);
+  color: hsl(0 0% 98%);
+}
+
+.dark .table td {
+  color: hsl(0 0% 98%);
+  border-color: hsl(240 3.7% 15.9%);
+}
+
+.dark .table tr:hover {
+  background-color: hsl(240 3.7% 15.9%);
+}
+
+/* Dropdown improvements for dark mode */
+.dark .dropdown-content {
+  background-color: hsl(240 10% 3.9%);
+  border: 1px solid hsl(240 3.7% 15.9%);
+  box-shadow: 0 10px 38px -10px rgba(0, 0, 0, 0.35), 0 10px 20px -15px rgba(0, 0, 0, 0.2);
+}
+
+.dark .dropdown-item {
+  color: hsl(0 0% 98%);
+}
+
+.dark .dropdown-item:hover {
+  background-color: hsl(240 3.7% 15.9%);
+}
+
+/* Tooltip improvements for dark mode */
+.dark .tooltip-content {
+  background-color: hsl(240 10% 3.9%);
+  color: hsl(0 0% 98%);
+  border: 1px solid hsl(240 3.7% 15.9%);
+}
+
+/* Progress bar improvements for dark mode */
+.dark .progress-bar {
+  background-color: hsl(240 3.7% 15.9%);
+}
+
+.dark .progress-fill {
+  background-color: hsl(210 100% 70%);
+}
+
+/* Skeleton improvements for dark mode */
+.dark .skeleton {
+  background-color: hsl(240 3.7% 15.9%);
+}
+
+/* Loading spinner improvements for dark mode */
+.dark .spinner {
+  border-color: hsl(240 3.7% 15.9%);
+  border-top-color: hsl(210 100% 70%);
 }

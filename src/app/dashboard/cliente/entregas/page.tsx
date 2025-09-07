@@ -15,6 +15,7 @@ import { getCurrentMonthDeliveriesByClient, deleteTransaction, type Transaction,
 import { getUserDocument, type UserData, getOnlineDrivers } from '@/services/firestore';
 import { getRecipientsByUser, type Recipient } from '@/services/recipients';
 import { useToast } from '@/hooks/use-toast';
+import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { 
@@ -77,6 +78,9 @@ function EntregasClienteContent() {
   const [drivers, setDrivers] = useState<(UserData & { uid: string })[]>([]);
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const { toast } = useToast();
+  
+  // Auto refresh hook
+  const { refreshWithDelay } = useAutoRefresh();
 
   const fetchData = useCallback(async (uid: string) => {
     setLoading(true);
@@ -137,7 +141,7 @@ function EntregasClienteContent() {
   const handleFormSuccess = () => {
     setIsFormOpen(false);
     if (user) {
-      fetchData(user.uid);
+      refreshWithDelay(() => fetchData(user.uid));
     }
   };
 
@@ -150,7 +154,7 @@ function EntregasClienteContent() {
       });
       // Recarregar os dados após exclusão
       if (user) {
-        fetchData(user.uid);
+        refreshWithDelay(() => fetchData(user.uid));
       }
     } catch (error) {
       console.error("Erro ao excluir entrega:", error);
@@ -232,10 +236,10 @@ function EntregasClienteContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-            <Clock className="h-4 w-4 text-orange-600" />
+            <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{pendingDeliveries.length}</div>
+            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{pendingDeliveries.length}</div>
             <p className="text-xs text-muted-foreground">Aguardando confirmação</p>
           </CardContent>
         </Card>
@@ -243,10 +247,10 @@ function EntregasClienteContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Concluídas</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
+            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{deliveryHistory.length}</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{deliveryHistory.length}</div>
             <p className="text-xs text-muted-foreground">Entregas realizadas</p>
           </CardContent>
         </Card>
@@ -254,10 +258,10 @@ function EntregasClienteContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Investido</CardTitle>
-            <DollarSign className="h-4 w-4 text-blue-600" />
+            <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">R$ {totalSpent.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">R$ {totalSpent.toFixed(2)}</div>
             <p className="text-xs text-muted-foreground">Em entregas concluídas</p>
           </CardContent>
         </Card>

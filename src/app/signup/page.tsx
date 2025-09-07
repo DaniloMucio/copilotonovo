@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Logo } from "@/components/logo";
 import { useToast } from "@/hooks/use-toast";
+import { useForceLightTheme } from "@/hooks/use-force-light-theme";
 import { signUp, UserType } from "@/services/auth";
 
 const signupSchema = z.object({
@@ -57,6 +58,9 @@ export default function SignupPage() {
       userType: "motorista",
     },
   });
+
+  // Forçar tema claro na página de cadastro
+  useForceLightTheme();
 
   async function onSubmit(values: SignupFormValues) {
     try {

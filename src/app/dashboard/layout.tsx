@@ -22,7 +22,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const handleLogout = useCallback(async () => {
     try {
       await auth.signOut();
-      window.location.href = '/login';
+      // Não redirecionar aqui - deixar o useEffect do onAuthStateChanged fazer o redirecionamento
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -53,7 +53,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         }
       } else {
         // Redirecionar para login se não estiver autenticado
-        window.location.href = '/';
+        window.location.href = '/login';
       }
     });
     return () => unsubscribe();

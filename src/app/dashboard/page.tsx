@@ -24,18 +24,18 @@ function DashboardRedirect() {
               router.replace('/dashboard/cliente');
             } else {
               console.warn("Tipo de usuário desconhecido. Redirecionando para o login.");
-              router.push('/');
+              router.push('/login');
             }
           } else {
             console.warn("Documento do usuário não encontrado no Firestore.");
-            router.push('/');
+            router.push('/login');
           }
         } catch (error) {
           console.error("Erro ao buscar dados do usuário:", error);
-          router.push('/');
+          router.push('/login');
         }
       } else {
-        router.push('/');
+        router.push('/login');
       }
     });
 

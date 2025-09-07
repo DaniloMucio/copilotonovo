@@ -21,7 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { auth } from '@/lib/firebase';
 import { getCurrentMonthTransactionsSync, getTransactions, type Transaction } from '@/services/transactions';
 import { getShifts, type WorkShift } from '@/services/workShifts';
-import { DollarSign, TrendingDown, TrendingUp, Pencil as PencilIcon, KeyRound, Calendar } from 'lucide-react';
+import { DollarSign, TrendingDown, TrendingUp, Calendar } from 'lucide-react';
 import { ExpenseManager } from '@/components/ExpenseManager';
 import { IncomeManager } from '@/components/IncomeManager';
 import { Button } from '@/components/ui/button';
@@ -43,11 +43,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { IncomeForm } from '@/components/forms/IncomeForm';
 import { ExpenseForm } from '@/components/forms/ExpenseForm';
 import { getUserDocument, type UserData } from '@/services/firestore';
-import { ProfileForm } from '@/components/forms/ProfileForm';
-import { ChangePasswordForm } from '@/components/forms/ChangePasswordForm';
 import { ReportsManager } from '@/components/ReportsManager';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
 import { usePWAInstall } from '@/hooks/use-pwa-install';
+import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 
 
 interface MotoristaDashboardProps {
@@ -66,12 +65,13 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
   const [loading, setLoading] = useState(true);
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
-  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const { toast } = useToast();
   
   // PWA hook
   const { canInstall: pwaCanInstall, installApp: pwaInstall } = usePWAInstall();
+  
+  // Auto refresh hook
+  const { refreshData, refreshWithDelay } = useAutoRefresh();
 
   const defaultTab = searchParams.get('tab') || 'overview';
   
@@ -81,8 +81,11 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
   }, []);
 
   const fetchTransactions = useCallback(async (uid: string) => {
+    console.log('🔄 MotoristaDashboard: fetchTransactions iniciado para uid:', uid);
     const userTransactions = await getCurrentMonthTransactionsSync(uid);
+    console.log('📊 MotoristaDashboard: Transações carregadas:', userTransactions.length);
     setTransactions(userTransactions);
+    console.log('✅ MotoristaDashboard: fetchTransactions concluído');
   }, []);
 
   const fetchAllTransactions = useCallback(async (uid: string) => {
@@ -96,6 +99,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
   }, []);
 
   const refreshAllData = useCallback(async (uid: string) => {
+    console.log('🔄 MotoristaDashboard: refreshAllData iniciado para uid:', uid);
     setLoading(true);
     try {
       await Promise.all([
@@ -104,8 +108,9 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
         fetchAllTransactions(uid),
         fetchShifts(uid),
       ]);
+      console.log('✅ MotoristaDashboard: refreshAllData concluído com sucesso');
     } catch (error) {
-      console.error("Erro ao carregar dados do dashboard:", error);
+      console.error("❌ MotoristaDashboard: Erro ao carregar dados do dashboard:", error);
       toast({
         variant: "destructive",
         title: "Erro ao carregar dados",
@@ -122,30 +127,22 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
         setUser(currentUser);
         await refreshAllData(currentUser.uid);
       } else {
-        router.push('/');
+        router.push('/login');
       }
     });
     return () => unsubscribe();
   }, [router, refreshAllData]);
 
   const onTransactionAddedOrUpdated = () => {
-    if (user) fetchTransactions(user.uid);
+    console.log('🔄 MotoristaDashboard: onTransactionAddedOrUpdated chamado');
+    if (user) {
+      console.log('🔄 MotoristaDashboard: Chamando refreshWithDelay...');
+      refreshWithDelay(() => refreshAllData(user.uid));
+    }
     setIsEditDialogOpen(false);
     setTransactionToEdit(null);
   }
 
-  const handleProfileUpdate = () => {
-    if(user) {
-      const refreshedUser = auth.currentUser;
-      if(refreshedUser) setUser(refreshedUser);
-      fetchUserData(user.uid);
-    }
-    setIsProfileDialogOpen(false);
-  }
-
-  const handlePasswordUpdate = () => {
-    setIsPasswordDialogOpen(false);
-  }
 
   const handleEditClick = (transaction: Transaction) => {
     setTransactionToEdit(transaction);
@@ -157,7 +154,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
     try {
       await deleteTransaction(transactionId);
       toast({ title: "Sucesso!", description: "Transação excluída." });
-      fetchTransactions(user.uid);
+      refreshWithDelay(() => refreshAllData(user.uid));
     } catch (error) {
       toast({ variant: "destructive", title: "Erro", description: "Ocorreu um problema ao excluir a transação." });
     }
@@ -176,6 +173,14 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
   const totalExpenses = expenseTransactions.reduce((acc, curr) => acc + curr.amount, 0);
   const netBalance = totalIncome - totalExpenses;
   const recentTransactions = transactions.slice(0, 5);
+  
+  // Debug: Log quando transactions muda
+  console.log('📊 MotoristaDashboard: transactions atualizado:', {
+    total: transactions.length,
+    receitas: incomeTransactions.length,
+    despesas: expenseTransactions.length,
+    recentes: recentTransactions.length
+  });
 
   const currentMonthIncome = incomeTransactions.filter(
     (t) => {
@@ -232,20 +237,6 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             {userData && (<Badge variant="outline" className="text-sm font-medium capitalize">Perfil: {userData.userType}</Badge>)}
-            <Dialog open={isProfileDialogOpen} onOpenChange={setIsProfileDialogOpen}>
-              <DialogTrigger asChild><Button variant="ghost" size="icon"><PencilIcon className="h-4 w-4" /></Button></DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Editar Perfil</DialogTitle><DialogDescription>Altere suas informações de perfil.</DialogDescription></DialogHeader>
-                {user && userData && <ProfileForm user={user} userData={userData} onFormSubmit={handleProfileUpdate} />}
-              </DialogContent>
-            </Dialog>
-            <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
-              <DialogTrigger asChild><Button variant="ghost" size="icon"><KeyRound className="h-4 w-4" /></Button></DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Alterar Senha</DialogTitle><DialogDescription>Defina uma nova senha para sua conta.</DialogDescription></DialogHeader>
-                <ChangePasswordForm onFormSubmit={handlePasswordUpdate} />
-              </DialogContent>
-            </Dialog>
             <PWAInstallButton canInstall={pwaCanInstall} install={pwaInstall} />
           </div>
         </div>
@@ -262,37 +253,37 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
         <TabsContent value="overview" className="mt-6">
           <div className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="shadow-sm border-emerald-200 bg-emerald-50/50">
+              <Card className="shadow-sm border-emerald-200 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-950/50">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-emerald-800">Receita Total</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-emerald-600" />
+                  <CardTitle className="text-sm font-medium text-emerald-800 dark:text-emerald-200">Receita Total</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-emerald-600">
+                  <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                     {currentMonthIncome.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Mês atual</p>
                 </CardContent>
               </Card>
-              <Card className="shadow-sm border-rose-200 bg-rose-50/50">
+              <Card className="shadow-sm border-rose-200 bg-rose-50/50 dark:border-rose-800 dark:bg-rose-950/50">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-rose-800">Despesa Total</CardTitle>
-                  <TrendingDown className="h-4 w-4 text-rose-600" />
+                  <CardTitle className="text-sm font-medium text-rose-800 dark:text-rose-200">Despesa Total</CardTitle>
+                  <TrendingDown className="h-4 w-4 text-rose-600 dark:text-rose-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-rose-600">
+                  <div className="text-2xl font-bold text-rose-600 dark:text-rose-400">
                     {currentMonthExpenses.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Mês atual</p>
                 </CardContent>
               </Card>
-              <Card className="shadow-sm border-stone-200 bg-stone-50/50">
+              <Card className="shadow-sm border-stone-200 bg-stone-50/50 dark:border-stone-700 dark:bg-stone-900/50">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Saldo Líquido</CardTitle>
+                  <CardTitle className="text-sm font-medium text-stone-800 dark:text-stone-200">Saldo Líquido</CardTitle>
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className={`text-2xl font-bold ${currentMonthNetBalance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  <div className={`text-2xl font-bold ${currentMonthNetBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                     {currentMonthNetBalance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Mês atual</p>
@@ -316,10 +307,10 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
                         {recentTransactions.map((transaction) => (
                           <TableRow key={transaction.id}>
                             <TableCell className="font-medium">{transaction.description}</TableCell>
-                            <TableCell><Badge variant={transaction.type === 'receita' ? 'default' : 'destructive'} className={transaction.type === 'receita' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}>{transaction.type}</Badge></TableCell>
+                            <TableCell><Badge variant={transaction.type === 'receita' ? 'default' : 'destructive'} className={transaction.type === 'receita' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200' : 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200'}>{transaction.type}</Badge></TableCell>
                             <TableCell><Badge variant="outline">{transaction.category}</Badge></TableCell>
                             <TableCell>{transaction.observations}</TableCell>
-                            <TableCell className={`text-right font-medium ${transaction.type === 'receita' ? 'text-emerald-600' : 'text-rose-600'}`}>{transaction.type === 'despesa' && '- '}{transaction.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
+                            <TableCell className={`text-right font-medium ${transaction.type === 'receita' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{transaction.type === 'despesa' && '- '}{transaction.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
                             <TableCell className="text-right">{format(transaction.date.toDate(), 'dd/MM/yyyy')}</TableCell>
                             <TableCell className="text-right space-x-2">
                               <Dialog open={isEditDialogOpen && transactionToEdit?.id === transaction.id} onOpenChange={(isOpen) => { if (!isOpen) setTransactionToEdit(null); setIsEditDialogOpen(isOpen); }}>
@@ -354,7 +345,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
               <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
             </div>
           </div>
-          <IncomeManager user={user} transactions={incomeTransactions} onAction={() => fetchTransactions(user.uid)} />
+          <IncomeManager user={user} transactions={incomeTransactions} onAction={() => refreshWithDelay(() => refreshAllData(user.uid))} />
         </TabsContent>
         <TabsContent value="despesas">
           <div className="mb-4">
@@ -363,7 +354,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
               <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
             </div>
           </div>
-          <ExpenseManager user={user} transactions={expenseTransactions} onAction={() => fetchTransactions(user.uid)} />
+          <ExpenseManager user={user} transactions={expenseTransactions} onAction={() => refreshWithDelay(() => refreshAllData(user.uid))} />
         </TabsContent>
         <TabsContent value="reports"><ReportsManager transactions={allTransactions} shifts={shifts} user={user} /></TabsContent>
       </Tabs>

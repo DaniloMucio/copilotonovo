@@ -1,5 +1,5 @@
 
-import { doc, getDoc, setDoc, updateDoc, collection, getDocs, where, query } from "firebase/firestore"; 
+import { doc, getDoc, setDoc, updateDoc, collection, getDocs, where, query, deleteDoc, writeBatch } from "firebase/firestore"; 
 import { db, auth } from "@/lib/firebase";
 import type { User } from 'firebase/auth';
 
@@ -202,5 +202,96 @@ export const getUserNotes = async (userId: string): Promise<string> => {
     } catch (error) {
         console.error("Erro ao buscar anotações do usuário:", error);
         return ""; // Retorna string vazia em caso de erro
+    }
+};
+
+/**
+ * Remove todos os dados de um usuário do Firestore.
+ * Esta função deve ser chamada ANTES de excluir a conta do Firebase Auth.
+ * @param userId - O ID do usuário.
+ * @param userType - O tipo do usuário (motorista ou cliente).
+ */
+export const deleteUserData = async (userId: string, userType: 'motorista' | 'cliente'): Promise<void> => {
+    try {
+        console.log(`🗑️ Iniciando exclusão de dados para usuário ${userId} (${userType})`);
+        
+        const batch = writeBatch(db);
+        let deletedCount = 0;
+
+        // 1. Excluir dados do usuário
+        const userRef = doc(db, "users", userId);
+        batch.delete(userRef);
+        deletedCount++;
+        console.log(`✅ Marcado para exclusão: documento do usuário`);
+
+        // 2. Excluir transações do usuário
+        const transactionsQuery = query(collection(db, "transactions"), where("userId", "==", userId));
+        const transactionsSnapshot = await getDocs(transactionsQuery);
+        transactionsSnapshot.forEach((doc) => {
+            batch.delete(doc.ref);
+            deletedCount++;
+        });
+        console.log(`✅ Marcado para exclusão: ${transactionsSnapshot.size} transações`);
+
+        // 3. Excluir agendamentos (se for cliente)
+        if (userType === 'cliente') {
+            const appointmentsQuery = query(collection(db, "appointments"), where("clientId", "==", userId));
+            const appointmentsSnapshot = await getDocs(appointmentsQuery);
+            appointmentsSnapshot.forEach((doc) => {
+                batch.delete(doc.ref);
+                deletedCount++;
+            });
+            console.log(`✅ Marcado para exclusão: ${appointmentsSnapshot.size} agendamentos`);
+        }
+
+        // 4. Excluir jornadas de trabalho (se for motorista)
+        if (userType === 'motorista') {
+            const shiftsQuery = query(collection(db, "workShifts"), where("userId", "==", userId));
+            const shiftsSnapshot = await getDocs(shiftsQuery);
+            shiftsSnapshot.forEach((doc) => {
+                batch.delete(doc.ref);
+                deletedCount++;
+            });
+            console.log(`✅ Marcado para exclusão: ${shiftsSnapshot.size} jornadas de trabalho`);
+
+            // 5. Excluir dados de veículos (se for motorista)
+            const vehiclesQuery = query(collection(db, "vehicles"), where("userId", "==", userId));
+            const vehiclesSnapshot = await getDocs(vehiclesQuery);
+            vehiclesSnapshot.forEach((doc) => {
+                batch.delete(doc.ref);
+                deletedCount++;
+            });
+            console.log(`✅ Marcado para exclusão: ${vehiclesSnapshot.size} veículos`);
+        }
+
+        // 6. Excluir notificações do usuário
+        const notificationsQuery = query(collection(db, "notifications"), where("userId", "==", userId));
+        const notificationsSnapshot = await getDocs(notificationsQuery);
+        notificationsSnapshot.forEach((doc) => {
+            batch.delete(doc.ref);
+            deletedCount++;
+        });
+        console.log(`✅ Marcado para exclusão: ${notificationsSnapshot.size} notificações`);
+
+        // 7. Excluir configurações de notificação
+        const notificationSettingsQuery = query(collection(db, "notificationSettings"), where("userId", "==", userId));
+        const notificationSettingsSnapshot = await getDocs(notificationSettingsQuery);
+        notificationSettingsSnapshot.forEach((doc) => {
+            batch.delete(doc.ref);
+            deletedCount++;
+        });
+        console.log(`✅ Marcado para exclusão: ${notificationSettingsSnapshot.size} configurações de notificação`);
+
+        // Executar todas as exclusões em lote
+        if (deletedCount > 0) {
+            await batch.commit();
+            console.log(`✅ Exclusão concluída: ${deletedCount} documentos removidos`);
+        } else {
+            console.log(`ℹ️ Nenhum documento encontrado para exclusão`);
+        }
+
+    } catch (error) {
+        console.error("❌ Erro ao excluir dados do usuário:", error);
+        throw new Error("Não foi possível excluir todos os dados do usuário. Tente novamente.");
     }
 };

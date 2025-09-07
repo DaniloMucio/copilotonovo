@@ -5,7 +5,8 @@ import {
   updateProfile,
   EmailAuthProvider,
   reauthenticateWithCredential,
-  updatePassword
+  updatePassword,
+  deleteUser
 } from 'firebase/auth';
 import { createUserDocument } from './firestore';
 import { AppErrorHandler } from '@/lib/errors';
@@ -104,5 +105,41 @@ export const updateUserProfile = async (displayName: string) => {
     } catch (error) {
         console.error("Erro ao atualizar o perfil do usuário:", error);
         throw new Error("Não foi possível atualizar o perfil.");
+    }
+};
+
+/**
+ * Exclui a conta do usuário do Firebase Auth.
+ * IMPORTANTE: Esta função remove APENAS a autenticação do usuário.
+ * Os dados do Firestore devem ser removidos separadamente.
+ * @param password - A senha atual do usuário para reautenticação.
+ */
+export const deleteUserAccount = async (password: string) => {
+    const user = auth.currentUser;
+    if (!user || !user.email) {
+        throw new Error("Usuário não está logado ou não tem email.");
+    }
+
+    try {
+        // Reautenticar o usuário antes de excluir
+        await reauthenticateUser(password);
+        
+        // Excluir a conta do Firebase Auth
+        await deleteUser(user);
+        
+        console.log('✅ Conta do usuário excluída com sucesso do Firebase Auth');
+    } catch (error: any) {
+        console.error("Erro ao excluir conta do usuário:", error);
+        
+        // Tratar erros específicos
+        if (error.message === 'wrong-password') {
+            throw new Error('Senha incorreta. Tente novamente.');
+        }
+        
+        if (error.code === 'auth/requires-recent-login') {
+            throw new Error('Por segurança, faça login novamente antes de excluir sua conta.');
+        }
+        
+        throw new Error("Não foi possível excluir sua conta. Tente novamente mais tarde.");
     }
 };

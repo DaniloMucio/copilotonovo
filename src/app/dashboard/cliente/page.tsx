@@ -22,14 +22,14 @@ import {
   MapPin,
   CheckCircle,
   AlertCircle,
-  Clock as ClockIcon,
-  Trash2
+  Clock as ClockIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
 import { usePWAInstall } from '@/hooks/use-pwa-install';
+import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { Timestamp } from 'firebase/firestore';
 
 interface ClienteDashboardProps {
@@ -85,6 +85,9 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
   
   // PWA hook
   const { canInstall: pwaCanInstall, installApp: pwaInstall } = usePWAInstall();
+  
+  // Auto refresh hook
+  const { refreshData, refreshWithDelay } = useAutoRefresh();
 
   const fetchUserData = useCallback(async (uid: string) => {
     const data = await getUserDocument(uid);
@@ -131,7 +134,7 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
       });
       // Recarregar os dados após exclusão
       if (user) {
-        await fetchTransactions(user.uid);
+        refreshWithDelay(() => refreshAllData(user.uid));
       }
     } catch (error) {
       console.error("Erro ao excluir entrega:", error);
@@ -142,6 +145,7 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
       });
     }
   };
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -179,21 +183,21 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
       value: pendingDeliveries.length.toString(),
       icon: ClockIcon,
       description: "Aguardando confirmação",
-      color: "text-orange-600"
+      color: "text-orange-600 dark:text-orange-400"
     },
     {
       title: "Entregas Concluídas",
       value: completedDeliveries.length.toString(),
       icon: CheckCircle,
       description: "Total realizadas",
-      color: "text-green-600"
+      color: "text-green-600 dark:text-green-400"
     },
     {
       title: "Total Investido",
       value: `R$ ${totalSpent.toFixed(2)}`,
       icon: DollarSign,
       description: "Em entregas",
-      color: "text-blue-600"
+      color: "text-blue-600 dark:text-blue-400"
     }
   ];
 
@@ -216,7 +220,12 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
             Bem-vindo, {userData.displayName || user.email}! Acompanhe suas entregas e agendamentos.
           </p>
         </div>
-        <PWAInstallButton canInstall={pwaCanInstall} install={pwaInstall} />
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            {userData && (<Badge variant="outline" className="text-sm font-medium capitalize">Perfil: {userData.userType}</Badge>)}
+            <PWAInstallButton canInstall={pwaCanInstall} install={pwaInstall} />
+          </div>
+        </div>
       </div>
 
       {/* Estatísticas */}
@@ -335,13 +344,13 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Entregas Pendentes:</span>
-                    <span className="font-semibold text-orange-600">
+                    <span className="font-semibold text-orange-600 dark:text-orange-400">
                       {pendingDeliveries.length}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Entregas Concluídas:</span>
-                    <span className="font-semibold text-green-600">
+                    <span className="font-semibold text-green-600 dark:text-green-400">
                       {completedDeliveries.length}
                     </span>
                   </div>

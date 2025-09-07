@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Logo } from "@/components/logo";
 import { useToast } from "@/hooks/use-toast";
+import { useForceLightTheme } from "@/hooks/use-force-light-theme";
 import { signIn } from "@/services/auth";
 import { loginSchema } from "@/lib/validations";
 
@@ -43,6 +44,9 @@ export default function LoginPage() {
       remember: false,
     },
   });
+
+  // Forçar tema claro na página de login
+  useForceLightTheme();
 
   async function onSubmit(values: LoginFormValues) {
     try {

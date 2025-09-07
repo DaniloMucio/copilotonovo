@@ -12,6 +12,7 @@ import { auth } from '@/lib/firebase';
 import { getTransactions, type Transaction, updateTransaction } from '@/services/transactions';
 import { getRecipientsByUser, type Recipient } from '@/services/recipients';
 import { useToast } from '@/hooks/use-toast';
+import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { DateRangePicker } from '@/components/ui/daterangepicker';
@@ -65,6 +66,9 @@ function EntregasContent() {
     const [recipients, setRecipients] = useState<Recipient[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
+    
+    // Auto refresh hook
+    const { refreshWithDelay } = useAutoRefresh();
     
     // Estado para o seletor de data - padrão: mês atual
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -145,7 +149,7 @@ function EntregasContent() {
             const status = accept ? 'Confirmada' : 'Recusada';
             await updateTransaction(deliveryId, { deliveryStatus: status as any });
             toast({ title: 'Sucesso!', description: `Entrega ${status.toLowerCase()}.` });
-            fetchData(user!.uid);
+            refreshWithDelay(() => fetchData(user!.uid));
         } catch (error) {
             toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível processar a solicitação.'})
         }
@@ -164,9 +168,9 @@ function EntregasContent() {
 
     const handleAction = useCallback(async () => {
         if (user) {
-           await fetchData(user.uid);
+           refreshWithDelay(() => fetchData(user.uid));
         }
-    }, [user, fetchData]);
+    }, [user, fetchData, refreshWithDelay]);
 
     return (
         <div className="space-y-6">
