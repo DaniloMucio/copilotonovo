@@ -22,7 +22,8 @@ import {
   MapPin,
   CheckCircle,
   AlertCircle,
-  Clock as ClockIcon
+  Clock as ClockIcon,
+  Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';

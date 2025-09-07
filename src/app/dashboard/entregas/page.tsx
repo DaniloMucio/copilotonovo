@@ -101,7 +101,7 @@ function EntregasContent() {
         } finally {
             setLoading(false);
         }
-    }, [toast]);
+    }, [toast, filterDeliveriesByDate]);
 
     // Função para filtrar entregas por período
     const filterDeliveriesByDate = useCallback((deliveries: Transaction[]) => {
