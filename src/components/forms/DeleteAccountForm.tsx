@@ -36,20 +36,9 @@ import {
 
 const deleteAccountSchema = z.object({
   password: z.string().min(1, 'Senha é obrigatória.'),
-  confirmation: z.string().refine((val) => val === 'EXCLUIR', {
-    message: 'Digite EXCLUIR para confirmar a exclusão.',
-  }),
 });
 
-// Schema para o formulário que aceita string vazia inicialmente
-const deleteAccountFormSchema = z.object({
-  password: z.string().min(1, 'Senha é obrigatória.'),
-  confirmation: z.string().refine((val) => val === 'EXCLUIR', {
-    message: 'Digite EXCLUIR para confirmar a exclusão.',
-  }),
-});
-
-type DeleteAccountFormValues = z.infer<typeof deleteAccountFormSchema>;
+type DeleteAccountFormValues = z.infer<typeof deleteAccountSchema>;
 
 interface DeleteAccountFormProps {
   user: User;
@@ -63,11 +52,10 @@ export function DeleteAccountForm({ user, userData, onFormSubmit }: DeleteAccoun
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
-  const form = useForm({
-    resolver: zodResolver(deleteAccountFormSchema),
+  const form = useForm<DeleteAccountFormValues>({
+    resolver: zodResolver(deleteAccountSchema),
     defaultValues: {
       password: '',
-      confirmation: '',
     },
   });
 
@@ -177,25 +165,6 @@ export function DeleteAccountForm({ user, userData, onFormSubmit }: DeleteAccoun
             )}
           />
 
-          {/* Campo de confirmação */}
-          <FormField
-            control={form.control}
-            name="confirmation"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Digite <span className="font-mono font-bold text-red-600">EXCLUIR</span> para confirmar
-                </FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="Digite EXCLUIR" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
           <DialogFooter>
             <Button 
