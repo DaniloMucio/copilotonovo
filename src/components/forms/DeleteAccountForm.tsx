@@ -41,7 +41,15 @@ const deleteAccountSchema = z.object({
   }),
 });
 
-type DeleteAccountFormValues = z.infer<typeof deleteAccountSchema>;
+// Schema para o formulário que aceita string vazia inicialmente
+const deleteAccountFormSchema = z.object({
+  password: z.string().min(1, 'Senha é obrigatória.'),
+  confirmation: z.string().refine((val) => val === 'EXCLUIR', {
+    message: 'Digite EXCLUIR para confirmar a exclusão.',
+  }),
+});
+
+type DeleteAccountFormValues = z.infer<typeof deleteAccountFormSchema>;
 
 interface DeleteAccountFormProps {
   user: User;
@@ -55,8 +63,8 @@ export function DeleteAccountForm({ user, userData, onFormSubmit }: DeleteAccoun
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
-  const form = useForm<{ password: string; confirmation: string }>({
-    resolver: zodResolver(deleteAccountSchema),
+  const form = useForm<DeleteAccountFormValues>({
+    resolver: zodResolver(deleteAccountFormSchema),
     defaultValues: {
       password: '',
       confirmation: '',
