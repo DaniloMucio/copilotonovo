@@ -55,7 +55,7 @@ export function DeleteAccountForm({ user, userData, onFormSubmit }: DeleteAccoun
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
-  const form = useForm<DeleteAccountFormValues>({
+  const form = useForm({
     resolver: zodResolver(deleteAccountSchema),
     defaultValues: {
       password: '',
