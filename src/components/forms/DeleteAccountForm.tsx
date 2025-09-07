@@ -36,7 +36,7 @@ import {
 
 const deleteAccountSchema = z.object({
   password: z.string().min(1, 'Senha é obrigatória.'),
-  confirmation: z.string().refine((val) => val === 'EXCLUIR', {
+  confirmation: z.string().min(1, 'Confirmação é obrigatória.').refine((val) => val === 'EXCLUIR', {
     message: 'Digite EXCLUIR para confirmar a exclusão.',
   }),
 });
