@@ -36,7 +36,7 @@ import {
 
 const deleteAccountSchema = z.object({
   password: z.string().min(1, 'Senha é obrigatória.'),
-  confirmation: z.string().min(1, 'Confirmação é obrigatória.').refine((val) => val === 'EXCLUIR', {
+  confirmation: z.string().refine((val) => val === 'EXCLUIR', {
     message: 'Digite EXCLUIR para confirmar a exclusão.',
   }),
 });
@@ -55,7 +55,7 @@ export function DeleteAccountForm({ user, userData, onFormSubmit }: DeleteAccoun
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
-  const form = useForm({
+  const form = useForm<{ password: string; confirmation: string }>({
     resolver: zodResolver(deleteAccountSchema),
     defaultValues: {
       password: '',
