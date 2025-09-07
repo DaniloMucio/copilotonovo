@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/hooks/use-theme';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   User as UserIcon, 
   Key, 
@@ -40,6 +41,7 @@ export function SettingsManager({ user, userData }: SettingsManagerProps) {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const { canInstall: pwaCanInstall, installApp: pwaInstall } = usePWAInstall();
+  const isMobile = useIsMobile();
   
   const [activeTab, setActiveTab] = useState('profile');
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
@@ -117,14 +119,14 @@ export function SettingsManager({ user, userData }: SettingsManagerProps) {
   return (
     <div className="mt-8">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
-          <TabsTrigger value="profile">Perfil</TabsTrigger>
-          <TabsTrigger value="security">Segurança</TabsTrigger>
-          <TabsTrigger value="notifications">Notificações</TabsTrigger>
-          <TabsTrigger value="appearance">Aparência</TabsTrigger>
-          <TabsTrigger value="privacy">Privacidade</TabsTrigger>
-          <TabsTrigger value="app">App</TabsTrigger>
-          <TabsTrigger value="danger">Perigo</TabsTrigger>
+        <TabsList className={`w-full ${isMobile ? 'flex overflow-x-auto scrollbar-hide' : 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7'}`}>
+          <TabsTrigger value="profile" className={isMobile ? 'flex-shrink-0' : ''}>Perfil</TabsTrigger>
+          <TabsTrigger value="security" className={isMobile ? 'flex-shrink-0' : ''}>Segurança</TabsTrigger>
+          <TabsTrigger value="notifications" className={isMobile ? 'flex-shrink-0' : ''}>Notificações</TabsTrigger>
+          <TabsTrigger value="appearance" className={isMobile ? 'flex-shrink-0' : ''}>Aparência</TabsTrigger>
+          <TabsTrigger value="privacy" className={isMobile ? 'flex-shrink-0' : ''}>Privacidade</TabsTrigger>
+          <TabsTrigger value="app" className={isMobile ? 'flex-shrink-0' : ''}>App</TabsTrigger>
+          <TabsTrigger value="danger" className={isMobile ? 'flex-shrink-0' : ''}>Perigo</TabsTrigger>
         </TabsList>
 
         {/* Aba Perfil */}
