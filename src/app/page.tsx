@@ -121,44 +121,6 @@ export default function HomePage() {
     { name: "Shadcn/ui", icon: "🎯", description: "Componentes UI reutilizáveis" }
   ];
 
-  const updates = [
-    {
-      version: "v1.2.0",
-      date: "Janeiro 2025",
-      title: "Sistema de Configurações Unificado",
-      description: "Nova página de configurações com todas as opções organizadas em abas intuitivas",
-      features: ["Tema claro/escuro", "Configurações de perfil", "Gerenciamento de senha", "Exclusão de conta"],
-      icon: <Settings className="h-6 w-6" />,
-      type: "feature"
-    },
-    {
-      version: "v1.1.5",
-      date: "Dezembro 2024",
-      title: "Melhorias no Modo Escuro",
-      description: "Otimizações significativas na visibilidade e contraste do tema escuro",
-      features: ["Cores aprimoradas", "Melhor contraste", "Interface mais legível"],
-      icon: <Moon className="h-6 w-6" />,
-      type: "improvement"
-    },
-    {
-      version: "v1.1.0",
-      date: "Novembro 2024",
-      title: "PWA para Smartphones",
-      description: "Aplicação web progressiva otimizada para dispositivos móveis",
-      features: ["Instalação nativa", "Funcionamento offline", "Notificações push"],
-      icon: <Smartphone className="h-6 w-6" />,
-      type: "feature"
-    },
-    {
-      version: "v1.0.0",
-      date: "Outubro 2024",
-      title: "Lançamento Inicial",
-      description: "Primeira versão do Co-Piloto Driver com funcionalidades básicas",
-      features: ["Gestão financeira", "Controle de entregas", "Relatórios", "Dashboard"],
-      icon: <Rocket className="h-6 w-6" />,
-      type: "launch"
-    }
-  ];
 
   const partnerTypes = [
     {
@@ -220,6 +182,17 @@ export default function HomePage() {
             </motion.div>
             
             <div className="flex items-center space-x-4">
+              <Link href="/atualizacoes">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button variant="outline" size="sm" className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full px-6 shadow-sm hover:shadow-md transition-all duration-300">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Atualizações
+                  </Button>
+                </motion.div>
+              </Link>
               <Link href="/login">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
@@ -653,124 +626,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Updates Section */}
-      <section className="py-32 bg-white relative">
-        <div className="container mx-auto px-6 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
-            transition={{ duration: 0.8, delay: 2.0 }}
-            className="text-center mb-20"
-          >
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <Link href="/atualizacoes">
-                <Badge variant="secondary" className="mb-8 px-6 py-3 text-sm font-medium bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Últimas Atualizações
-                </Badge>
-              </Link>
-            </motion.div>
-            
-            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-8">
-              Acompanhe nossa
-              <span className="block bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                evolução constante
-              </span>
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto font-light">
-              Estamos sempre trabalhando para melhorar sua experiência com novas funcionalidades, 
-              correções e otimizações baseadas no seu feedback.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            {updates.slice(0, 2).map((update, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
-                transition={{ duration: 0.8, delay: 0.1 * index + 2.2 }}
-                whileHover={{ y: -5, scale: 1.01 }}
-                className="group"
-              >
-                <Card className="h-full border-0 shadow-lg hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-white to-gray-50/50 rounded-2xl overflow-hidden group-hover:from-white group-hover:to-green-50/50">
-                  <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-emerald-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <CardHeader className="relative z-10">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                          update.type === 'feature' ? 'bg-gradient-to-br from-blue-100 to-blue-200' :
-                          update.type === 'improvement' ? 'bg-gradient-to-br from-yellow-100 to-yellow-200' :
-                          update.type === 'launch' ? 'bg-gradient-to-br from-green-100 to-green-200' :
-                          'bg-gradient-to-br from-gray-100 to-gray-200'
-                        }`}>
-                          <div className={`${
-                            update.type === 'feature' ? 'text-blue-600' :
-                            update.type === 'improvement' ? 'text-yellow-600' :
-                            update.type === 'launch' ? 'text-green-600' :
-                            'text-gray-600'
-                          } group-hover:scale-110 transition-transform duration-500`}>
-                            {update.icon}
-                          </div>
-                        </div>
-                        <div>
-                          <Badge variant="secondary" className={`mb-2 ${
-                            update.type === 'feature' ? 'bg-blue-100 text-blue-700' :
-                            update.type === 'improvement' ? 'bg-yellow-100 text-yellow-700' :
-                            update.type === 'launch' ? 'bg-green-100 text-green-700' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
-                            {update.version}
-                          </Badge>
-                          <p className="text-sm text-gray-500">{update.date}</p>
-                        </div>
-                      </div>
-                    </div>
-                    <CardTitle className="text-xl font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-300 mb-3">
-                      {update.title}
-                    </CardTitle>
-                    <CardDescription className="text-gray-600 text-base leading-relaxed">
-                      {update.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="relative z-10">
-                    <div className="space-y-2">
-                      {update.features.map((feature, featureIndex) => (
-                        <div key={featureIndex} className="flex items-center space-x-2">
-                          <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
-                          <span className="text-sm text-gray-600">{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
-            transition={{ duration: 0.8, delay: 2.4 }}
-            className="text-center"
-          >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/atualizacoes">
-                <Button size="lg" className="bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 rounded-full px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300">
-                  <RefreshCw className="h-5 w-5 mr-2" />
-                  Ver Todas as Atualizações
-                </Button>
-              </Link>
-            </motion.div>
-            <p className="text-gray-600 mt-4">
-              Acompanhe o histórico completo de todas as versões e melhorias
-            </p>
-          </motion.div>
-        </div>
-      </section>
 
       {/* Android App Section */}
       <section className="py-32 bg-gradient-to-br from-green-50/50 via-emerald-50/30 to-green-50/50 relative">
