@@ -67,7 +67,7 @@ export function DeleteAccountForm({ user, userData, onFormSubmit }: DeleteAccoun
     resolver: zodResolver(deleteAccountFormSchema),
     defaultValues: {
       password: '',
-      confirmation: '',
+      confirmation: '' as const,
     },
   });
 
