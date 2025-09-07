@@ -76,33 +76,6 @@ function EntregasContent() {
         to: endOfMonth(new Date()),
     });
 
-    const fetchData = useCallback(async (uid: string) => {
-        setLoading(true);
-        try {
-            const [allTransactions, recipientsList] = await Promise.all([
-                getTransactions(uid),
-                getRecipientsByUser(uid)
-            ]);
-
-            const deliveryTransactions = allTransactions.filter(
-                (t) => t.category === 'Entrega'
-            );
-            
-            // Armazenar todas as entregas e destinatários
-            setAllDeliveries(deliveryTransactions);
-            setRecipients(recipientsList);
-            
-            // Filtrar entregas por data
-            filterDeliveriesByDate(deliveryTransactions);
-
-        } catch (error) {
-            console.error("Erro ao buscar dados de entregas:", error);
-            toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível carregar os dados de entregas.'})
-        } finally {
-            setLoading(false);
-        }
-    }, [toast, filterDeliveriesByDate]);
-
     // Função para filtrar entregas por período
     const filterDeliveriesByDate = useCallback((deliveries: Transaction[]) => {
         if (!dateRange?.from) {
@@ -136,6 +109,33 @@ function EntregasContent() {
             (d) => d.deliveryStatus === 'Entregue' && d.paymentStatus === 'Pendente'
         ));
     }, [dateRange]);
+
+    const fetchData = useCallback(async (uid: string) => {
+        setLoading(true);
+        try {
+            const [allTransactions, recipientsList] = await Promise.all([
+                getTransactions(uid),
+                getRecipientsByUser(uid)
+            ]);
+
+            const deliveryTransactions = allTransactions.filter(
+                (t) => t.category === 'Entrega'
+            );
+            
+            // Armazenar todas as entregas e destinatários
+            setAllDeliveries(deliveryTransactions);
+            setRecipients(recipientsList);
+            
+            // Filtrar entregas por data
+            filterDeliveriesByDate(deliveryTransactions);
+
+        } catch (error) {
+            console.error("Erro ao buscar dados de entregas:", error);
+            toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível carregar os dados de entregas.'})
+        } finally {
+            setLoading(false);
+        }
+    }, [toast, filterDeliveriesByDate]);
 
     // Efeito para refiltrar quando a data mudar
     useEffect(() => {
