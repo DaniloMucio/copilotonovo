@@ -666,10 +666,12 @@ export default function HomePage() {
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
-              <Badge variant="secondary" className="mb-8 px-6 py-3 text-sm font-medium bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-0 rounded-full shadow-lg">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Últimas Atualizações
-              </Badge>
+              <Link href="/atualizacoes">
+                <Badge variant="secondary" className="mb-8 px-6 py-3 text-sm font-medium bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Últimas Atualizações
+                </Badge>
+              </Link>
             </motion.div>
             
             <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-8">
@@ -684,8 +686,8 @@ export default function HomePage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {updates.map((update, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            {updates.slice(0, 2).map((update, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
@@ -748,6 +750,25 @@ export default function HomePage() {
               </motion.div>
             ))}
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
+            transition={{ duration: 0.8, delay: 2.4 }}
+            className="text-center"
+          >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link href="/atualizacoes">
+                <Button size="lg" className="bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 rounded-full px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <RefreshCw className="h-5 w-5 mr-2" />
+                  Ver Todas as Atualizações
+                </Button>
+              </Link>
+            </motion.div>
+            <p className="text-gray-600 mt-4">
+              Acompanhe o histórico completo de todas as versões e melhorias
+            </p>
+          </motion.div>
         </div>
       </section>
 
