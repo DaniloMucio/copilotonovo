@@ -209,9 +209,9 @@ export const getUserNotes = async (userId: string): Promise<string> => {
  * Remove todos os dados de um usuário do Firestore.
  * Esta função deve ser chamada ANTES de excluir a conta do Firebase Auth.
  * @param userId - O ID do usuário.
- * @param userType - O tipo do usuário (motorista ou cliente).
+ * @param userType - O tipo do usuário (motorista, cliente ou admin).
  */
-export const deleteUserData = async (userId: string, userType: 'motorista' | 'cliente'): Promise<void> => {
+export const deleteUserData = async (userId: string, userType: 'motorista' | 'cliente' | 'admin'): Promise<void> => {
     try {
         console.log(`🗑️ Iniciando exclusão de dados para usuário ${userId} (${userType})`);
         
