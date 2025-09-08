@@ -280,14 +280,22 @@ export const getFinancialStats = async (): Promise<FinancialStats> => {
  */
 export const getAllDeliveries = async (): Promise<Transaction[]> => {
   try {
-    const q = query(
-      collection(db, 'transactions'),
-      where('category', '==', 'Entrega'),
-      orderBy('date', 'desc')
-    );
-    
+    // Buscar todas as transações primeiro e filtrar no cliente para evitar necessidade de índice
+    const q = query(collection(db, 'transactions'));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
+    
+    const allTransactions = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
+    
+    // Filtrar entregas no cliente e ordenar por data
+    const deliveries = allTransactions
+      .filter(t => t.category === 'Entrega')
+      .sort((a, b) => {
+        const dateA = a.date instanceof Date ? a.date : a.date.toDate();
+        const dateB = b.date instanceof Date ? b.date : b.date.toDate();
+        return dateB.getTime() - dateA.getTime();
+      });
+    
+    return deliveries;
   } catch (error) {
     console.error('Erro ao buscar todas as entregas:', error);
     throw error;
@@ -299,14 +307,22 @@ export const getAllDeliveries = async (): Promise<Transaction[]> => {
  */
 export const getAllTransactions = async (): Promise<Transaction[]> => {
   try {
-    const q = query(
-      collection(db, 'transactions'),
-      orderBy('date', 'desc'),
-      limit(1000) // Limitar para performance
-    );
-    
+    // Buscar todas as transações e ordenar no cliente para evitar necessidade de índice
+    const q = query(collection(db, 'transactions'));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
+    
+    const allTransactions = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
+    
+    // Ordenar no cliente por data (mais recente primeiro) e limitar
+    const sortedTransactions = allTransactions
+      .sort((a, b) => {
+        const dateA = a.date instanceof Date ? a.date : a.date.toDate();
+        const dateB = b.date instanceof Date ? b.date : b.date.toDate();
+        return dateB.getTime() - dateA.getTime();
+      })
+      .slice(0, 1000); // Limitar para performance
+    
+    return sortedTransactions;
   } catch (error) {
     console.error('Erro ao buscar todas as transações:', error);
     throw error;
