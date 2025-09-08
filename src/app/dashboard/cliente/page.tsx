@@ -95,9 +95,9 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
     if (data) setUserData(data);
   }, []);
 
-  const fetchTransactions = useCallback(async (uid: string) => {
+  const fetchTransactions = useCallback(async (uid: string, userType?: string) => {
     // Para clientes, buscar entregas do mês atual pelo clientId
-    if (userData?.userType === 'cliente') {
+    if (userType === 'cliente') {
       const clientDeliveries = await getCurrentMonthDeliveriesByClient(uid);
       setTransactions(clientDeliveries);
     } else {
@@ -105,15 +105,18 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
       console.warn("Tipo de usuário não é cliente no dashboard cliente");
       setTransactions([]);
     }
-  }, [userData?.userType]);
+  }, []);
 
   const refreshAllData = useCallback(async (uid: string) => {
     setLoading(true);
     try {
       // Primeiro carregar os dados do usuário
-      await fetchUserData(uid);
-      // Depois carregar as transações (que depende do userData)
-      await fetchTransactions(uid);
+      const userData = await getUserDocument(uid);
+      if (userData) {
+        setUserData(userData);
+        // Depois carregar as transações com o tipo de usuário
+        await fetchTransactions(uid, userData.userType);
+      }
     } catch (error) {
       console.error("Erro ao carregar dados do dashboard:", error);
       toast({
@@ -124,7 +127,7 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
     } finally {
       setLoading(false);
     }
-  }, [fetchUserData, fetchTransactions, toast]);
+  }, [fetchTransactions, toast]);
 
   const handleDeleteDelivery = async (deliveryId: string) => {
     try {

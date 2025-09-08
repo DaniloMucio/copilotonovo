@@ -119,9 +119,9 @@ export function DeleteAccountForm({ user, userData, onFormSubmit }: DeleteAccoun
                 <h4 className="text-sm font-medium text-red-800">
                   ⚠️ Ação Irreversível
                 </h4>
-                <p className="text-sm text-red-700">
+                <div className="text-sm text-red-700">
                   Esta ação excluirá permanentemente sua conta e todos os dados associados, incluindo:
-                </p>
+                </div>
                 <ul className="text-sm text-red-700 list-disc list-inside space-y-1">
                   <li>Seu perfil e informações pessoais</li>
                   <li>Todas as transações e registros financeiros</li>
@@ -137,9 +137,9 @@ export function DeleteAccountForm({ user, userData, onFormSubmit }: DeleteAccoun
                   )}
                   <li>Notificações e configurações</li>
                 </ul>
-                <p className="text-sm font-medium text-red-800">
+                <div className="text-sm font-medium text-red-800">
                   Esta ação não pode ser desfeita!
-                </p>
+                </div>
               </div>
             </div>
           </div>
@@ -195,15 +195,15 @@ export function DeleteAccountForm({ user, userData, onFormSubmit }: DeleteAccoun
               <span>Confirmar Exclusão da Conta</span>
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3">
-              <p>
+              <div>
                 Você está prestes a excluir permanentemente sua conta e todos os dados associados.
-              </p>
-              <p className="font-medium text-red-600">
+              </div>
+              <div className="font-medium text-red-600">
                 Esta ação é irreversível e não pode ser desfeita.
-              </p>
-              <p>
+              </div>
+              <div>
                 Tem certeza absoluta de que deseja continuar?
-              </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

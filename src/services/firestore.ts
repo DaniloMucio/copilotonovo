@@ -219,73 +219,106 @@ export const deleteUserData = async (userId: string, userType: 'motorista' | 'cl
         let deletedCount = 0;
 
         // 1. Excluir dados do usuário
-        const userRef = doc(db, "users", userId);
-        batch.delete(userRef);
-        deletedCount++;
-        console.log(`✅ Marcado para exclusão: documento do usuário`);
+        try {
+            const userRef = doc(db, "users", userId);
+            batch.delete(userRef);
+            deletedCount++;
+            console.log(`✅ Marcado para exclusão: documento do usuário`);
+        } catch (error) {
+            console.warn("⚠️ Erro ao marcar usuário para exclusão:", error);
+        }
 
         // 2. Excluir transações do usuário
-        const transactionsQuery = query(collection(db, "transactions"), where("userId", "==", userId));
-        const transactionsSnapshot = await getDocs(transactionsQuery);
-        transactionsSnapshot.forEach((doc) => {
-            batch.delete(doc.ref);
-            deletedCount++;
-        });
-        console.log(`✅ Marcado para exclusão: ${transactionsSnapshot.size} transações`);
-
-        // 3. Excluir agendamentos (se for cliente)
-        if (userType === 'cliente') {
-            const appointmentsQuery = query(collection(db, "appointments"), where("clientId", "==", userId));
-            const appointmentsSnapshot = await getDocs(appointmentsQuery);
-            appointmentsSnapshot.forEach((doc) => {
+        try {
+            const transactionsQuery = query(collection(db, "transactions"), where("userId", "==", userId));
+            const transactionsSnapshot = await getDocs(transactionsQuery);
+            transactionsSnapshot.forEach((doc) => {
                 batch.delete(doc.ref);
                 deletedCount++;
             });
-            console.log(`✅ Marcado para exclusão: ${appointmentsSnapshot.size} agendamentos`);
+            console.log(`✅ Marcado para exclusão: ${transactionsSnapshot.size} transações`);
+        } catch (error) {
+            console.warn("⚠️ Erro ao buscar transações:", error);
+        }
+
+        // 3. Excluir agendamentos (se for cliente)
+        if (userType === 'cliente') {
+            try {
+                const appointmentsQuery = query(collection(db, "appointments"), where("clientId", "==", userId));
+                const appointmentsSnapshot = await getDocs(appointmentsQuery);
+                appointmentsSnapshot.forEach((doc) => {
+                    batch.delete(doc.ref);
+                    deletedCount++;
+                });
+                console.log(`✅ Marcado para exclusão: ${appointmentsSnapshot.size} agendamentos`);
+            } catch (error) {
+                console.warn("⚠️ Erro ao buscar agendamentos:", error);
+            }
         }
 
         // 4. Excluir jornadas de trabalho (se for motorista)
         if (userType === 'motorista') {
-            const shiftsQuery = query(collection(db, "workShifts"), where("userId", "==", userId));
-            const shiftsSnapshot = await getDocs(shiftsQuery);
-            shiftsSnapshot.forEach((doc) => {
-                batch.delete(doc.ref);
-                deletedCount++;
-            });
-            console.log(`✅ Marcado para exclusão: ${shiftsSnapshot.size} jornadas de trabalho`);
+            try {
+                const shiftsQuery = query(collection(db, "workShifts"), where("userId", "==", userId));
+                const shiftsSnapshot = await getDocs(shiftsQuery);
+                shiftsSnapshot.forEach((doc) => {
+                    batch.delete(doc.ref);
+                    deletedCount++;
+                });
+                console.log(`✅ Marcado para exclusão: ${shiftsSnapshot.size} jornadas de trabalho`);
+            } catch (error) {
+                console.warn("⚠️ Erro ao buscar jornadas:", error);
+            }
 
             // 5. Excluir dados de veículos (se for motorista)
-            const vehiclesQuery = query(collection(db, "vehicles"), where("userId", "==", userId));
-            const vehiclesSnapshot = await getDocs(vehiclesQuery);
-            vehiclesSnapshot.forEach((doc) => {
-                batch.delete(doc.ref);
-                deletedCount++;
-            });
-            console.log(`✅ Marcado para exclusão: ${vehiclesSnapshot.size} veículos`);
+            try {
+                const vehiclesQuery = query(collection(db, "vehicles"), where("userId", "==", userId));
+                const vehiclesSnapshot = await getDocs(vehiclesQuery);
+                vehiclesSnapshot.forEach((doc) => {
+                    batch.delete(doc.ref);
+                    deletedCount++;
+                });
+                console.log(`✅ Marcado para exclusão: ${vehiclesSnapshot.size} veículos`);
+            } catch (error) {
+                console.warn("⚠️ Erro ao buscar veículos:", error);
+            }
         }
 
         // 6. Excluir notificações do usuário
-        const notificationsQuery = query(collection(db, "notifications"), where("userId", "==", userId));
-        const notificationsSnapshot = await getDocs(notificationsQuery);
-        notificationsSnapshot.forEach((doc) => {
-            batch.delete(doc.ref);
-            deletedCount++;
-        });
-        console.log(`✅ Marcado para exclusão: ${notificationsSnapshot.size} notificações`);
+        try {
+            const notificationsQuery = query(collection(db, "notifications"), where("userId", "==", userId));
+            const notificationsSnapshot = await getDocs(notificationsQuery);
+            notificationsSnapshot.forEach((doc) => {
+                batch.delete(doc.ref);
+                deletedCount++;
+            });
+            console.log(`✅ Marcado para exclusão: ${notificationsSnapshot.size} notificações`);
+        } catch (error) {
+            console.warn("⚠️ Erro ao buscar notificações:", error);
+        }
 
         // 7. Excluir configurações de notificação
-        const notificationSettingsQuery = query(collection(db, "notificationSettings"), where("userId", "==", userId));
-        const notificationSettingsSnapshot = await getDocs(notificationSettingsQuery);
-        notificationSettingsSnapshot.forEach((doc) => {
-            batch.delete(doc.ref);
-            deletedCount++;
-        });
-        console.log(`✅ Marcado para exclusão: ${notificationSettingsSnapshot.size} configurações de notificação`);
+        try {
+            const notificationSettingsQuery = query(collection(db, "notificationSettings"), where("userId", "==", userId));
+            const notificationSettingsSnapshot = await getDocs(notificationSettingsQuery);
+            notificationSettingsSnapshot.forEach((doc) => {
+                batch.delete(doc.ref);
+                deletedCount++;
+            });
+            console.log(`✅ Marcado para exclusão: ${notificationSettingsSnapshot.size} configurações de notificação`);
+        } catch (error) {
+            console.warn("⚠️ Erro ao buscar configurações de notificação:", error);
+        }
 
         // Executar todas as exclusões em lote
         if (deletedCount > 0) {
-            await batch.commit();
-            console.log(`✅ Exclusão concluída: ${deletedCount} documentos removidos`);
+            try {
+                await batch.commit();
+                console.log(`✅ Exclusão concluída: ${deletedCount} documentos removidos`);
+            } catch (error) {
+                console.error("❌ Erro ao executar batch de exclusão:", error);
+                throw new Error("Não foi possível excluir todos os dados do usuário. Tente novamente.");
+            }
         } else {
             console.log(`ℹ️ Nenhum documento encontrado para exclusão`);
         }

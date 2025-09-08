@@ -126,7 +126,7 @@ export function SettingsManager({ user, userData }: SettingsManagerProps) {
           <TabsTrigger value="appearance" className={isMobile ? 'flex-shrink-0' : ''}>Aparência</TabsTrigger>
           <TabsTrigger value="privacy" className={isMobile ? 'flex-shrink-0' : ''}>Privacidade</TabsTrigger>
           <TabsTrigger value="app" className={isMobile ? 'flex-shrink-0' : ''}>App</TabsTrigger>
-          <TabsTrigger value="danger" className={isMobile ? 'flex-shrink-0' : ''}>Perigo</TabsTrigger>
+          <TabsTrigger value="danger" className={isMobile ? 'flex-shrink-0' : ''}>Conta</TabsTrigger>
         </TabsList>
 
         {/* Aba Perfil */}
@@ -379,13 +379,13 @@ export function SettingsManager({ user, userData }: SettingsManagerProps) {
           </Card>
         </TabsContent>
 
-        {/* Aba Perigo */}
+        {/* Aba Conta */}
         <TabsContent value="danger" className="mt-6">
           <Card className="border-red-200 bg-red-50/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-red-800">
                 <Trash2 className="h-5 w-5" />
-                Zona de Perigo
+                Configurações da Conta
               </CardTitle>
               <CardDescription className="text-red-700">
                 Ações irreversíveis que afetam sua conta
