@@ -2,38 +2,36 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Função auxiliar para verificar se o usuário é administrador
-    function isAdmin() {
-      return request.auth != null && 
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
-    }
 
     // Regras para a coleção 'users'
     match /users/{userId} {
       allow create: if request.auth != null;
-      // Permite que um usuário obtenha seu próprio documento ou administradores vejam qualquer usuário
-      allow get: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      // Permite que um usuário obtenha seu próprio documento
+      allow get: if request.auth != null && request.auth.uid == userId;
       // Permite que usuários autenticados listem (query) outros usuários.
       // A consulta no lado do cliente deve ser segura e filtrar adequadamente (ex: por userType).
       allow list: if request.auth != null;
-      // Permite que usuários atualizem seus próprios dados ou administradores atualizem qualquer usuário
-      allow update: if request.auth != null && (request.auth.uid == userId || isAdmin());
-      // Permite que usuários deletem seus próprios dados ou administradores deletem qualquer usuário
-      allow delete: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      // Permite que usuários atualizem seus próprios dados
+      allow update: if request.auth != null && request.auth.uid == userId;
+      // Permite que usuários deletem seus próprios dados
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Regras especiais para administradores - acesso total aos usuários
+    match /users/{userId} {
+      allow read, write: if request.auth != null && 
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
     }
 
     // Regras para a coleção 'transactions'
     match /transactions/{transactionId} {
       // O motorista pode ler/atualizar/deletar suas transações.
       // O cliente pode ler/atualizar/deletar as transações que ele criou.
-      // Administradores podem ler/atualizar/deletar qualquer transação.
       allow read, update, delete: if request.auth != null && 
                                       (request.auth.uid == resource.data.userId || 
-                                       (resource.data.clientId != null && request.auth.uid == resource.data.clientId) ||
-                                       isAdmin());
-      // Permite que motoristas, clientes e administradores criem transações.
+                                       (resource.data.clientId != null && request.auth.uid == resource.data.clientId));
+      // Permite que motoristas e clientes criem transações.
       allow create: if request.auth != null;
     }
     
@@ -42,23 +40,37 @@ service cloud.firestore {
       allow list: if request.auth != null;
     }
     
+    // Regra especial para administradores - acesso total a todas as transações
+    match /transactions/{transactionId} {
+      allow read, write: if request.auth != null && 
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
+    
     // Regras para a coleção 'workShifts'
     match /workShifts/{shiftId} {
-      // Usuários podem gerenciar suas próprias jornadas ou administradores podem gerenciar qualquer jornada
-      allow read, delete: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
-      allow create, update: if request.auth != null && (request.auth.uid == request.resource.data.userId || isAdmin());
+      // Usuários podem gerenciar suas próprias jornadas
+      allow read, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create, update: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
     
     // Regra para permitir queries (list) na coleção workShifts
     match /workShifts {
       allow list: if request.auth != null;
     }
+    
+    // Regra especial para administradores - acesso total às jornadas
+    match /workShifts/{shiftId} {
+      allow read, write: if request.auth != null && 
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
 
     // REGRAS SEGURAS E FINAIS para a coleção 'appointments'
     match /appointments/{appointmentId} {
       // --- REGRAS DE LEITURA ---
-      // Permite obter um documento específico se o usuário for o dono ou se for administrador.
-      allow get: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      // Permite obter um documento específico se o usuário for o dono.
+      allow get: if request.auth != null && request.auth.uid == resource.data.userId;
       // Permite listar (fazer query) se o usuário estiver autenticado.
       // A segurança da consulta é reforçada pelo código da aplicação.
       allow list: if request.auth != null;
@@ -66,10 +78,17 @@ service cloud.firestore {
       // --- REGRAS DE ESCRITA ---
       // Permite criar um novo agendamento se o usuário estiver autenticado e for o dono.
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      // Permite atualizar um agendamento se o usuário for o dono ou se for administrador.
-      allow update: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
-      // Permite apagar um agendamento se o usuário for o dono ou se for administrador.
-      allow delete: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      // Permite atualizar um agendamento se o usuário for o dono.
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Permite apagar um agendamento se o usuário for o dono.
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    
+    // Regra especial para administradores - acesso total aos agendamentos
+    match /appointments/{appointmentId} {
+      allow read, write: if request.auth != null && 
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
     }
 
     // Regras para a coleção 'configurations'
@@ -79,74 +98,123 @@ service cloud.firestore {
 
     // Regras para a coleção 'vehicles'
     match /vehicles/{vehicleId} {
-      // Usuários podem gerenciar seus próprios veículos ou administradores podem gerenciar qualquer veículo
-      allow read, write: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
-      allow create: if request.auth != null && (request.auth.uid == request.resource.data.userId || isAdmin());
+      // Usuários podem gerenciar seus próprios veículos
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
     
     // Regra para permitir queries (list) na coleção vehicles
     match /vehicles {
       allow list: if request.auth != null;
     }
+    
+    // Regra especial para administradores - acesso total aos veículos
+    match /vehicles/{vehicleId} {
+      allow read, write: if request.auth != null && 
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
 
     // Regras para a coleção 'maintenance'
     match /maintenance/{maintenanceId} {
-      // Usuários podem gerenciar suas próprias manutenções ou administradores podem gerenciar qualquer manutenção
-      allow read, write: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
-      allow create: if request.auth != null && (request.auth.uid == request.resource.data.userId || isAdmin());
+      // Usuários podem gerenciar suas próprias manutenções
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
     
     // Regra para permitir queries (list) na coleção maintenance
     match /maintenance {
       allow list: if request.auth != null;
     }
+    
+    // Regra especial para administradores - acesso total às manutenções
+    match /maintenance/{maintenanceId} {
+      allow read, write: if request.auth != null && 
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
 
     // Regras para a coleção 'fuel'
     match /fuel/{fuelId} {
-      // Usuários podem gerenciar seus próprios combustíveis ou administradores podem gerenciar qualquer combustível
-      allow read, write: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
-      allow create: if request.auth != null && (request.auth.uid == request.resource.data.userId || isAdmin());
+      // Usuários podem gerenciar seus próprios combustíveis
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
     
     // Regra para permitir queries (list) na coleção fuel
     match /fuel {
       allow list: if request.auth != null;
     }
+    
+    // Regra especial para administradores - acesso total aos combustíveis
+    match /fuel/{fuelId} {
+      allow read, write: if request.auth != null && 
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
 
     // Regras para notificações
     match /notifications/{notificationId} {
-      // Usuários podem gerenciar suas próprias notificações ou administradores podem gerenciar qualquer notificação
-      allow read, write: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
-      allow create: if request.auth != null && (request.auth.uid == request.resource.data.userId || isAdmin());
+      // Usuários podem gerenciar suas próprias notificações
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
     
     // Regra para permitir queries (list) na coleção notifications
     match /notifications {
       allow list: if request.auth != null;
     }
+    
+    // Regra especial para administradores - acesso total às notificações
+    match /notifications/{notificationId} {
+      allow read, write: if request.auth != null && 
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
 
     // Regras para configurações de notificação
     match /notificationSettings/{userId} {
-      // Usuários podem gerenciar suas próprias configurações ou administradores podem gerenciar qualquer configuração
-      allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      // Usuários podem gerenciar suas próprias configurações
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Regra especial para administradores - acesso total às configurações
+    match /notificationSettings/{userId} {
+      allow read, write: if request.auth != null && 
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
     }
 
     // Regras para tokens FCM
     match /fcmTokens/{userId} {
-      // Usuários podem gerenciar seus próprios tokens ou administradores podem gerenciar qualquer token
-      allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      // Usuários podem gerenciar seus próprios tokens
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Regra especial para administradores - acesso total aos tokens
+    match /fcmTokens/{userId} {
+      allow read, write: if request.auth != null && 
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
     }
 
     // Regras para a coleção 'recipients'
     match /recipients/{recipientId} {
-      // Usuários podem gerenciar seus próprios destinatários ou administradores podem gerenciar qualquer destinatário
-      allow read, write: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
-      allow create: if request.auth != null && (request.auth.uid == request.resource.data.userId || isAdmin());
+      // Usuários podem gerenciar seus próprios destinatários
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
     
     // Regra para permitir queries (list) na coleção recipients
     match /recipients {
       allow list: if request.auth != null;
+    }
+    
+    // Regra especial para administradores - acesso total aos destinatários
+    match /recipients/{recipientId} {
+      allow read, write: if request.auth != null && 
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
     }
   }
 }
