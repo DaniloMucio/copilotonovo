@@ -2,26 +2,38 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Função auxiliar para verificar se o usuário é administrador
+    function isAdmin() {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
 
     // Regras para a coleção 'users'
     match /users/{userId} {
       allow create: if request.auth != null;
-      // Permite que um usuário obtenha seu próprio documento.
-      allow get: if request.auth != null && request.auth.uid == userId;
+      // Permite que um usuário obtenha seu próprio documento ou administradores vejam qualquer usuário
+      allow get: if request.auth != null && (request.auth.uid == userId || isAdmin());
       // Permite que usuários autenticados listem (query) outros usuários.
       // A consulta no lado do cliente deve ser segura e filtrar adequadamente (ex: por userType).
       allow list: if request.auth != null;
-      allow update, delete: if request.auth != null && request.auth.uid == userId;
+      // Permite que usuários atualizem seus próprios dados ou administradores atualizem qualquer usuário
+      allow update: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      // Permite que usuários deletem seus próprios dados ou administradores deletem qualquer usuário
+      allow delete: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
 
     // Regras para a coleção 'transactions'
     match /transactions/{transactionId} {
       // O motorista pode ler/atualizar/deletar suas transações.
       // O cliente pode ler/atualizar/deletar as transações que ele criou.
+      // Administradores podem ler/atualizar/deletar qualquer transação.
       allow read, update, delete: if request.auth != null && 
                                       (request.auth.uid == resource.data.userId || 
-                                       (resource.data.clientId != null && request.auth.uid == resource.data.clientId));
-      // Permite que motoristas e clientes criem transações.
+                                       (resource.data.clientId != null && request.auth.uid == resource.data.clientId) ||
+                                       isAdmin());
+      // Permite que motoristas, clientes e administradores criem transações.
       allow create: if request.auth != null;
     }
     
@@ -32,15 +44,21 @@ service cloud.firestore {
     
     // Regras para a coleção 'workShifts'
     match /workShifts/{shiftId} {
-      allow read, delete: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create, update: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Usuários podem gerenciar suas próprias jornadas ou administradores podem gerenciar qualquer jornada
+      allow read, delete: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      allow create, update: if request.auth != null && (request.auth.uid == request.resource.data.userId || isAdmin());
+    }
+    
+    // Regra para permitir queries (list) na coleção workShifts
+    match /workShifts {
+      allow list: if request.auth != null;
     }
 
     // REGRAS SEGURAS E FINAIS para a coleção 'appointments'
     match /appointments/{appointmentId} {
       // --- REGRAS DE LEITURA ---
-      // Permite obter um documento específico se o usuário for o dono.
-      allow get: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Permite obter um documento específico se o usuário for o dono ou se for administrador.
+      allow get: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
       // Permite listar (fazer query) se o usuário estiver autenticado.
       // A segurança da consulta é reforçada pelo código da aplicação.
       allow list: if request.auth != null;
@@ -48,10 +66,10 @@ service cloud.firestore {
       // --- REGRAS DE ESCRITA ---
       // Permite criar um novo agendamento se o usuário estiver autenticado e for o dono.
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      // Permite atualizar um agendamento se o usuário for o dono.
-      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
-      // Permite apagar um agendamento se o usuário for o dono.
-      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Permite atualizar um agendamento se o usuário for o dono ou se for administrador.
+      allow update: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      // Permite apagar um agendamento se o usuário for o dono ou se for administrador.
+      allow delete: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
     }
 
     // Regras para a coleção 'configurations'
@@ -61,8 +79,9 @@ service cloud.firestore {
 
     // Regras para a coleção 'vehicles'
     match /vehicles/{vehicleId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Usuários podem gerenciar seus próprios veículos ou administradores podem gerenciar qualquer veículo
+      allow read, write: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      allow create: if request.auth != null && (request.auth.uid == request.resource.data.userId || isAdmin());
     }
     
     // Regra para permitir queries (list) na coleção vehicles
@@ -72,8 +91,9 @@ service cloud.firestore {
 
     // Regras para a coleção 'maintenance'
     match /maintenance/{maintenanceId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Usuários podem gerenciar suas próprias manutenções ou administradores podem gerenciar qualquer manutenção
+      allow read, write: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      allow create: if request.auth != null && (request.auth.uid == request.resource.data.userId || isAdmin());
     }
     
     // Regra para permitir queries (list) na coleção maintenance
@@ -83,8 +103,9 @@ service cloud.firestore {
 
     // Regras para a coleção 'fuel'
     match /fuel/{fuelId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Usuários podem gerenciar seus próprios combustíveis ou administradores podem gerenciar qualquer combustível
+      allow read, write: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      allow create: if request.auth != null && (request.auth.uid == request.resource.data.userId || isAdmin());
     }
     
     // Regra para permitir queries (list) na coleção fuel
@@ -94,8 +115,9 @@ service cloud.firestore {
 
     // Regras para notificações
     match /notifications/{notificationId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Usuários podem gerenciar suas próprias notificações ou administradores podem gerenciar qualquer notificação
+      allow read, write: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      allow create: if request.auth != null && (request.auth.uid == request.resource.data.userId || isAdmin());
     }
     
     // Regra para permitir queries (list) na coleção notifications
@@ -105,18 +127,21 @@ service cloud.firestore {
 
     // Regras para configurações de notificação
     match /notificationSettings/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Usuários podem gerenciar suas próprias configurações ou administradores podem gerenciar qualquer configuração
+      allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
 
     // Regras para tokens FCM
     match /fcmTokens/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Usuários podem gerenciar seus próprios tokens ou administradores podem gerenciar qualquer token
+      allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
 
     // Regras para a coleção 'recipients'
     match /recipients/{recipientId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Usuários podem gerenciar seus próprios destinatários ou administradores podem gerenciar qualquer destinatário
+      allow read, write: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      allow create: if request.auth != null && (request.auth.uid == request.resource.data.userId || isAdmin());
     }
     
     // Regra para permitir queries (list) na coleção recipients
