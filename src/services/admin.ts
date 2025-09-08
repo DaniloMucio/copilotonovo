@@ -5,12 +5,9 @@ import {
   where, 
   orderBy, 
   limit,
-  Timestamp,
-  startOfDay,
-  endOfDay,
-  startOfMonth,
-  endOfMonth
+  Timestamp
 } from 'firebase/firestore';
+import { startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns';
 import { db } from '@/lib/firebase';
 import { UserData } from './firestore';
 import { Transaction } from './transactions';

@@ -28,6 +28,7 @@ export function AdminGuard({ children, fallback }: AdminGuardProps) {
 
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [isAdmin, loading, router]);
 
   if (loading) {
