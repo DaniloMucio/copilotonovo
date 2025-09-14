@@ -5,26 +5,24 @@ service cloud.firestore {
 
     // Regras para a coleção 'users'
     match /users/{userId} {
-      allow create: if request.auth != null;
+      // Permite que usuários criem seus próprios documentos
+      allow create: if request.auth != null && request.auth.uid == userId;
       // Permite que um usuário obtenha seu próprio documento
       allow get: if request.auth != null && request.auth.uid == userId;
       // Permite que usuários atualizem seus próprios dados
       allow update: if request.auth != null && request.auth.uid == userId;
       // Permite que usuários deletem seus próprios dados
       allow delete: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Regra para permitir listagem de usuários para administradores e clientes
-    // Clientes podem buscar motoristas online, administradores têm acesso total
-    match /users {
-      allow list: if request.auth != null;
-    }
-    
-    // Regras especiais para administradores - acesso total aos usuários
-    match /users/{userId} {
+      // Regras especiais para administradores - acesso total aos usuários
       allow read, write: if request.auth != null && 
                             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
                             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
+    
+    // Regra para permitir listagem de usuários para todos os usuários autenticados
+    // Necessário para buscar motoristas online
+    match /users {
+      allow list: if request.auth != null;
     }
 
     // Regras para a coleção 'transactions'
