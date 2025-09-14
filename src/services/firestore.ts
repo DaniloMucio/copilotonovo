@@ -13,6 +13,11 @@ export interface UserData {
   phone?: string;
   companyName?: string;
   isOnline?: boolean;
+  isActive?: boolean; // Flag para indicar se a conta está ativa
+  tempPassword?: string; // Senha temporária para usuários criados pelo admin
+  needsAuthSetup?: boolean; // Flag para indicar que precisa configurar autenticação
+  createdAt?: Date; // Data de criação do usuário
+  updatedAt?: Date; // Data da última atualização
 }
 
 /**
@@ -68,6 +73,42 @@ export const getUserDocument = async (userId: string): Promise<UserData | null> 
 };
 
 /**
+ * Cria dados básicos para um usuário que não possui documento no Firestore.
+ * @param userId - O ID do usuário.
+ * @param userType - O tipo do usuário.
+ * @param displayName - Nome do usuário.
+ * @param email - Email do usuário.
+ */
+export const createBasicUserData = async (
+    userId: string, 
+    userType: 'motorista' | 'cliente' | 'admin',
+    displayName: string,
+    email: string
+): Promise<UserData> => {
+    try {
+        console.log(`🔄 Criando dados básicos para usuário ${userId} (${userType})`);
+        
+        const basicUserData: UserData = {
+            displayName,
+            email,
+            userType,
+            isOnline: false,
+            isActive: true,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        
+        await createUserDocument(userId, basicUserData);
+        console.log(`✅ Dados básicos criados para usuário ${userId}`);
+        
+        return basicUserData;
+    } catch (error) {
+        console.error("❌ Erro ao criar dados básicos do usuário:", error);
+        throw error;
+    }
+};
+
+/**
  * Atualiza os dados de um usuário no Firestore.
  * @param user - O objeto do usuário do Firebase Auth.
  * @param data - Os dados a serem atualizados.
@@ -118,19 +159,71 @@ export const getDrivers = async (): Promise<(UserData & { uid: string })[]> => {
  */
 export const getOnlineDrivers = async (): Promise<(UserData & { uid: string })[]> => {
     try {
-        const q = query(
+        console.log("🔍 Buscando motoristas online...");
+        
+        // Verificar se o usuário atual tem documento no Firestore
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            console.log("⚠️ Usuário não autenticado");
+            return [];
+        }
+        
+        // Verificar se o usuário tem documento no Firestore
+        const userDoc = await getUserDocument(currentUser.uid);
+        if (!userDoc) {
+            console.log("⚠️ Usuário não tem documento no Firestore, criando dados básicos...");
+            // Criar dados básicos para o usuário
+            const basicUserData = await createBasicUserData(
+                currentUser.uid,
+                'cliente', // Assumir cliente por padrão
+                currentUser.displayName || 'Usuário',
+                currentUser.email || ''
+            );
+            console.log("✅ Dados básicos criados para o usuário");
+        }
+        
+        // Buscar todos os motoristas
+        const allDriversQuery = query(
             collection(db, "users"), 
-            where("userType", "==", "motorista"),
-            where("isOnline", "==", true)
+            where("userType", "==", "motorista")
         );
-        const querySnapshot = await getDocs(q);
-        const drivers = querySnapshot.docs.map(doc => ({
+        const allDriversSnapshot = await getDocs(allDriversQuery);
+        
+        console.log(`📊 Total de motoristas encontrados: ${allDriversSnapshot.size}`);
+        
+        // Debug: mostrar todos os motoristas e seus status
+        const allDrivers = allDriversSnapshot.docs.map(doc => ({
             uid: doc.id,
             ...doc.data()
         })) as (UserData & { uid: string })[];
-        return drivers;
+        
+        console.log("🔍 Todos os motoristas encontrados:", allDrivers.map(driver => ({
+            uid: driver.uid,
+            displayName: driver.displayName,
+            isOnline: driver.isOnline,
+            userType: driver.userType
+        })));
+        
+        // Filtrar apenas os que estão online
+        const onlineDrivers = allDrivers.filter(driver => driver.isOnline === true);
+        
+        console.log(`✅ Motoristas online encontrados: ${onlineDrivers.length}`);
+        console.log("🔍 Motoristas online:", onlineDrivers.map(driver => ({
+            uid: driver.uid,
+            displayName: driver.displayName,
+            isOnline: driver.isOnline
+        })));
+        
+        return onlineDrivers;
     } catch (error) {
-        console.error("Erro ao buscar motoristas online:", error);
+        console.error("❌ Erro ao buscar motoristas online:", error);
+        
+        // Se o erro for de permissão, retornar array vazio
+        if (error instanceof Error && error.message.includes('permission')) {
+            console.log("⚠️ Erro de permissão detectado, retornando lista vazia");
+            return [];
+        }
+        
         throw error;
     }
 }
@@ -161,6 +254,45 @@ export const updateDriverStatus = async (userId: string, isOnline: boolean): Pro
         }
     } catch (error) {
         console.error("Erro ao atualizar status do motorista:", error);
+        throw error;
+    }
+}
+
+/**
+ * Inicializa o campo isOnline para usuários que não possuem este campo.
+ * Esta função deve ser executada apenas por administradores.
+ */
+export const initializeIsOnlineField = async (): Promise<void> => {
+    try {
+        console.log("🔄 Inicializando campo isOnline para usuários existentes...");
+        
+        // Buscar todos os usuários
+        const usersQuery = query(collection(db, "users"));
+        const usersSnapshot = await getDocs(usersQuery);
+        
+        const batch = writeBatch(db);
+        let updateCount = 0;
+        
+        usersSnapshot.docs.forEach(doc => {
+            const data = doc.data();
+            
+            // Se o campo isOnline não existir, inicializar como false
+            if (data.isOnline === undefined) {
+                batch.update(doc.ref, { isOnline: false });
+                updateCount++;
+                console.log(`📝 Marcado para atualização: ${doc.id} (${data.userType})`);
+            }
+        });
+        
+        if (updateCount > 0) {
+            await batch.commit();
+            console.log(`✅ Campo isOnline inicializado para ${updateCount} usuários`);
+        } else {
+            console.log("ℹ️ Todos os usuários já possuem o campo isOnline");
+        }
+        
+    } catch (error) {
+        console.error("❌ Erro ao inicializar campo isOnline:", error);
         throw error;
     }
 }
