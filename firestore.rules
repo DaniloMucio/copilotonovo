@@ -8,13 +8,19 @@ service cloud.firestore {
       allow create: if request.auth != null;
       // Permite que um usuário obtenha seu próprio documento
       allow get: if request.auth != null && request.auth.uid == userId;
-      // Permite que usuários autenticados listem (query) outros usuários.
-      // A consulta no lado do cliente deve ser segura e filtrar adequadamente (ex: por userType).
-      allow list: if request.auth != null;
       // Permite que usuários atualizem seus próprios dados
       allow update: if request.auth != null && request.auth.uid == userId;
       // Permite que usuários deletem seus próprios dados
       allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Regra para permitir listagem de usuários para administradores e clientes
+    // Clientes podem buscar motoristas online, administradores têm acesso total
+    match /users {
+      allow list: if request.auth != null && 
+                    exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                    (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin' ||
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'cliente');
     }
     
     // Regras especiais para administradores - acesso total aos usuários
@@ -212,6 +218,73 @@ service cloud.firestore {
     
     // Regra especial para administradores - acesso total aos destinatários
     match /recipients/{recipientId} {
+      allow read, write: if request.auth != null && 
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
+
+    // Regras para a coleção 'plans'
+    match /plans/{planId} {
+      // Todos os usuários autenticados podem ler os planos
+      allow read: if request.auth != null;
+      // Apenas administradores podem criar, atualizar ou deletar planos
+      allow create, update, delete: if request.auth != null && 
+                                      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
+    
+    // Regra para permitir listagem de planos
+    match /plans {
+      allow list: if request.auth != null;
+    }
+
+    // Regras para a coleção 'subscriptions'
+    match /subscriptions/{subscriptionId} {
+      // Usuários podem ler apenas suas próprias assinaturas
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Usuários podem criar suas próprias assinaturas
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Usuários podem atualizar suas próprias assinaturas
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Apenas administradores podem deletar assinaturas
+      allow delete: if request.auth != null && 
+                      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
+    
+    // Regra para permitir listagem de assinaturas
+    match /subscriptions {
+      allow list: if request.auth != null;
+    }
+    
+    // Regra especial para administradores - acesso total às assinaturas
+    match /subscriptions/{subscriptionId} {
+      allow read, write: if request.auth != null && 
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
+
+    // Regras para a coleção 'usage'
+    match /usage/{usageId} {
+      // Usuários podem ler apenas seus próprios dados de uso
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Usuários podem criar seus próprios dados de uso
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Usuários podem atualizar seus próprios dados de uso
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Apenas administradores podem deletar dados de uso
+      allow delete: if request.auth != null && 
+                      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
+    
+    // Regra para permitir listagem de dados de uso
+    match /usage {
+      allow list: if request.auth != null;
+    }
+    
+    // Regra especial para administradores - acesso total aos dados de uso
+    match /usage/{usageId} {
       allow read, write: if request.auth != null && 
                             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
                             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';

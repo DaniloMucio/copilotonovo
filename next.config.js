@@ -20,7 +20,7 @@ const withPWA = require('@ducanh2912/next-pwa').default({
       },
     },
     {
-      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
       handler: 'CacheFirst',
       options: {
         cacheName: 'images',
@@ -36,6 +36,14 @@ const withPWA = require('@ducanh2912/next-pwa').default({
       options: {
         cacheName: 'static-resources',
       },
+    },
+    {
+      urlPattern: /manifest\.json$/,
+      handler: 'NetworkOnly',
+    },
+    {
+      urlPattern: /favicon\.ico$/,
+      handler: 'NetworkOnly',
     },
   ],
 });
