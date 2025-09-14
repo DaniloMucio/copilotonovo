@@ -17,10 +17,7 @@ service cloud.firestore {
     // Regra para permitir listagem de usuários para administradores e clientes
     // Clientes podem buscar motoristas online, administradores têm acesso total
     match /users {
-      allow list: if request.auth != null && 
-                    exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-                    (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin' ||
-                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'cliente');
+      allow list: if request.auth != null;
     }
     
     // Regras especiais para administradores - acesso total aos usuários
