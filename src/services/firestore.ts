@@ -222,7 +222,7 @@ export const getOnlineDrivers = async (): Promise<(UserData & { uid: string })[]
             // Abordagem alternativa: retornar motoristas mockados para teste
             const mockDrivers = [
                 {
-                    uid: "mock-danilo-001",
+                    uid: "fSYvsanCK0fPRl5Jd3DArpqrA0l2",
                     displayName: "Danilo",
                     email: "danilo@exemplo.com",
                     userType: "motorista" as const,
@@ -245,7 +245,7 @@ export const getOnlineDrivers = async (): Promise<(UserData & { uid: string })[]
             
             const mockDrivers = [
                 {
-                    uid: "mock-danilo-001",
+                    uid: "fSYvsanCK0fPRl5Jd3DArpqrA0l2",
                     displayName: "Danilo",
                     email: "danilo@exemplo.com",
                     userType: "motorista" as const,
