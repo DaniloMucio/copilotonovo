@@ -5,7 +5,12 @@ import {
   where, 
   orderBy, 
   limit,
-  Timestamp
+  Timestamp,
+  doc,
+  updateDoc,
+  deleteDoc,
+  addDoc,
+  writeBatch
 } from 'firebase/firestore';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns';
 import { db } from '@/lib/firebase';
@@ -85,8 +90,21 @@ export const getAdminStats = async (): Promise<AdminStats> => {
     // Filtrar entregas
     const deliveries = transactions.filter(t => t.category === 'Entrega');
     const totalDeliveries = deliveries.length;
+    
+    // Debug: verificar status das entregas
+    console.log('🔍 Debug - Total de transações:', transactions.length);
+    console.log('🔍 Debug - Total de entregas:', deliveries.length);
+    console.log('🔍 Debug - Status das entregas:', deliveries.map(d => ({
+      id: d.id,
+      status: d.deliveryStatus,
+      category: d.category
+    })));
+    
     const pendingDeliveries = deliveries.filter(d => d.deliveryStatus === 'Pendente').length;
     const completedDeliveries = deliveries.filter(d => d.deliveryStatus === 'Entregue').length;
+    
+    console.log('🔍 Debug - Entregas pendentes:', pendingDeliveries);
+    console.log('🔍 Debug - Entregas concluídas:', completedDeliveries);
 
     // Calcular métricas financeiras
     const revenueTransactions = transactions.filter(t => t.type === 'receita');
@@ -206,6 +224,123 @@ export const getDeliveryStats = async (): Promise<DeliveryStats> => {
     };
   } catch (error) {
     console.error('Erro ao buscar estatísticas de entregas:', error);
+    throw error;
+  }
+};
+
+/**
+ * Busca entregas pendentes com detalhes
+ */
+export const getPendingDeliveries = async (): Promise<Transaction[]> => {
+  try {
+    const transactionsSnapshot = await getDocs(collection(db, 'transactions'));
+    const transactions = transactionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
+    
+    const pendingDeliveries = transactions.filter(t => 
+      t.category === 'Entrega' && t.deliveryStatus === 'Pendente'
+    );
+    
+    console.log('🔍 Debug - Entregas pendentes encontradas:', pendingDeliveries.length);
+    console.log('🔍 Debug - Detalhes das entregas pendentes:', pendingDeliveries.map(d => ({
+      id: d.id,
+      status: d.deliveryStatus,
+      description: d.description,
+      amount: d.amount,
+      date: d.date
+    })));
+    
+    return pendingDeliveries;
+  } catch (error) {
+    console.error('Erro ao buscar entregas pendentes:', error);
+    throw error;
+  }
+};
+
+/**
+ * Atualiza o status de uma entrega
+ */
+export const updateDeliveryStatus = async (deliveryId: string, newStatus: string): Promise<void> => {
+  try {
+    const deliveryRef = doc(db, 'transactions', deliveryId);
+    await updateDoc(deliveryRef, {
+      deliveryStatus: newStatus,
+      updatedAt: new Date()
+    });
+    
+    console.log(`✅ Status da entrega ${deliveryId} atualizado para: ${newStatus}`);
+  } catch (error) {
+    console.error('Erro ao atualizar status da entrega:', error);
+    throw error;
+  }
+};
+
+/**
+ * Exclui uma entrega
+ */
+export const deleteDelivery = async (deliveryId: string): Promise<void> => {
+  try {
+    const deliveryRef = doc(db, 'transactions', deliveryId);
+    await deleteDoc(deliveryRef);
+    
+    console.log(`✅ Entrega ${deliveryId} excluída com sucesso`);
+  } catch (error) {
+    console.error('Erro ao excluir entrega:', error);
+    throw error;
+  }
+};
+
+/**
+ * Busca entregas em andamento
+ */
+export const getInProgressDeliveries = async (): Promise<Transaction[]> => {
+  try {
+    const transactionsSnapshot = await getDocs(collection(db, 'transactions'));
+    const transactions = transactionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
+    
+    const inProgressDeliveries = transactions.filter(t => 
+      t.category === 'Entrega' && t.deliveryStatus === 'A caminho'
+    );
+    
+    console.log('🔍 Debug - Entregas em andamento encontradas:', inProgressDeliveries.length);
+    console.log('🔍 Debug - Detalhes das entregas em andamento:', inProgressDeliveries.map(d => ({
+      id: d.id,
+      status: d.deliveryStatus,
+      description: d.description,
+      amount: d.amount,
+      date: d.date
+    })));
+    
+    return inProgressDeliveries;
+  } catch (error) {
+    console.error('Erro ao buscar entregas em andamento:', error);
+    throw error;
+  }
+};
+
+/**
+ * Busca entregas concluídas
+ */
+export const getCompletedDeliveries = async (): Promise<Transaction[]> => {
+  try {
+    const transactionsSnapshot = await getDocs(collection(db, 'transactions'));
+    const transactions = transactionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
+    
+    const completedDeliveries = transactions.filter(t => 
+      t.category === 'Entrega' && t.deliveryStatus === 'Entregue'
+    );
+    
+    console.log('🔍 Debug - Entregas concluídas encontradas:', completedDeliveries.length);
+    console.log('🔍 Debug - Detalhes das entregas concluídas:', completedDeliveries.map(d => ({
+      id: d.id,
+      status: d.deliveryStatus,
+      description: d.description,
+      amount: d.amount,
+      date: d.date
+    })));
+    
+    return completedDeliveries;
+  } catch (error) {
+    console.error('Erro ao buscar entregas concluídas:', error);
     throw error;
   }
 };
@@ -394,5 +529,222 @@ export const getUserAdminData = async (userId: string): Promise<{
   } catch (error) {
     console.error('Erro ao buscar dados administrativos do usuário:', error);
     throw error;
+  }
+};
+
+/**
+ * Atualiza dados de um usuário (função para administradores)
+ */
+export const updateUserByAdmin = async (userId: string, updateData: Partial<UserData>): Promise<void> => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    
+    // Adicionar timestamp de atualização
+    const dataWithTimestamp = {
+      ...updateData,
+      updatedAt: new Date(),
+    };
+    
+    await updateDoc(userRef, dataWithTimestamp);
+    
+    console.log(`✅ Usuário ${userId} atualizado com sucesso`);
+  } catch (error) {
+    console.error('❌ Erro ao atualizar usuário:', error);
+    throw new Error('Não foi possível atualizar os dados do usuário. Tente novamente.');
+  }
+};
+
+/**
+ * EXCLUSÃO COMPLETA DE USUÁRIO POR ADMINISTRADOR
+ * Remove TODOS os dados relacionados ao usuário do sistema.
+ * Após esta exclusão, o email poderá ser reutilizado para criar uma nova conta.
+ */
+export const deleteUserByAdmin = async (userId: string, userType: 'motorista' | 'cliente' | 'admin'): Promise<{
+  success: boolean;
+  deletedCount: number;
+  errors: string[];
+  firebaseAuthDeleted?: boolean;
+}> => {
+  try {
+    console.log(`🗑️ ADMIN: Iniciando exclusão completa do usuário ${userId} (${userType})`);
+    
+    // Importar a função do backend (Firebase Functions)
+    const { httpsCallable } = await import('firebase/functions');
+    const { getFunctions } = await import('firebase/functions');
+    const { app } = await import('@/lib/firebase');
+    
+    const functions = getFunctions(app);
+    const deleteUserCompletely = httpsCallable(functions, 'deleteUserCompletely');
+    
+    console.log(`🚀 ADMIN: Chamando função do backend para exclusão completa...`);
+    
+    // Chamar a função do backend que usa Admin SDK
+    const result = await deleteUserCompletely({
+      userId,
+      userType
+    });
+    
+    const data = result.data as {
+      success: boolean;
+      deletedCount: number;
+      errors: string[];
+      firebaseAuthDeleted: boolean;
+    };
+    
+    if (data.success) {
+      console.log(`✅ ADMIN: Usuário ${userId} excluído completamente - ${data.deletedCount} documentos removidos`);
+      console.log(`🔐 ADMIN: Firebase Auth deletado: ${data.firebaseAuthDeleted}`);
+    } else {
+      console.warn(`⚠️ ADMIN: Exclusão parcial do usuário ${userId} - ${data.errors.length} erros encontrados`);
+      console.warn('Erros:', data.errors);
+    }
+
+    return data;
+
+  } catch (error) {
+    console.error('❌ ADMIN: Erro crítico ao excluir usuário:', error);
+    
+    // Fallback: tentar exclusão local se a função do backend falhar
+    console.log(`🔄 ADMIN: Tentando exclusão local como fallback...`);
+    
+    try {
+      const { deleteUserCompletely } = await import('./firestore');
+      const firestoreResult = await deleteUserCompletely(userId, userType, true);
+      
+      return {
+        ...firestoreResult,
+        firebaseAuthDeleted: false,
+        errors: [
+          ...firestoreResult.errors,
+          'Firebase Auth não foi deletado (função do backend falhou)'
+        ]
+      };
+    } catch (fallbackError) {
+      console.error('❌ ADMIN: Fallback também falhou:', fallbackError);
+      throw new Error(`Não foi possível excluir o usuário. Erro: ${error}`);
+    }
+  }
+};
+
+// Função para atribuir plano a um usuário
+export const assignPlanToUser = async (userId: string, planId: string): Promise<void> => {
+  try {
+    console.log(`🎯 Atribuindo plano ${planId} ao usuário ${userId}`);
+    
+    // Primeiro, desativar assinaturas ativas do usuário
+    const activeSubscriptionsQuery = query(
+      collection(db, 'subscriptions'),
+      where('userId', '==', userId),
+      where('status', 'in', ['active', 'trial'])
+    );
+    
+    const activeSubscriptionsSnapshot = await getDocs(activeSubscriptionsQuery);
+    
+    // Desativar assinaturas ativas
+    for (const subscriptionDoc of activeSubscriptionsSnapshot.docs) {
+      await updateDoc(doc(db, 'subscriptions', subscriptionDoc.id), {
+        status: 'cancelled',
+        updatedAt: new Date()
+      });
+    }
+    
+    // Criar nova assinatura
+    const subscriptionData = {
+      userId,
+      planId,
+      status: 'active',
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    await addDoc(collection(db, 'subscriptions'), subscriptionData);
+    
+    console.log(`✅ Plano ${planId} atribuído com sucesso ao usuário ${userId}`);
+  } catch (error) {
+    console.error('❌ Erro ao atribuir plano ao usuário:', error);
+    throw new Error('Não foi possível atribuir o plano ao usuário. Tente novamente.');
+  }
+};
+
+// Função para remover plano de um usuário
+export const removePlanFromUser = async (userId: string): Promise<void> => {
+  try {
+    console.log(`🗑️ Removendo plano do usuário ${userId}`);
+    
+    // Buscar e desativar todas as assinaturas ativas do usuário
+    const activeSubscriptionsQuery = query(
+      collection(db, 'subscriptions'),
+      where('userId', '==', userId),
+      where('status', 'in', ['active', 'trial'])
+    );
+    
+    const activeSubscriptionsSnapshot = await getDocs(activeSubscriptionsQuery);
+    
+    for (const subscriptionDoc of activeSubscriptionsSnapshot.docs) {
+      await updateDoc(doc(db, 'subscriptions', subscriptionDoc.id), {
+        status: 'cancelled',
+        updatedAt: new Date()
+      });
+    }
+    
+    console.log(`✅ Plano removido com sucesso do usuário ${userId}`);
+  } catch (error) {
+    console.error('❌ Erro ao remover plano do usuário:', error);
+    throw new Error('Não foi possível remover o plano do usuário. Tente novamente.');
+  }
+};
+
+/**
+ * Inicializa o campo isOnline para todos os usuários que não possuem este campo.
+ * Esta função deve ser executada apenas por administradores.
+ */
+export const initializeIsOnlineField = async (): Promise<{ success: boolean; message: string; updatedCount: number }> => {
+  try {
+    console.log("🔄 Inicializando campo isOnline para usuários existentes...");
+    
+    // Buscar todos os usuários
+    const usersQuery = query(collection(db, "users"));
+    const usersSnapshot = await getDocs(usersQuery);
+    
+    const batch = writeBatch(db);
+    let updateCount = 0;
+    
+    usersSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      
+      // Se o campo isOnline não existir, inicializar como false
+      if (data.isOnline === undefined) {
+        batch.update(doc.ref, { isOnline: false });
+        updateCount++;
+        console.log(`📝 Marcado para atualização: ${doc.id} (${data.userType}) - ${data.displayName}`);
+      }
+    });
+    
+    if (updateCount > 0) {
+      await batch.commit();
+      console.log(`✅ Campo isOnline inicializado para ${updateCount} usuários`);
+      return {
+        success: true,
+        message: `Campo isOnline inicializado para ${updateCount} usuários`,
+        updatedCount: updateCount
+      };
+    } else {
+      console.log("ℹ️ Todos os usuários já possuem o campo isOnline");
+      return {
+        success: true,
+        message: "Todos os usuários já possuem o campo isOnline",
+        updatedCount: 0
+      };
+    }
+    
+  } catch (error) {
+    console.error("❌ Erro ao inicializar campo isOnline:", error);
+    return {
+      success: false,
+      message: `Erro ao inicializar campo isOnline: ${error}`,
+      updatedCount: 0
+    };
   }
 };

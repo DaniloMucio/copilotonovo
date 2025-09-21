@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { type FuelRecord } from '@/services/vehicle';
 
 interface FuelFormProps {
@@ -65,11 +65,17 @@ export function FuelForm({ isOpen, fuelToEdit, onSuccess, onCancel }: FuelFormPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onCancel}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px]" aria-describedby="fuel-form-description">
         <DialogHeader>
           <DialogTitle>
             {fuelToEdit ? 'Editar Abastecimento' : 'Novo Abastecimento'}
           </DialogTitle>
+          <DialogDescription id="fuel-form-description">
+            {fuelToEdit 
+              ? 'Atualize as informações do abastecimento.' 
+              : 'Registre um novo abastecimento do veículo.'
+            }
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">

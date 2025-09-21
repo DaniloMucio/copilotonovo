@@ -9,18 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useTheme } from '@/hooks/use-theme';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   User as UserIcon, 
   Key, 
   Bell, 
-  Palette, 
-  Database, 
   Smartphone, 
-  Trash2,
-  Download,
-  Info
+  Trash2
 } from 'lucide-react';
 
 // Importar formulários existentes
@@ -48,7 +43,6 @@ export function SettingsManager({ user, userData }: SettingsManagerProps) {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isDeleteAccountDialogOpen, setIsDeleteAccountDialogOpen] = useState(false);
   const [isNotificationDialogOpen, setIsNotificationDialogOpen] = useState(false);
-  const { theme: selectedTheme, setTheme: setSelectedTheme } = useTheme();
 
   // Sincronizar com URL params
   useEffect(() => {
@@ -90,30 +84,6 @@ export function SettingsManager({ user, userData }: SettingsManagerProps) {
     });
   };
 
-  const exportUserData = async () => {
-    try {
-      // Aqui você pode implementar a exportação de dados
-      toast({
-        title: 'Exportação iniciada',
-        description: 'Seus dados serão preparados para download.'
-      });
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro',
-        description: 'Não foi possível exportar os dados.'
-      });
-    }
-  };
-
-  const handleThemeChange = (theme: 'light' | 'dark' | 'system') => {
-    setSelectedTheme(theme);
-    
-    toast({
-      title: 'Tema alterado',
-      description: `Tema ${theme === 'system' ? 'automático' : theme} aplicado com sucesso.`
-    });
-  };
 
 
   return (
@@ -123,8 +93,6 @@ export function SettingsManager({ user, userData }: SettingsManagerProps) {
           <TabsTrigger value="profile" className={isMobile ? 'flex-shrink-0' : ''}>Perfil</TabsTrigger>
           <TabsTrigger value="security" className={isMobile ? 'flex-shrink-0' : ''}>Segurança</TabsTrigger>
           <TabsTrigger value="notifications" className={isMobile ? 'flex-shrink-0' : ''}>Notificações</TabsTrigger>
-          <TabsTrigger value="appearance" className={isMobile ? 'flex-shrink-0' : ''}>Aparência</TabsTrigger>
-          <TabsTrigger value="privacy" className={isMobile ? 'flex-shrink-0' : ''}>Privacidade</TabsTrigger>
           <TabsTrigger value="app" className={isMobile ? 'flex-shrink-0' : ''}>App</TabsTrigger>
           <TabsTrigger value="danger" className={isMobile ? 'flex-shrink-0' : ''}>Conta</TabsTrigger>
         </TabsList>
@@ -247,102 +215,7 @@ export function SettingsManager({ user, userData }: SettingsManagerProps) {
           </Card>
         </TabsContent>
 
-        {/* Aba Aparência */}
-        <TabsContent value="appearance" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Palette className="h-5 w-5" />
-                Aparência e Personalização
-              </CardTitle>
-              <CardDescription>
-                Personalize a interface do aplicativo
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">Tema</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Escolha entre tema claro, escuro ou automático
-                  </p>
-                  <div className="space-y-3">
-                    <div className="flex gap-2">
-                      <Button 
-                        variant={selectedTheme === 'light' ? 'default' : 'outline'} 
-                        size="sm"
-                        onClick={() => handleThemeChange('light')}
-                      >
-                        ☀️ Claro
-                      </Button>
-                      <Button 
-                        variant={selectedTheme === 'dark' ? 'default' : 'outline'} 
-                        size="sm"
-                        onClick={() => handleThemeChange('dark')}
-                      >
-                        🌙 Escuro
-                      </Button>
-                      <Button 
-                        variant={selectedTheme === 'system' ? 'default' : 'outline'} 
-                        size="sm"
-                        onClick={() => handleThemeChange('system')}
-                      >
-                        🔄 Automático
-                      </Button>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Tema atual: <span className="font-medium">
-                        {selectedTheme === 'light' ? '☀️ Claro' : 
-                         selectedTheme === 'dark' ? '🌙 Escuro' : 
-                         '🔄 Automático (seguindo sistema)'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        {/* Aba Privacidade */}
-        <TabsContent value="privacy" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5" />
-                Dados e Privacidade
-              </CardTitle>
-              <CardDescription>
-                Gerencie seus dados e configurações de privacidade
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">Exportar Dados</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Baixe uma cópia dos seus dados em formato JSON
-                  </p>
-                  <Button variant="outline" onClick={exportUserData}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Exportar Dados
-                  </Button>
-                </div>
-                
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">Política de Privacidade</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Entenda como seus dados são coletados e utilizados
-                  </p>
-                  <Button variant="outline">
-                    <Info className="h-4 w-4 mr-2" />
-                    Ver Política
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         {/* Aba App */}
         <TabsContent value="app" className="mt-6">

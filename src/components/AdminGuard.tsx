@@ -14,12 +14,21 @@ interface AdminGuardProps {
 }
 
 export function AdminGuard({ children, fallback }: AdminGuardProps) {
-  const { isAdmin, loading } = useAdmin();
+  const { isAdmin, loading, user, userData } = useAdmin();
   const router = useRouter();
   const [showAccessDenied, setShowAccessDenied] = useState(false);
 
   useEffect(() => {
-    if (!loading && !isAdmin) {
+    // Se não há usuário (logout), redirecionar diretamente para login
+    if (!loading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    // Se há usuário mas não é admin, mostrar tela de bloqueio
+    // Mas só se o usuário não estiver sendo limpo (logout em progresso)
+    // Verificar se userData existe para evitar mostrar tela durante logout
+    if (!loading && user && !isAdmin && userData && userData.userType !== 'admin') {
       setShowAccessDenied(true);
       // Redirecionar após 3 segundos
       const timer = setTimeout(() => {
@@ -29,7 +38,7 @@ export function AdminGuard({ children, fallback }: AdminGuardProps) {
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, [isAdmin, loading, router]);
+  }, [isAdmin, loading, user, userData, router]);
 
   if (loading) {
     return (

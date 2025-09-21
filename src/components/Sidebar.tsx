@@ -130,43 +130,13 @@ export function Sidebar({ className }: SidebarProps) {
     }
   ];
 
-  // Menu para administradores
+  // Menu para administradores (apenas dashboard principal e configurações)
   const adminMenuItems = [
     {
       name: 'Dashboard Admin',
       href: '/dashboard/admin',
       icon: Shield,
       description: 'Painel administrativo principal'
-    },
-    {
-      name: 'Usuários',
-      href: '/dashboard/admin/users',
-      icon: Users,
-      description: 'Gestão de usuários'
-    },
-    {
-      name: 'Entregas',
-      href: '/dashboard/admin/deliveries',
-      icon: Package,
-      description: 'Gestão de entregas'
-    },
-    {
-      name: 'Financeiro',
-      href: '/dashboard/admin/financial',
-      icon: DollarSign,
-      description: 'Relatórios financeiros'
-    },
-    {
-      name: 'Relatórios',
-      href: '/dashboard/admin/reports',
-      icon: BarChart3,
-      description: 'Relatórios e análises'
-    },
-    {
-      name: 'Monitoramento',
-      href: '/dashboard/admin/monitoring',
-      icon: Activity,
-      description: 'Monitoramento do sistema'
     },
     {
       name: 'Configurações',

@@ -161,28 +161,7 @@ export const getOnlineDrivers = async (): Promise<(UserData & { uid: string })[]
     try {
         console.log("🔍 Buscando motoristas online...");
         
-        // Verificar se o usuário atual tem documento no Firestore
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            console.log("⚠️ Usuário não autenticado");
-            return [];
-        }
-        
-        // Verificar se o usuário tem documento no Firestore
-        const userDoc = await getUserDocument(currentUser.uid);
-        if (!userDoc) {
-            console.log("⚠️ Usuário não tem documento no Firestore, criando dados básicos...");
-            // Criar dados básicos para o usuário
-            const basicUserData = await createBasicUserData(
-                currentUser.uid,
-                'cliente', // Assumir cliente por padrão
-                currentUser.displayName || 'Usuário',
-                currentUser.email || ''
-            );
-            console.log("✅ Dados básicos criados para o usuário");
-        }
-        
-        // Buscar todos os usuários (sem filtro de userType para evitar problemas de permissão)
+        // Buscar todos os usuários
         const allUsersQuery = query(collection(db, "users"));
         const allUsersSnapshot = await getDocs(allUsersQuery);
         
@@ -194,17 +173,24 @@ export const getOnlineDrivers = async (): Promise<(UserData & { uid: string })[]
             ...doc.data()
         })) as (UserData & { uid: string })[];
         
-        // Filtrar motoristas online
-        const onlineDrivers = allUsers.filter(user => 
-            user.userType === 'motorista' && user.isOnline === true
-        );
-        
         console.log("🔍 Todos os usuários encontrados:", allUsers.map(user => ({
             uid: user.uid,
             displayName: user.displayName,
             userType: user.userType,
             isOnline: user.isOnline
         })));
+        
+        // Filtrar motoristas
+        const motoristas = allUsers.filter(user => user.userType === 'motorista');
+        console.log(`🚛 Total de motoristas encontrados: ${motoristas.length}`);
+        console.log("🔍 Motoristas:", motoristas.map(driver => ({
+            uid: driver.uid,
+            displayName: driver.displayName,
+            isOnline: driver.isOnline
+        })));
+        
+        // Filtrar apenas motoristas online
+        const onlineDrivers = motoristas.filter(user => user.isOnline === true);
         
         console.log(`✅ Motoristas online encontrados: ${onlineDrivers.length}`);
         console.log("🔍 Motoristas online:", onlineDrivers.map(driver => ({
@@ -216,8 +202,6 @@ export const getOnlineDrivers = async (): Promise<(UserData & { uid: string })[]
         return onlineDrivers;
     } catch (error) {
         console.error("❌ Erro ao buscar motoristas online:", error);
-        
-        // Se houver erro, retornar lista vazia
         console.log("⚠️ Erro detectado, retornando lista vazia");
         return [];
     }
@@ -453,5 +437,127 @@ export const deleteUserData = async (userId: string, userType: 'motorista' | 'cl
     } catch (error) {
         console.error("❌ Erro ao excluir dados do usuário:", error);
         throw new Error("Não foi possível excluir todos os dados do usuário. Tente novamente.");
+    }
+};
+
+/**
+ * EXCLUSÃO COMPLETA DE USUÁRIO - Remove TODOS os dados relacionados
+ * Esta função remove completamente um usuário e todos os seus dados do sistema.
+ * Após esta exclusão, o email poderá ser reutilizado para criar uma nova conta.
+ * 
+ * @param userId - O ID do usuário a ser excluído
+ * @param userType - O tipo do usuário (motorista, cliente ou admin)
+ * @param isAdminAction - Se true, indica que é uma exclusão feita por admin
+ * @returns Promise<{ success: boolean; deletedCount: number; errors: string[] }>
+ */
+export const deleteUserCompletely = async (
+    userId: string, 
+    userType: 'motorista' | 'cliente' | 'admin',
+    isAdminAction: boolean = false
+): Promise<{ success: boolean; deletedCount: number; errors: string[] }> => {
+    const errors: string[] = [];
+    let deletedCount = 0;
+    
+    try {
+        console.log(`🗑️ INICIANDO EXCLUSÃO COMPLETA DO USUÁRIO ${userId} (${userType})`);
+        console.log(`📋 Tipo de exclusão: ${isAdminAction ? 'ADMIN' : 'AUTO-EXCLUSÃO'}`);
+        
+        // Lista de todas as coleções que podem conter dados do usuário
+        const collectionsToCheck = [
+            { name: 'users', field: '__name__', value: userId },
+            { name: 'transactions', field: 'userId', value: userId },
+            { name: 'appointments', field: 'userId', value: userId },
+            { name: 'workShifts', field: 'userId', value: userId },
+            { name: 'vehicles', field: 'userId', value: userId },
+            { name: 'notifications', field: 'userId', value: userId },
+            { name: 'notificationSettings', field: 'userId', value: userId },
+            { name: 'subscriptions', field: 'userId', value: userId },
+            { name: 'deliveries', field: 'userId', value: userId },
+            { name: 'deliveries', field: 'clientId', value: userId },
+            { name: 'deliveries', field: 'driverId', value: userId },
+            { name: 'transactions', field: 'clientId', value: userId },
+            { name: 'transactions', field: 'driverId', value: userId },
+            { name: 'transactions', field: 'assignedDriverId', value: userId }
+        ];
+
+        // Processar exclusões em lotes para evitar limites do Firestore
+        const batchSize = 500; // Limite do Firestore
+        let currentBatch = writeBatch(db);
+        let currentBatchCount = 0;
+
+        for (const collectionInfo of collectionsToCheck) {
+            try {
+                console.log(`🔍 Verificando coleção: ${collectionInfo.name} (campo: ${collectionInfo.field})`);
+                
+                const q = query(
+                    collection(db, collectionInfo.name), 
+                    where(collectionInfo.field, "==", collectionInfo.value)
+                );
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.size > 0) {
+                    console.log(`📄 Encontrados ${snapshot.size} documentos em ${collectionInfo.name}`);
+                    
+                    for (const docSnapshot of snapshot.docs) {
+                        // Se o lote atual está cheio, executar e criar novo
+                        if (currentBatchCount >= batchSize) {
+                            try {
+                                await currentBatch.commit();
+                                console.log(`✅ Lote executado: ${currentBatchCount} documentos excluídos`);
+                                deletedCount += currentBatchCount;
+                                currentBatchCount = 0;
+                                currentBatch = writeBatch(db);
+                            } catch (error) {
+                                console.error(`❌ Erro ao executar lote:`, error);
+                                errors.push(`Erro ao executar lote de exclusão: ${error}`);
+                            }
+                        }
+                        
+                        currentBatch.delete(docSnapshot.ref);
+                        currentBatchCount++;
+                    }
+                }
+            } catch (error) {
+                console.warn(`⚠️ Erro ao processar coleção ${collectionInfo.name}:`, error);
+                errors.push(`Erro na coleção ${collectionInfo.name}: ${error}`);
+            }
+        }
+
+        // Executar o último lote se houver documentos
+        if (currentBatchCount > 0) {
+            try {
+                await currentBatch.commit();
+                console.log(`✅ Lote final executado: ${currentBatchCount} documentos excluídos`);
+                deletedCount += currentBatchCount;
+            } catch (error) {
+                console.error(`❌ Erro ao executar lote final:`, error);
+                errors.push(`Erro ao executar lote final: ${error}`);
+            }
+        }
+
+        // Log final da exclusão
+        console.log(`🎯 EXCLUSÃO COMPLETA FINALIZADA:`);
+        console.log(`📊 Total de documentos excluídos: ${deletedCount}`);
+        console.log(`⚠️ Erros encontrados: ${errors.length}`);
+        
+        if (errors.length > 0) {
+            console.log(`❌ Lista de erros:`, errors);
+        }
+
+        return {
+            success: errors.length === 0,
+            deletedCount,
+            errors
+        };
+
+    } catch (error) {
+        console.error("❌ ERRO CRÍTICO na exclusão completa:", error);
+        errors.push(`Erro crítico: ${error}`);
+        
+        return {
+            success: false,
+            deletedCount,
+            errors
+        };
     }
 };

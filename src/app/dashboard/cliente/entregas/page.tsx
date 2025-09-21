@@ -116,7 +116,13 @@ function EntregasClienteContent() {
 
   const fetchDrivers = useCallback(async () => {
     try {
+      console.log('🔍 Buscando motoristas online...');
       const driversList = await getOnlineDrivers();
+      console.log('📋 Motoristas encontrados:', driversList.map(d => ({
+        uid: d.uid,
+        displayName: d.displayName,
+        isOnline: d.isOnline
+      })));
       setDrivers(driversList);
     } catch (error) {
       console.error("❌ Erro ao buscar motoristas online:", error);

@@ -18,6 +18,7 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
+  DialogDescription,
   DialogTrigger 
 } from '@/components/ui/dialog';
 import { 
@@ -290,9 +291,12 @@ export function DeliveryManagement({ onDeliverySelect }: DeliveryManagementProps
 
       {/* Modal de detalhes da entrega */}
       <Dialog open={!!selectedDelivery} onOpenChange={() => setSelectedDelivery(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby="delivery-details-description">
           <DialogHeader>
             <DialogTitle>Detalhes da Entrega</DialogTitle>
+            <DialogDescription id="delivery-details-description">
+              Visualize as informações completas da entrega selecionada
+            </DialogDescription>
           </DialogHeader>
           {selectedDelivery && (
             <div className="space-y-4">

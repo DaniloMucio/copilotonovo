@@ -55,6 +55,22 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
     const { toast } = useToast();
     const { userData } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Debug logs
+    console.log('🔍 DeliveryForm Debug:', {
+        userData: userData ? {
+            userType: userData.userType,
+            displayName: userData.displayName
+        } : null,
+        driversCount: drivers.length,
+        drivers: drivers.map(d => ({
+            uid: d.uid,
+            displayName: d.displayName,
+            isOnline: d.isOnline
+        })),
+        transactionToEdit: !!transactionToEdit,
+        shouldShowDriverSelect: userData?.userType === 'cliente' && !transactionToEdit
+    });
     const [isFetchingSenderCep, setIsFetchingSenderCep] = useState(false);
     const [isFetchingRecipientCep, setIsFetchingRecipientCep] = useState(false);
     const [selectedRecipient, setSelectedRecipient] = useState<Recipient | null>(null);
@@ -239,18 +255,33 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Selecione um motorista" />
+                                            <SelectValue placeholder={
+                                                drivers.length === 0 
+                                                    ? "Nenhum motorista online disponível" 
+                                                    : "Selecione um motorista"
+                                            } />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        {drivers.map(driver => (
-                                            <SelectItem key={driver.uid} value={driver.uid}>
-                                                {driver.displayName || driver.name || 'Motorista sem nome'}
+                                        {drivers.length === 0 ? (
+                                            <SelectItem value="" disabled>
+                                                Nenhum motorista online disponível
                                             </SelectItem>
-                                        ))}
+                                        ) : (
+                                            drivers.map(driver => (
+                                                <SelectItem key={driver.uid} value={driver.uid}>
+                                                    {driver.displayName || driver.name || 'Motorista sem nome'}
+                                                </SelectItem>
+                                            ))
+                                        )}
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
+                                {drivers.length === 0 && (
+                                    <p className="text-sm text-muted-foreground">
+                                        Não há motoristas online no momento. A entrega será atribuída automaticamente quando um motorista ficar disponível.
+                                    </p>
+                                )}
                             </FormItem>
                         )}
                     />

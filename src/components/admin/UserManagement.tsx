@@ -6,21 +6,27 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
-  DialogTrigger 
+  DialogDescription
 } from '@/components/ui/dialog';
+import { AdminEditUserForm } from '@/components/forms/AdminEditUserForm';
+import { updateUserByAdmin, deleteUserByAdmin } from '@/services/admin';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { 
   Users, 
   Search, 
@@ -31,7 +37,11 @@ import {
   UserX,
   Mail,
   Phone,
-  Calendar
+  Calendar,
+  Settings,
+  AlertTriangle,
+  AlertCircle,
+  X
 } from 'lucide-react';
 import { getAllUsersWithStats, type UserWithStats } from '@/services/admin';
 import { format } from 'date-fns';
@@ -47,36 +57,290 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<UserWithStats | null>(null);
+  const [editingUser, setEditingUser] = useState<UserWithStats | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserWithStats | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Filtros avançados
+  const [userTypeFilter, setUserTypeFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  
+  // Seleção múltipla
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
+  
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        setLoading(true);
         const usersData = await getAllUsersWithStats();
         setUsers(usersData);
         setFilteredUsers(usersData);
       } catch (error) {
-        console.error('Erro ao buscar usuários:', error);
+        console.error('Erro ao carregar usuários:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao carregar usuários',
+          description: 'Não foi possível carregar a lista de usuários. Tente novamente.',
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
-    const filtered = users.filter(user => 
-      user.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.userType.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    let filtered = users.filter(user => {
+      // Filtro de busca por texto
+      const matchesSearch = user.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           user.userType.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Filtro por tipo de usuário
+      const matchesUserType = userTypeFilter === 'all' || user.userType === userTypeFilter;
+      
+      // Filtro por status
+      const matchesStatus = statusFilter === 'all' || 
+                           (statusFilter === 'active' && (user.isActive || user.isOnline)) ||
+                           (statusFilter === 'inactive' && (!user.isActive && !user.isOnline));
+      
+      return matchesSearch && matchesUserType && matchesStatus;
+    });
+
+    // Ordenação
+    filtered.sort((a, b) => {
+      let aValue: any, bValue: any;
+      
+      switch (sortBy) {
+        case 'name':
+          aValue = a.displayName.toLowerCase();
+          bValue = b.displayName.toLowerCase();
+          break;
+        case 'email':
+          aValue = a.email.toLowerCase();
+          bValue = b.email.toLowerCase();
+          break;
+        case 'type':
+          aValue = a.userType;
+          bValue = b.userType;
+          break;
+        case 'deliveries':
+          aValue = a.totalDeliveries || 0;
+          bValue = b.totalDeliveries || 0;
+          break;
+        case 'revenue':
+          aValue = a.totalRevenue || 0;
+          bValue = b.totalRevenue || 0;
+          break;
+        case 'lastActivity':
+          aValue = a.lastActivity ? new Date(a.lastActivity).getTime() : 0;
+          bValue = b.lastActivity ? new Date(b.lastActivity).getTime() : 0;
+          break;
+        default:
+          aValue = a.displayName.toLowerCase();
+          bValue = b.displayName.toLowerCase();
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+
     setFilteredUsers(filtered);
-  }, [searchTerm, users]);
+  }, [searchTerm, users, userTypeFilter, statusFilter, sortBy, sortOrder]);
 
   const handleUserClick = (user: UserWithStats) => {
     setSelectedUser(user);
     onUserSelect?.(user);
   };
+
+  const handleUserUpdated = async () => {
+    try {
+      const usersData = await getAllUsersWithStats();
+      setUsers(usersData);
+      setFilteredUsers(usersData);
+    } catch (error) {
+      console.error('Erro ao recarregar usuários:', error);
+    }
+  };
+
+  const handleCloseEditDialog = () => {
+    setShowEditDialog(false);
+    setEditingUser(null);
+  };
+
+  const handleDeleteUser = (user: UserWithStats) => {
+    setUserToDelete(user);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      console.log(`🗑️ ADMIN: Iniciando exclusão completa do usuário ${userToDelete.uid}`);
+      
+      // EXCLUSÃO COMPLETA - Remove TODOS os dados relacionados
+      const deletionResult = await deleteUserByAdmin(userToDelete.uid, userToDelete.userType);
+      
+      if (deletionResult.success) {
+        console.log(`✅ ADMIN: Usuário excluído completamente - ${deletionResult.deletedCount} documentos removidos`);
+        
+        // Remover usuário da lista local
+        const updatedUsers = users.filter(user => user.uid !== userToDelete.uid);
+        setUsers(updatedUsers);
+        setFilteredUsers(updatedUsers);
+
+        toast({
+          title: 'Usuário excluído completamente',
+          description: `Usuário excluído com sucesso. ${deletionResult.deletedCount} documentos foram removidos permanentemente. ${deletionResult.firebaseAuthDeleted ? 'Conta do Firebase Auth também foi deletada.' : 'Conta do Firebase Auth não foi deletada, mas o usuário não conseguirá mais fazer login.'}`,
+        });
+      } else {
+        console.warn(`⚠️ ADMIN: Exclusão parcial - ${deletionResult.errors.length} erros encontrados`);
+        
+        toast({
+          variant: 'destructive',
+          title: 'Exclusão parcial',
+          description: `Usuário excluído parcialmente. ${deletionResult.deletedCount} documentos removidos, mas alguns dados podem ter permanecido.`,
+        });
+      }
+
+      setShowDeleteDialog(false);
+      setUserToDelete(null);
+      setSelectedUser(null);
+      
+    } catch (error) {
+      console.error('❌ ADMIN: Erro crítico ao excluir usuário:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao excluir usuário',
+        description: 'Não foi possível excluir o usuário. Tente novamente.',
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const cancelDeleteUser = () => {
+    setShowDeleteDialog(false);
+    setUserToDelete(null);
+  };
+
+  const handleToggleUserStatus = async (user: UserWithStats) => {
+    try {
+      const updateData = user.userType === 'motorista' 
+        ? { isOnline: !user.isOnline }
+        : { isActive: !user.isActive };
+
+      await updateUserByAdmin(user.uid, updateData);
+
+      // Atualizar lista local
+      const updatedUsers = users.map(u => 
+        u.uid === user.uid 
+          ? { ...u, ...updateData }
+          : u
+      );
+      setUsers(updatedUsers);
+      setFilteredUsers(updatedUsers);
+
+      toast({
+        title: 'Status atualizado',
+        description: `Usuário ${user.userType === 'motorista' ? (user.isOnline ? 'desativado' : 'ativado') : (user.isActive ? 'desativado' : 'ativado')} com sucesso.`,
+      });
+
+    } catch (error) {
+      console.error('Erro ao alterar status do usuário:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao alterar status',
+        description: 'Não foi possível alterar o status do usuário. Tente novamente.',
+      });
+    }
+  };
+
+  // Funções para seleção múltipla
+  const handleSelectUser = (userId: string) => {
+    const newSelected = new Set(selectedUsers);
+    if (newSelected.has(userId)) {
+      newSelected.delete(userId);
+    } else {
+      newSelected.add(userId);
+    }
+    setSelectedUsers(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedUsers.size === filteredUsers.length) {
+      setSelectedUsers(new Set());
+    } else {
+      setSelectedUsers(new Set(filteredUsers.map(u => u.uid)));
+    }
+  };
+
+  const handleBulkToggleStatus = async (action: 'activate' | 'deactivate') => {
+    if (selectedUsers.size === 0) return;
+
+    setIsBulkActionLoading(true);
+    try {
+      const promises = Array.from(selectedUsers).map(async (userId) => {
+        const user = users.find(u => u.uid === userId);
+        if (!user) return;
+
+        const updateData = user.userType === 'motorista' 
+          ? { isOnline: action === 'activate' }
+          : { isActive: action === 'activate' };
+
+        return updateUserByAdmin(userId, updateData);
+      });
+
+      await Promise.all(promises);
+
+      // Atualizar lista local
+      const updatedUsers = users.map(u => {
+        if (selectedUsers.has(u.uid)) {
+          return {
+            ...u,
+            ...(u.userType === 'motorista' 
+              ? { isOnline: action === 'activate' }
+              : { isActive: action === 'activate' }
+            )
+          };
+        }
+        return u;
+      });
+      setUsers(updatedUsers);
+      setFilteredUsers(updatedUsers);
+
+      toast({
+        title: 'Ação em lote concluída',
+        description: `${selectedUsers.size} usuários ${action === 'activate' ? 'ativados' : 'desativados'} com sucesso.`,
+      });
+
+      setSelectedUsers(new Set());
+
+    } catch (error) {
+      console.error('Erro na ação em lote:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro na ação em lote',
+        description: 'Não foi possível executar a ação em lote. Tente novamente.',
+      });
+    } finally {
+      setIsBulkActionLoading(false);
+    }
+  };
+
 
   const getStatusBadge = (user: UserWithStats) => {
     if (user.userType === 'motorista') {
@@ -125,8 +389,9 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4 mb-4">
-            <div className="relative flex-1">
+          {/* Filtros avançados */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar usuários..."
@@ -135,46 +400,185 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                 className="pl-10"
               />
             </div>
-            <Badge variant="outline">
-              {filteredUsers.length} usuários
-            </Badge>
+
+            <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filtrar por tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os tipos</SelectItem>
+                <SelectItem value="motorista">Motoristas</SelectItem>
+                <SelectItem value="cliente">Clientes</SelectItem>
+                <SelectItem value="admin">Administradores</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filtrar por status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os status</SelectItem>
+                <SelectItem value="active">Ativos</SelectItem>
+                <SelectItem value="inactive">Inativos</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="flex gap-2">
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Nome</SelectItem>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="type">Tipo</SelectItem>
+                  <SelectItem value="deliveries">Entregas</SelectItem>
+                  <SelectItem value="revenue">Receita</SelectItem>
+                  <SelectItem value="lastActivity">Última atividade</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              >
+                {sortOrder === 'asc' ? '↑' : '↓'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Controles de seleção múltipla */}
+          {selectedUsers.size > 0 && (
+            <div className="flex items-center gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg mb-4">
+              <div className="flex items-center gap-2">
+                <Badge variant="default" className="bg-blue-600">
+                  {selectedUsers.size} selecionados
+                </Badge>
+                <span className="text-sm text-blue-700 dark:text-blue-300">
+                  Ações em lote disponíveis:
+                </span>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkToggleStatus('activate')}
+                  disabled={isBulkActionLoading}
+                  className="text-green-600 hover:text-green-700"
+                >
+                  <UserCheck className="h-4 w-4 mr-2" />
+                  Ativar Selecionados
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkToggleStatus('deactivate')}
+                  disabled={isBulkActionLoading}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <UserX className="h-4 w-4 mr-2" />
+                  Desativar Selecionados
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedUsers(new Set())}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Limpar Seleção
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">
+                {filteredUsers.length} usuários
+              </Badge>
+              {selectedUsers.size > 0 && (
+                <Badge variant="secondary">
+                  {selectedUsers.size} selecionados
+                </Badge>
+              )}
+            </div>
+            
           </div>
 
           {/* Lista de usuários */}
           <div className="space-y-3">
+            {/* Cabeçalho com seleção múltipla */}
+            <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
+                  onChange={handleSelectAll}
+                  className="rounded border-gray-300"
+                />
+                <span className="text-sm font-medium">Selecionar todos</span>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {filteredUsers.length} usuários encontrados
+              </div>
+            </div>
+
             {filteredUsers.map((user) => (
               <div
                 key={user.uid}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                onClick={() => handleUserClick(user)}
+                className={`flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors ${
+                  selectedUsers.has(user.uid) ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : ''
+                }`}
               >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium">{user.displayName}</p>
-                    <Badge variant="outline" className="capitalize">
-                      {user.userType}
-                    </Badge>
-                    {getStatusBadge(user)}
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Mail className="h-3 w-3" />
-                      {user.email}
-                    </span>
-                    {user.phone && (
+                <div className="flex items-center gap-3">
+                  {/* Checkbox de seleção */}
+                  <input
+                    type="checkbox"
+                    checked={selectedUsers.has(user.uid)}
+                    onChange={() => handleSelectUser(user.uid)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="rounded border-gray-300"
+                  />
+                  
+                  <div className="space-y-1 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{user.displayName}</p>
+                      <Badge variant="outline" className="capitalize">
+                        {user.userType}
+                      </Badge>
+                      {getStatusBadge(user)}
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
-                        <Phone className="h-3 w-3" />
-                        {user.phone}
+                        <Mail className="h-3 w-3" />
+                        {user.email}
+                        {user.needsAuthSetup && (
+                          <Badge variant="outline" className="ml-2 text-xs">
+                            Precisa configurar login
+                          </Badge>
+                        )}
                       </span>
-                    )}
-                    {user.lastActivity && (
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {format(user.lastActivity, 'dd/MM/yyyy', { locale: ptBR })}
-                      </span>
-                    )}
+                      {user.phone && (
+                        <span className="flex items-center gap-1">
+                          <Phone className="h-3 w-3" />
+                          {user.phone}
+                        </span>
+                      )}
+                      {user.lastActivity && (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {format(user.lastActivity, 'dd/MM/yyyy', { locale: ptBR })}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
+                
                 <div className="flex items-center gap-2">
                   <div className="text-right text-sm">
                     <p>{user.totalDeliveries || 0} entregas</p>
@@ -182,9 +586,67 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                       R$ {(user.totalRevenue || 0).toFixed(2)}
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
-                    <Eye className="h-4 w-4" />
-                  </Button>
+                  
+                  {/* Ações rápidas */}
+                  <div className="flex items-center gap-1">
+                    {/* Toggle Status Online/Ativo */}
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleUserStatus(user);
+                      }}
+                      className={user.userType === 'motorista' 
+                        ? (user.isOnline ? "bg-green-100 hover:bg-green-200" : "bg-gray-100 hover:bg-gray-200")
+                        : (user.isActive ? "bg-green-100 hover:bg-green-200" : "bg-gray-100 hover:bg-gray-200")
+                      }
+                    >
+                      {user.userType === 'motorista' 
+                        ? (user.isOnline ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />)
+                        : (user.isActive ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />)
+                      }
+                    </Button>
+
+                    {/* Editar */}
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingUser(user);
+                        setShowEditDialog(true);
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+
+                    {/* Ver detalhes */}
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleUserClick(user);
+                      }}
+                      title="Ver detalhes"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+
+                    {/* Excluir */}
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteUser(user);
+                      }}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -202,9 +664,12 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
 
       {/* Modal de detalhes do usuário */}
       <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby="user-details-description">
           <DialogHeader>
             <DialogTitle>Detalhes do Usuário</DialogTitle>
+            <DialogDescription id="user-details-description">
+              Visualize as informações completas do usuário selecionado
+            </DialogDescription>
           </DialogHeader>
           {selectedUser && (
             <div className="space-y-4">
@@ -216,6 +681,18 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Email</label>
                   <p className="text-lg">{selectedUser.email}</p>
+                  {selectedUser.needsAuthSetup && (
+                    <div className="mt-2">
+                      <Badge variant="outline" className="text-xs">
+                        Precisa configurar login
+                      </Badge>
+                      {selectedUser.tempPassword && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Senha temporária: {selectedUser.tempPassword}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Tipo</label>
@@ -265,19 +742,122 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setSelectedUser(null)}>
-                  Fechar
+              <div className="flex justify-between pt-4">
+                <Button 
+                  variant="destructive" 
+                  onClick={() => handleDeleteUser(selectedUser)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir Usuário
                 </Button>
-                <Button>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Editar Usuário
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setSelectedUser(null)}>
+                    Fechar
+                  </Button>
+                  <Button onClick={() => {
+                    setEditingUser(selectedUser);
+                    setShowEditDialog(true);
+                    setSelectedUser(null);
+                  }}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar Usuário
+                  </Button>
+                </div>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Modal de edição de usuário */}
+      <Dialog open={showEditDialog} onOpenChange={handleCloseEditDialog}>
+        <DialogContent className="max-w-2xl" aria-describedby="edit-user-description">
+          <DialogHeader>
+            <DialogTitle>Editar Usuário</DialogTitle>
+            <DialogDescription id="edit-user-description">
+              Modifique as informações do usuário selecionado
+            </DialogDescription>
+          </DialogHeader>
+          {editingUser && (
+            <AdminEditUserForm
+              user={editingUser as any}
+              userData={editingUser}
+              onFormSubmit={handleCloseEditDialog}
+              onUserUpdated={handleUserUpdated}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de confirmação de exclusão */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-600" />
+              Confirmar Exclusão
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              <div className="space-y-3">
+                <div>
+                  Tem certeza de que deseja excluir <strong>COMPLETAMENTE</strong> o usuário <strong>{userToDelete?.displayName}</strong>?
+                </div>
+                
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                  <div className="flex items-center gap-2 text-red-800 dark:text-red-200 font-semibold">
+                    <AlertTriangle className="h-4 w-4" />
+                    EXCLUSÃO COMPLETA E IRREVERSÍVEL
+                  </div>
+                  <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+                    Esta ação removerá <strong>TODOS</strong> os dados relacionados ao usuário do sistema.
+                    <br />
+                    <strong>O usuário NÃO conseguirá mais fazer login no sistema.</strong>
+                    <br />
+                    <strong>A conta do Firebase Authentication também será deletada.</strong>
+                  </p>
+                </div>
+
+                <div>
+                  <strong>Dados que serão excluídos permanentemente:</strong>
+                  <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
+                    <li><strong>Perfil completo</strong> do usuário</li>
+                    <li><strong>Todas as transações</strong> financeiras</li>
+                    <li><strong>Todas as entregas</strong> (como cliente ou motorista)</li>
+                    <li><strong>Agendamentos</strong> (se for cliente)</li>
+                    <li><strong>Jornadas de trabalho</strong> (se for motorista)</li>
+                    <li><strong>Veículos</strong> cadastrados (se for motorista)</li>
+                    <li><strong>Notificações</strong> e configurações</li>
+                    <li><strong>Histórico completo</strong> de atividades</li>
+                  </ul>
+                </div>
+
+                <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+                  <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200 font-semibold">
+                    <AlertCircle className="h-4 w-4" />
+                    IMPORTANTE
+                  </div>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
+                    Após a exclusão, o email <strong>{userToDelete?.email}</strong> poderá ser reutilizado para criar uma nova conta.
+                  </p>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelDeleteUser} disabled={isDeleting}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteUser}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? 'Excluindo...' : 'Sim, excluir usuário'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
   );
 }
