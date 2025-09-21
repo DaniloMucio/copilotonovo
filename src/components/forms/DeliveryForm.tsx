@@ -114,7 +114,9 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                 console.log('🔍 Mudança detectada no campo do destinatário:', {
                     name,
                     type,
-                    newValue: value[name],
+                    newValue: name === 'recipientCompany' ? value.recipientCompany : 
+                             name === 'recipientAddress' ? value.recipientAddress :
+                             name === 'recipientId' ? value.recipientId : 'N/A',
                     selectedRecipient: selectedRecipient.name
                 });
                 
@@ -135,7 +137,7 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                     
                     // Verificar se algum campo do endereço foi alterado
                     const addressChanged = Object.keys(expectedAddress).some(key => 
-                        currentAddress[key] !== expectedAddress[key]
+                        currentAddress && currentAddress[key] !== expectedAddress[key]
                     );
                     
                     if (addressChanged) {
