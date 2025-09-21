@@ -118,11 +118,30 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                     selectedRecipient: selectedRecipient.name
                 });
                 
-                // Verificar se os dados do destinatário foram perdidos
+                // Verificar se os dados do destinatário foram perdidos e restaurar
                 if (name === 'recipientCompany' && value.recipientCompany !== selectedRecipient.name) {
-                    console.log('⚠️ ATENÇÃO: Dados do destinatário podem ter sido perdidos!');
+                    console.log('⚠️ ATENÇÃO: Dados do destinatário foram perdidos! Restaurando...');
                     console.log('Valor esperado:', selectedRecipient.name);
                     console.log('Valor atual:', value.recipientCompany);
+                    
+                    // Restaurar os dados do destinatário
+                    form.setValue('recipientCompany', selectedRecipient.name);
+                    form.setValue('recipientAddress', selectedRecipient.address);
+                }
+                
+                if (name === 'recipientAddress' && selectedRecipient.address) {
+                    const currentAddress = value.recipientAddress;
+                    const expectedAddress = selectedRecipient.address;
+                    
+                    // Verificar se algum campo do endereço foi alterado
+                    const addressChanged = Object.keys(expectedAddress).some(key => 
+                        currentAddress[key] !== expectedAddress[key]
+                    );
+                    
+                    if (addressChanged) {
+                        console.log('⚠️ ATENÇÃO: Endereço do destinatário foi alterado! Restaurando...');
+                        form.setValue('recipientAddress', selectedRecipient.address);
+                    }
                 }
             }
         });
@@ -175,9 +194,14 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                     address: recipient.address
                 });
                 setSelectedRecipient(recipient);
+                
+                // Usar batch para definir todos os valores de uma vez
                 form.setValue('recipientId', recipient.id);
                 form.setValue('recipientCompany', recipient.name);
                 form.setValue('recipientAddress', recipient.address);
+                
+                // Forçar re-render dos campos do destinatário
+                form.trigger(['recipientCompany', 'recipientAddress']);
                 
                 // Verificar se os dados foram realmente definidos
                 setTimeout(() => {
