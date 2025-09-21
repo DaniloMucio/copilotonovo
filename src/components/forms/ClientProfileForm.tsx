@@ -21,12 +21,22 @@ import { useToast } from '@/hooks/use-toast';
 import { updateUserProfile as updateAuthProfile } from '@/services/auth';
 import { updateUserDocument, UserData } from '@/services/firestore';
 import { Separator } from '@/components/ui/separator';
+import { getAddressFromCEP } from '@/services/viacep';
+import { Loader2 } from 'lucide-react';
 
 const clientProfileSchema = z.object({
   displayName: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
   companyName: z.string().min(2, 'Nome da empresa deve ter pelo menos 2 caracteres.').optional(),
   cnpj: z.string().min(14, 'CNPJ deve ter pelo menos 14 dígitos.').optional(),
   phone: z.string().min(10, 'Telefone deve ter pelo menos 10 dígitos.').optional(),
+  address: z.object({
+    cep: z.string().min(8, 'CEP deve ter 8 dígitos.').max(9, 'CEP inválido').optional(),
+    street: z.string().min(1, 'Rua é obrigatória.').optional(),
+    number: z.string().min(1, 'Número é obrigatório.').optional(),
+    neighborhood: z.string().min(1, 'Bairro é obrigatório.').optional(),
+    city: z.string().min(1, 'Cidade é obrigatória.').optional(),
+    state: z.string().min(1, 'Estado é obrigatório.').optional(),
+  }).optional(),
 });
 
 type ClientProfileFormValues = z.infer<typeof clientProfileSchema>;
@@ -40,6 +50,7 @@ interface ClientProfileFormProps {
 export function ClientProfileForm({ user, userData, onFormSubmit }: ClientProfileFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFetchingCep, setIsFetchingCep] = useState(false);
 
   const form = useForm<ClientProfileFormValues>({
     resolver: zodResolver(clientProfileSchema),
@@ -48,6 +59,14 @@ export function ClientProfileForm({ user, userData, onFormSubmit }: ClientProfil
       companyName: userData.companyName || '',
       cnpj: userData.cnpj || '',
       phone: userData.phone || '',
+      address: (userData as any).address || {
+        cep: '',
+        street: '',
+        number: '',
+        neighborhood: '',
+        city: '',
+        state: '',
+      },
     },
   });
 
@@ -57,8 +76,38 @@ export function ClientProfileForm({ user, userData, onFormSubmit }: ClientProfil
       companyName: userData.companyName || '',
       cnpj: userData.cnpj || '',
       phone: userData.phone || '',
+      address: (userData as any).address || {
+        cep: '',
+        street: '',
+        number: '',
+        neighborhood: '',
+        city: '',
+        state: '',
+      },
     });
   }, [user, userData, form]);
+
+  const handleCepSearch = async (cep: string) => {
+    const cepOnlyNumbers = cep.replace(/\D/g, '');
+    if (cepOnlyNumbers.length !== 8) return;
+
+    setIsFetchingCep(true);
+    try {
+      const data = await getAddressFromCEP(cepOnlyNumbers);
+      if (data.erro) {
+        toast({ variant: 'destructive', title: 'CEP não encontrado.' });
+        return;
+      }
+      form.setValue('address.street', data.logradouro);
+      form.setValue('address.neighborhood', data.bairro);
+      form.setValue('address.city', data.localidade);
+      form.setValue('address.state', data.uf);
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Erro ao buscar CEP.' });
+    } finally {
+      setIsFetchingCep(false);
+    }
+  };
 
   async function onSubmit(values: ClientProfileFormValues) {
     setIsSubmitting(true);
@@ -73,6 +122,7 @@ export function ClientProfileForm({ user, userData, onFormSubmit }: ClientProfil
       dataToUpdate.companyName = values.companyName;
       dataToUpdate.cnpj = values.cnpj;
       dataToUpdate.phone = values.phone;
+      dataToUpdate.address = values.address;
       
       await updateUserDocument(user, dataToUpdate);
       
@@ -155,6 +205,110 @@ export function ClientProfileForm({ user, userData, onFormSubmit }: ClientProfil
               </FormItem>
             )}
           />
+        </div>
+        
+        <Separator />
+        
+        <div className="space-y-4">
+          <h4 className="text-sm font-medium text-muted-foreground">Endereço da Empresa</h4>
+          <p className="text-xs text-muted-foreground">
+            Este endereço será usado como remetente nas suas entregas.
+          </p>
+          
+          <FormField
+            control={form.control}
+            name="address.cep"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>CEP</FormLabel>
+                <FormControl>
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      {...field} 
+                      type="tel" 
+                      inputMode="numeric" 
+                      placeholder="00000-000"
+                      onBlur={(e) => handleCepSearch(e.target.value)}
+                    />
+                    {isFetchingCep && <Loader2 className="animate-spin h-4 w-4" />}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="address.street"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Rua</FormLabel>
+                <FormControl>
+                  <Input placeholder="Nome da rua" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="address.number"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Número</FormLabel>
+                  <FormControl>
+                    <Input placeholder="123" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="address.neighborhood"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bairro</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Centro" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="address.city"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cidade</FormLabel>
+                  <FormControl>
+                    <Input placeholder="São Paulo" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="address.state"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estado</FormLabel>
+                  <FormControl>
+                    <Input placeholder="SP" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
         
         <DialogFooter>
