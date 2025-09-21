@@ -24,8 +24,17 @@ export const PWAInstallButton = ({ canInstall, install, variant = 'icon' }: PWAI
   }
 
   const handleInstall = () => {
-    install();
-    setShowDialog(false);
+    // Verificar se é iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    if (isIOS) {
+      // Para iOS, mostrar instruções específicas
+      setShowDialog(true);
+    } else {
+      // Para outros dispositivos, usar o método padrão
+      install();
+      setShowDialog(false);
+    }
   };
 
   const handleDismiss = () => {
@@ -71,35 +80,67 @@ export const PWAInstallButton = ({ canInstall, install, variant = 'icon' }: PWAI
           <DialogHeader>
             <DialogTitle>Instalar Co-Piloto Driver</DialogTitle>
             <DialogDescription>
-              Instale o Co-Piloto como um aplicativo nativo para acesso mais rápido e melhor experiência.
+              {/iPad|iPhone|iPod/.test(navigator.userAgent) 
+                ? "Para instalar no iOS, siga as instruções abaixo:"
+                : "Instale o Co-Piloto como um aplicativo nativo para acesso mais rápido e melhor experiência."
+              }
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="flex items-center gap-4 p-4 border rounded-lg">
-              <Smartphone className="h-8 w-8 text-primary" />
-              <div>
-                <h4 className="font-semibold">Acesso Rápido</h4>
-                <p className="text-sm text-muted-foreground">
-                  Ícone na tela inicial do seu dispositivo
-                </p>
+            {/iPad|iPhone|iPod/.test(navigator.userAgent) ? (
+              <div className="space-y-4">
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                    📱 Instruções para iOS:
+                  </h4>
+                  <ol className="text-sm text-blue-700 dark:text-blue-300 space-y-2 list-decimal list-inside">
+                    <li>Toque no botão de compartilhar (📤) na barra inferior</li>
+                    <li>Role para baixo e selecione "Adicionar à Tela Inicial"</li>
+                    <li>Toque em "Adicionar" para confirmar</li>
+                    <li>O app aparecerá na sua tela inicial!</li>
+                  </ol>
+                </div>
+                <div className="flex items-center gap-4 p-4 border rounded-lg">
+                  <Smartphone className="h-8 w-8 text-primary" />
+                  <div>
+                    <h4 className="font-semibold">Acesso Rápido</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Ícone na tela inicial do seu iPhone/iPad
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-4 p-4 border rounded-lg">
-              <Monitor className="h-8 w-8 text-primary" />
-              <div>
-                <h4 className="font-semibold">Experiência Nativa</h4>
-                <p className="text-sm text-muted-foreground">
-                  Interface otimizada sem navegador
-                </p>
-              </div>
-            </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-4 p-4 border rounded-lg">
+                  <Smartphone className="h-8 w-8 text-primary" />
+                  <div>
+                    <h4 className="font-semibold">Acesso Rápido</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Ícone na tela inicial do seu dispositivo
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 p-4 border rounded-lg">
+                  <Monitor className="h-8 w-8 text-primary" />
+                  <div>
+                    <h4 className="font-semibold">Experiência Nativa</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Interface otimizada sem navegador
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
             <div className="flex gap-2 pt-4">
-              <Button onClick={handleInstall} className="flex-1">
-                <Download className="mr-2 h-4 w-4" />
-                Instalar
-              </Button>
-              <Button variant="outline" onClick={() => setShowDialog(false)}>
-                Talvez depois
+              {!/iPad|iPhone|iPod/.test(navigator.userAgent) && (
+                <Button onClick={handleInstall} className="flex-1">
+                  <Download className="mr-2 h-4 w-4" />
+                  Instalar
+                </Button>
+              )}
+              <Button variant="outline" onClick={() => setShowDialog(false)} className="flex-1">
+                {/iPad|iPhone|iPod/.test(navigator.userAgent) ? "Entendi" : "Talvez depois"}
               </Button>
             </div>
           </div>

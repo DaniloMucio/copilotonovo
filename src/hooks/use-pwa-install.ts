@@ -28,16 +28,29 @@ export function usePWAInstall(): UsePWAInstallReturn {
   useEffect(() => {
     // Verificar se o app já está instalado
     const checkIfInstalled = () => {
+      // Verificar display mode standalone
       if (window.matchMedia('(display-mode: standalone)').matches) {
         setIsInstalled(true);
         setShowInstallButton(false);
-      } else if ((window.navigator as any).standalone) {
-        // Para iOS
+        return;
+      }
+      
+      // Verificar iOS standalone
+      if ((window.navigator as any).standalone) {
         setIsInstalled(true);
         setShowInstallButton(false);
-      } else {
-        setIsInstalled(false);
+        return;
       }
+      
+      // Verificar se está em modo PWA no iOS
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (isIOS && window.matchMedia('(display-mode: fullscreen)').matches) {
+        setIsInstalled(true);
+        setShowInstallButton(false);
+        return;
+      }
+      
+      setIsInstalled(false);
     };
 
     // Capturar o evento beforeinstallprompt
@@ -54,6 +67,22 @@ export function usePWAInstall(): UsePWAInstallReturn {
           title: "App Disponível para Instalação! 📱",
           description: "Clique em 'Instalar App' para adicionar o Co-Piloto Driver à sua tela inicial.",
           duration: 5000,
+        });
+      }
+    };
+
+    // Lógica específica para iOS
+    const handleIOSInstall = () => {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (isIOS && !(window.navigator as any).standalone) {
+        setCanInstall(true);
+        setShowInstallButton(true);
+        
+        // Mostrar instruções específicas para iOS
+        toast({
+          title: "Instalar no iOS 📱",
+          description: "Toque no botão de compartilhar e selecione 'Adicionar à Tela Inicial'",
+          duration: 8000,
         });
       }
     };
@@ -83,6 +112,11 @@ export function usePWAInstall(): UsePWAInstallReturn {
 
     // Verificação inicial
     checkIfInstalled();
+    
+    // Verificar iOS após um pequeno delay
+    setTimeout(() => {
+      handleIOSInstall();
+    }, 1000);
 
     // Cleanup
     return () => {
