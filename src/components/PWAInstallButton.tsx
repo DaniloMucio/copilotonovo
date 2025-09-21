@@ -95,8 +95,8 @@ export const PWAInstallButton = ({ canInstall, install, variant = 'icon' }: PWAI
                   </h4>
                   <ol className="text-sm text-blue-700 dark:text-blue-300 space-y-2 list-decimal list-inside">
                     <li>Toque no botão de compartilhar (📤) na barra inferior</li>
-                    <li>Role para baixo e selecione "Adicionar à Tela Inicial"</li>
-                    <li>Toque em "Adicionar" para confirmar</li>
+                    <li>Role para baixo e selecione &quot;Adicionar à Tela Inicial&quot;</li>
+                    <li>Toque em &quot;Adicionar&quot; para confirmar</li>
                     <li>O app aparecerá na sua tela inicial!</li>
                   </ol>
                 </div>
