@@ -33,7 +33,7 @@ export default function AtualizacoesPage() {
   const updates = [
     {
       version: "v1.3.0",
-      date: "Janeiro 2025",
+      date: "Setembro 2025",
       title: "Sistema de Administração Aprimorado",
       description: "Grandes melhorias no painel administrativo com novas funcionalidades e interface otimizada para gestão completa do sistema.",
       features: [
@@ -50,7 +50,7 @@ export default function AtualizacoesPage() {
     },
     {
       version: "v1.2.0",
-      date: "Janeiro 2025",
+      date: "Agosto 2025",
       title: "Sistema de Configurações Unificado",
       description: "Nova página de configurações com todas as opções organizadas em abas intuitivas para melhor experiência do usuário.",
       features: [
