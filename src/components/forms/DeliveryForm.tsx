@@ -107,6 +107,29 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
         }
     }, [transactionToEdit, form]);
 
+    // Monitorar mudanças nos valores do formulário para detectar perda de dados
+    useEffect(() => {
+        const subscription = form.watch((value, { name, type }) => {
+            if (selectedRecipient && name && name.startsWith('recipient')) {
+                console.log('🔍 Mudança detectada no campo do destinatário:', {
+                    name,
+                    type,
+                    newValue: value[name],
+                    selectedRecipient: selectedRecipient.name
+                });
+                
+                // Verificar se os dados do destinatário foram perdidos
+                if (name === 'recipientCompany' && value.recipientCompany !== selectedRecipient.name) {
+                    console.log('⚠️ ATENÇÃO: Dados do destinatário podem ter sido perdidos!');
+                    console.log('Valor esperado:', selectedRecipient.name);
+                    console.log('Valor atual:', value.recipientCompany);
+                }
+            }
+        });
+        
+        return () => subscription.unsubscribe();
+    }, [form, selectedRecipient]);
+
     const handleCepSearch = async (cep: string, type: 'sender' | 'recipient') => {
         const cepOnlyNumbers = cep.replace(/\D/g, '');
         if (cepOnlyNumbers.length !== 8) return;
@@ -133,19 +156,40 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
     };
 
     const handleRecipientChange = (recipientId: string) => {
+        console.log('🔄 handleRecipientChange chamado com:', recipientId);
+        console.log('📋 Estado atual do selectedRecipient:', selectedRecipient);
+        
         if (recipientId === 'new-recipient') {
+            console.log('🆕 Criando novo destinatário');
             setSelectedRecipient(null);
             form.setValue('recipientId', '');
             form.setValue('recipientCompany', '');
             form.setValue('recipientAddress', { cep: '', street: '', number: '', neighborhood: '', city: '', state: '' });
         } else {
             const recipient = recipients.find(r => r.id === recipientId);
+            console.log('🔍 Destinatário encontrado:', recipient);
             if (recipient) {
+                console.log('✅ Preenchendo dados do destinatário:', {
+                    id: recipient.id,
+                    name: recipient.name,
+                    address: recipient.address
+                });
                 setSelectedRecipient(recipient);
                 form.setValue('recipientId', recipient.id);
                 form.setValue('recipientCompany', recipient.name);
                 form.setValue('recipientAddress', recipient.address);
+                
+                // Verificar se os dados foram realmente definidos
+                setTimeout(() => {
+                    const currentValues = form.getValues();
+                    console.log('🔍 Valores do formulário após preenchimento:', {
+                        recipientId: currentValues.recipientId,
+                        recipientCompany: currentValues.recipientCompany,
+                        recipientAddress: currentValues.recipientAddress
+                    });
+                }, 100);
             } else {
+                console.log('❌ Destinatário não encontrado');
                 setSelectedRecipient(null);
                 form.setValue('recipientId', '');
             }
