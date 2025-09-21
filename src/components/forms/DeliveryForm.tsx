@@ -118,7 +118,15 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
     useEffect(() => {
         if (userData?.userType === 'cliente' && !transactionToEdit) {
             const senderCompany = userData.companyName || userData.displayName || '';
-            const senderAddress = userData.address || { cep: '', street: '', number: '', neighborhood: '', city: '', state: '' };
+            const userAddress = userData.address;
+            const senderAddress = {
+                cep: userAddress?.cep || '',
+                street: userAddress?.street || '',
+                number: userAddress?.number || '',
+                neighborhood: userAddress?.neighborhood || '',
+                city: userAddress?.city || '',
+                state: userAddress?.state || '',
+            };
             
             form.setValue('senderCompany', senderCompany);
             form.setValue('senderAddress', senderAddress);
