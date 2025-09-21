@@ -140,8 +140,8 @@ function FinancialContent() {
 
     const activeDrivers = allUsers.filter(user => user.userType === 'motorista' && user.isOnline).length;
     const totalClients = allUsers.filter(user => user.userType === 'cliente').length;
-    const averageOrderValue = deliveryStats.total > 0 ? financialStats.totalRevenue / deliveryStats.total : 0;
-    const revenuePerDriver = activeDrivers > 0 ? financialStats.totalRevenue / activeDrivers : 0;
+    const averageOrderValue = deliveryStats.total > 0 && financialStats?.totalRevenue ? financialStats.totalRevenue / deliveryStats.total : 0;
+    const revenuePerDriver = activeDrivers > 0 && financialStats?.totalRevenue ? financialStats.totalRevenue / activeDrivers : 0;
     const completionRate = deliveryStats.total > 0 ? (deliveryStats.completed / deliveryStats.total) * 100 : 0;
 
     return {
@@ -412,7 +412,7 @@ function FinancialContent() {
               R$ {financialStats?.netProfit.toFixed(2) || '0.00'}
             </div>
             <p className="text-xs text-muted-foreground">
-              Margem: {financialStats?.totalRevenue > 0 ? ((financialStats.netProfit / financialStats.totalRevenue) * 100).toFixed(1) : '0'}%
+              Margem: {financialStats?.totalRevenue && financialStats?.netProfit ? ((financialStats.netProfit / financialStats.totalRevenue) * 100).toFixed(1) : '0'}%
             </p>
           </CardContent>
         </Card>

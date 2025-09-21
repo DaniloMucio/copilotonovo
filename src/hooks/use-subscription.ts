@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { getSubscriptionStatus, updateUsage } from '@/services/subscriptions';
 import { SubscriptionStatus } from '@/types/plans';
@@ -9,7 +9,7 @@ export function useSubscription() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadSubscriptionStatus = async () => {
+  const loadSubscriptionStatus = useCallback(async () => {
     if (!user) {
       setSubscriptionStatus(null);
       setLoading(false);
@@ -27,7 +27,7 @@ export function useSubscription() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const incrementUsage = async (feature: 'deliveries' | 'reports') => {
     if (!user) return;
