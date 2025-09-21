@@ -224,7 +224,7 @@ export default function HomePage() {
             >
               <Badge variant="secondary" className="mb-8 px-6 py-3 text-sm font-medium bg-gradient-to-r from-blue-100 to-purple-100 text-gray-700 border-0 rounded-full shadow-lg">
                 <Sparkles className="h-4 w-4 mr-2" />
-                Nova Versão v1.2.0 Disponível
+                Nova Versão v1.3.0 Disponível
               </Badge>
             </motion.div>
             
