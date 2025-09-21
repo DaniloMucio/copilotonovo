@@ -140,9 +140,9 @@ function FinancialContent() {
 
     const activeDrivers = allUsers.filter(user => user.userType === 'motorista' && user.isOnline).length;
     const totalClients = allUsers.filter(user => user.userType === 'cliente').length;
-    const averageOrderValue = deliveryStats.totalDeliveries > 0 ? financialStats.totalRevenue / deliveryStats.totalDeliveries : 0;
+    const averageOrderValue = deliveryStats.total > 0 ? financialStats.totalRevenue / deliveryStats.total : 0;
     const revenuePerDriver = activeDrivers > 0 ? financialStats.totalRevenue / activeDrivers : 0;
-    const completionRate = deliveryStats.totalDeliveries > 0 ? (deliveryStats.completedDeliveries / deliveryStats.totalDeliveries) * 100 : 0;
+    const completionRate = deliveryStats.total > 0 ? (deliveryStats.completed / deliveryStats.total) * 100 : 0;
 
     return {
       averageOrderValue,

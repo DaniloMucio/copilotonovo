@@ -82,7 +82,7 @@ export function useSubscription() {
 
   useEffect(() => {
     loadSubscriptionStatus();
-  }, [user]);
+  }, [user, loadSubscriptionStatus]);
 
   return {
     subscriptionStatus,
