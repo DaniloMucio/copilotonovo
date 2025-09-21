@@ -59,7 +59,7 @@ export function ClientProfileForm({ user, userData, onFormSubmit }: ClientProfil
       companyName: userData.companyName || '',
       cnpj: userData.cnpj || '',
       phone: userData.phone || '',
-      address: (userData as any).address || {
+      address: userData.address || {
         cep: '',
         street: '',
         number: '',
@@ -76,7 +76,7 @@ export function ClientProfileForm({ user, userData, onFormSubmit }: ClientProfil
       companyName: userData.companyName || '',
       cnpj: userData.cnpj || '',
       phone: userData.phone || '',
-      address: (userData as any).address || {
+      address: userData.address || {
         cep: '',
         street: '',
         number: '',

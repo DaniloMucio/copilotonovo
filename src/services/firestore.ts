@@ -18,6 +18,14 @@ export interface UserData {
   needsAuthSetup?: boolean; // Flag para indicar que precisa configurar autenticação
   createdAt?: Date; // Data de criação do usuário
   updatedAt?: Date; // Data da última atualização
+  address?: {
+    cep?: string;
+    street?: string;
+    number?: string;
+    neighborhood?: string;
+    city?: string;
+    state?: string;
+  };
 }
 
 /**

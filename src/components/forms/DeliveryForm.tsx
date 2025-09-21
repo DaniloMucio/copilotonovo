@@ -84,13 +84,13 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
             senderCompany: userData?.userType === 'cliente' ? (userData.companyName || userData.displayName || '') : '',
             recipientId: '',
             recipientCompany: '',
-            senderAddress: userData?.userType === 'cliente' && (userData as any).address ? {
-                cep: (userData as any).address.cep || '',
-                street: (userData as any).address.street || '',
-                number: (userData as any).address.number || '',
-                neighborhood: (userData as any).address.neighborhood || '',
-                city: (userData as any).address.city || '',
-                state: (userData as any).address.state || '',
+            senderAddress: userData?.userType === 'cliente' && userData.address ? {
+                cep: userData.address.cep || '',
+                street: userData.address.street || '',
+                number: userData.address.number || '',
+                neighborhood: userData.address.neighborhood || '',
+                city: userData.address.city || '',
+                state: userData.address.state || '',
             } : { cep: '', street: '', number: '', neighborhood: '', city: '', state: '' },
             recipientAddress: { cep: '', street: '', number: '', neighborhood: '', city: '', state: '' },
             observations: '',
@@ -118,7 +118,7 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
     useEffect(() => {
         if (userData?.userType === 'cliente' && !transactionToEdit) {
             const senderCompany = userData.companyName || userData.displayName || '';
-            const senderAddress = (userData as any).address || { cep: '', street: '', number: '', neighborhood: '', city: '', state: '' };
+            const senderAddress = userData.address || { cep: '', street: '', number: '', neighborhood: '', city: '', state: '' };
             
             form.setValue('senderCompany', senderCompany);
             form.setValue('senderAddress', senderAddress);
