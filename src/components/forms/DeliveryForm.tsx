@@ -136,9 +136,10 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                     const expectedAddress = selectedRecipient.address;
                     
                     // Verificar se algum campo do endereço foi alterado
-                    const addressChanged = Object.keys(expectedAddress).some(key => 
-                        currentAddress && currentAddress[key] !== expectedAddress[key]
-                    );
+                    const addressChanged = Object.keys(expectedAddress).some(key => {
+                        const typedKey = key as keyof typeof expectedAddress;
+                        return currentAddress && currentAddress[typedKey] !== expectedAddress[typedKey];
+                    });
                     
                     if (addressChanged) {
                         console.log('⚠️ ATENÇÃO: Endereço do destinatário foi alterado! Restaurando...');
