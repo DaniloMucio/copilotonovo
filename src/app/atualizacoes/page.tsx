@@ -32,20 +32,37 @@ export default function AtualizacoesPage() {
 
   const updates = [
     {
+      version: "v1.3.0",
+      date: "Janeiro 2025",
+      title: "Sistema de Administração Aprimorado",
+      description: "Grandes melhorias no painel administrativo com novas funcionalidades e interface otimizada para gestão completa do sistema.",
+      features: [
+        "Página específica para visualização de motoristas online",
+        "Relatórios financeiros com exportação em PDF",
+        "Métricas dinâmicas e análises detalhadas",
+        "Exclusão completa de usuários (Firebase Auth + Firestore)",
+        "Interface limpa sem botões desnecessários",
+        "Correção do fluxo de logout do administrador"
+      ],
+      icon: <Shield className="h-6 w-6" />,
+      type: "feature",
+      highlights: ["Admin Dashboard", "PDF Export", "UX melhorada"]
+    },
+    {
       version: "v1.2.0",
       date: "Janeiro 2025",
       title: "Sistema de Configurações Unificado",
       description: "Nova página de configurações com todas as opções organizadas em abas intuitivas para melhor experiência do usuário.",
       features: [
-        "Tema claro/escuro com detecção automática do sistema",
         "Configurações de perfil unificadas",
         "Gerenciamento de senha seguro",
         "Exclusão de conta com confirmação",
-        "Interface responsiva para dispositivos móveis"
+        "Interface responsiva para dispositivos móveis",
+        "Remoção de abas desnecessárias (Aparência e Privacidade)"
       ],
       icon: <Settings className="h-6 w-6" />,
       type: "feature",
-      highlights: ["Nova funcionalidade", "Melhoria de UX", "Mobile-first"]
+      highlights: ["Nova funcionalidade", "Melhoria de UX", "Interface limpa"]
     },
     {
       version: "v1.1.5",
@@ -116,21 +133,27 @@ export default function AtualizacoesPage() {
   const upcomingFeatures = [
     {
       title: "Aplicativo Android Nativo",
-      description: "App nativo para Android com funcionalidades exclusivas",
+      description: "App nativo para Android com funcionalidades exclusivas e sincronização offline",
       status: "Em desenvolvimento",
       icon: <Globe className="h-5 w-5" />
     },
     {
-      title: "Integração com APIs de Logística",
-      description: "Conectividade com sistemas de rastreamento",
-      status: "Planejado",
+      title: "Sistema de Notificações Push",
+      description: "Notificações em tempo real para entregas e atualizações importantes",
+      status: "Em desenvolvimento",
       icon: <Zap className="h-5 w-5" />
     },
     {
-      title: "Relatórios Avançados",
-      description: "Análises mais detalhadas e insights inteligentes",
+      title: "Relatórios Avançados com IA",
+      description: "Análises inteligentes e insights automáticos baseados em dados históricos",
       status: "Planejado",
       icon: <Heart className="h-5 w-5" />
+    },
+    {
+      title: "Integração com APIs de Logística",
+      description: "Conectividade com sistemas de rastreamento e mapas em tempo real",
+      status: "Planejado",
+      icon: <Shield className="h-5 w-5" />
     }
   ];
 
@@ -237,6 +260,33 @@ export default function AtualizacoesPage() {
               Estamos sempre trabalhando para melhorar sua experiência com novas funcionalidades, 
               correções e otimizações baseadas no seu feedback.
             </p>
+
+            {/* Latest Update Highlight */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: isVisible ? 1 : 0, scale: isVisible ? 1 : 0.9 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-100 shadow-lg"
+            >
+              <div className="flex items-center justify-center mb-4">
+                <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 px-4 py-2">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Última Atualização
+                </Badge>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Sistema de Administração Aprimorado v1.3.0
+              </h2>
+              <p className="text-gray-600 mb-4">
+                Novas funcionalidades administrativas com relatórios em PDF, visualização de motoristas online e interface otimizada.
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Badge variant="outline" className="text-xs">PDF Export</Badge>
+                <Badge variant="outline" className="text-xs">Admin Dashboard</Badge>
+                <Badge variant="outline" className="text-xs">UX Melhorada</Badge>
+                <Badge variant="outline" className="text-xs">Motoristas Online</Badge>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -345,8 +395,8 @@ export default function AtualizacoesPage() {
             </p>
           </motion.div>
 
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {upcomingFeatures.map((feature, index) => (
                 <motion.div
                   key={index}
