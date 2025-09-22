@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DateRangePicker } from '@/components/ui/daterangepicker';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -77,6 +78,9 @@ function EntregasContent() {
     // Estados para multi-seleção de pagamentos
     const [selectedPayments, setSelectedPayments] = useState<string[]>([]);
     const [isProcessingPayments, setIsProcessingPayments] = useState(false);
+    
+    // Estado para modal de rotas
+    const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
     
     // Auto refresh hook
     const { refreshWithDelay } = useAutoRefresh();
@@ -297,7 +301,7 @@ function EntregasContent() {
     };
 
     return (
-        <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
+        <div className="space-y-6">
             <Card>
                 <CardHeader>
                     <CardTitle>Registrar Nova Entrega</CardTitle>
@@ -316,31 +320,18 @@ function EntregasContent() {
             <Separator />
 
             <Tabs defaultValue="history">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-1 h-auto bg-gray-100 dark:bg-gray-800">
-                    <TabsTrigger value="pending" className="text-xs md:text-sm px-1 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <span className="hidden sm:inline">Entregas Pendentes</span>
-                        <span className="sm:hidden">📋 Pendentes</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="history" className="text-xs md:text-sm px-1 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <span className="hidden sm:inline">Histórico de Entregas</span>
-                        <span className="sm:hidden">📊 Histórico</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="to-receive" className="text-xs md:text-sm px-1 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <span className="hidden sm:inline">Entregas a Receber</span>
-                        <span className="sm:hidden">💰 A Receber</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="routes" className="text-xs md:text-sm px-1 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <span className="hidden sm:inline">Gerenciamento de Rotas</span>
-                        <span className="sm:hidden">🗺️ Rotas</span>
-                    </TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="pending">Entregas Pendentes</TabsTrigger>
+                    <TabsTrigger value="history">Histórico de Entregas</TabsTrigger>
+                    <TabsTrigger value="to-receive">Entregas a Receber</TabsTrigger>
                 </TabsList>
                  <TabsContent value="pending">
-                    <Card className="mx-1 sm:mx-0">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-lg sm:text-xl">Entregas Pendentes</CardTitle>
-                            <CardDescription className="text-sm">Novas solicitações de entrega para você aceitar ou recusar.</CardDescription>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Entregas Pendentes</CardTitle>
+                            <CardDescription>Novas solicitações de entrega para você aceitar ou recusar.</CardDescription>
                         </CardHeader>
-                        <CardContent className="px-3 sm:px-6">
+                        <CardContent>
                            <DeliveryHistory 
                                 onAction={handleAction} 
                                 deliveries={pendingDeliveries} 
@@ -352,12 +343,12 @@ function EntregasContent() {
                     </Card>
                 </TabsContent>
                 <TabsContent value="history">
-                    <Card className="mx-1 sm:mx-0">
-                        <CardHeader className="pb-3">
+                    <Card>
+                        <CardHeader>
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                 <div>
-                                    <CardTitle className="text-lg sm:text-xl">Histórico de Entregas</CardTitle>
-                                    <CardDescription className="text-sm">
+                                    <CardTitle>Histórico de Entregas</CardTitle>
+                                    <CardDescription>
                                         {dateRange?.from ? format(dateRange.from, "PPP", { locale: ptBR }) : ''}
                                         {dateRange?.to ? ` - ${format(dateRange.to, "PPP", { locale: ptBR })}` : ''}
                                     </CardDescription>
@@ -368,7 +359,7 @@ function EntregasContent() {
                                 />
                             </div>
                         </CardHeader>
-                        <CardContent className="px-3 sm:px-6">
+                        <CardContent>
                             <DeliveryHistory 
                                 onAction={handleAction} 
                                 deliveries={deliveryHistory} 
@@ -379,12 +370,41 @@ function EntregasContent() {
                     </Card>
                 </TabsContent>
                 <TabsContent value="to-receive">
-                     <Card className="mx-1 sm:mx-0">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-lg sm:text-xl">Entregas a Receber</CardTitle>
-                            <CardDescription className="text-sm">Entregas que foram finalizadas mas ainda não foram pagas.</CardDescription>
+                     <Card>
+                        <CardHeader>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <CardTitle>Entregas a Receber</CardTitle>
+                                    <CardDescription>Entregas que foram finalizadas mas ainda não foram pagas.</CardDescription>
+                                </div>
+                                <Dialog open={isRouteModalOpen} onOpenChange={setIsRouteModalOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button 
+                                            variant="outline" 
+                                            className="bg-blue-50 hover:bg-blue-100 border-blue-200"
+                                        >
+                                            🗺️ Gerenciar Rotas
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                                        <DialogHeader>
+                                            <DialogTitle>Gerenciamento de Rotas</DialogTitle>
+                                        </DialogHeader>
+                                        <RouteOptimizer
+                                            deliveries={allDeliveries}
+                                            selectedDeliveries={selectedDeliveries}
+                                            onSelectionChange={handleSelectDelivery}
+                                            onSelectAll={handleSelectAll}
+                                            onOptimize={handleOptimizeRoute}
+                                            isOptimizing={isOptimizing}
+                                            optimizedRoute={optimizedRoute}
+                                            onClearRoute={() => setOptimizedRoute(null)}
+                                        />
+                                    </DialogContent>
+                                </Dialog>
+                            </div>
                         </CardHeader>
-                        <CardContent className="px-3 sm:px-6">
+                        <CardContent>
                             <div className="space-y-4">
                                 {/* Controles de multi-seleção */}
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
@@ -463,26 +483,6 @@ function EntregasContent() {
                                     </div>
                                 )}
                             </div>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-                <TabsContent value="routes">
-                    <Card className="mx-1 sm:mx-0">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-lg sm:text-xl">Gerenciamento de Rotas</CardTitle>
-                            <CardDescription className="text-sm">Selecione múltiplas entregas para otimizar sua rota e economizar tempo e combustível.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="px-3 sm:px-6">
-                            <RouteOptimizer
-                                deliveries={allDeliveries}
-                                selectedDeliveries={selectedDeliveries}
-                                onSelectionChange={handleSelectDelivery}
-                                onSelectAll={handleSelectAll}
-                                onOptimize={handleOptimizeRoute}
-                                isOptimizing={isOptimizing}
-                                optimizedRoute={optimizedRoute}
-                                onClearRoute={() => setOptimizedRoute(null)}
-                            />
                         </CardContent>
                     </Card>
                 </TabsContent>
