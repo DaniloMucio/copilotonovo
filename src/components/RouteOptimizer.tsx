@@ -36,43 +36,49 @@ export function RouteOptimizer({
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                 <div className="flex items-center space-x-2">
                     <input 
                         type="checkbox" 
                         id="select-all"
-                        className="rounded border-gray-300"
+                        className="rounded border-gray-300 mobile-checkbox"
                         checked={isAllSelected}
                         onChange={(e) => onSelectAll(e.target.checked)}
                     />
-                    <label htmlFor="select-all" className="text-sm font-medium">
-                        Selecionar todas as entregas ({selectedDeliveries.length} selecionadas)
+                    <label htmlFor="select-all" className="text-sm font-medium mobile-checkbox-label">
+                        <span className="hidden sm:inline">Selecionar todas as entregas ({selectedDeliveries.length} selecionadas)</span>
+                        <span className="sm:hidden">Todas ({selectedDeliveries.length})</span>
                     </label>
                 </div>
                 <Button 
                     variant="default" 
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-blue-600 hover:bg-blue-700 mobile-button w-full sm:w-auto"
                     onClick={onOptimize}
                     disabled={isOptimizing || selectedDeliveries.length < 2}
                 >
-                    {isOptimizing ? '🔄 Otimizando...' : '🗺️ Otimizar Rota'}
+                    <span className="hidden sm:inline">
+                        {isOptimizing ? '🔄 Otimizando...' : '🗺️ Otimizar Rota'}
+                    </span>
+                    <span className="sm:hidden">
+                        {isOptimizing ? '🔄 Otimizando...' : '🗺️ Otimizar'}
+                    </span>
                 </Button>
             </div>
             
             <div className="grid gap-4">
                 {availableDeliveries.map((delivery) => (
-                    <div key={delivery.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                    <div key={delivery.id} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 mobile-card">
                         <div className="flex items-start space-x-3">
                             <input 
                                 type="checkbox" 
                                 id={`delivery-${delivery.id}`}
-                                className="mt-1 rounded border-gray-300"
+                                className="mt-1 rounded border-gray-300 mobile-checkbox"
                                 checked={selectedDeliveries.includes(delivery.id)}
                                 onChange={(e) => onSelectionChange(delivery.id, e.target.checked)}
                             />
-                            <div className="flex-1">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="font-medium text-gray-900">
+                            <div className="flex-1 min-w-0">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                                    <h3 className="font-medium text-gray-900 text-sm sm:text-base truncate">
                                         {delivery.description || 'Entrega sem descrição'}
                                     </h3>
                                     <span className={`px-2 py-1 text-xs rounded-full ${
@@ -83,10 +89,10 @@ export function RouteOptimizer({
                                         {delivery.deliveryStatus}
                                     </span>
                                 </div>
-                                <p className="text-sm text-gray-600 mt-1">
+                                <p className="text-xs sm:text-sm text-gray-600 mt-1 break-words">
                                     📍 {buildFullAddress(delivery.recipientAddress)}
                                 </p>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-xs sm:text-sm text-gray-500">
                                     📅 {delivery.date.toDate().toLocaleDateString('pt-BR')}
                                 </p>
                             </div>

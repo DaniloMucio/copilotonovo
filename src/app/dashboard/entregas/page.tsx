@@ -316,11 +316,23 @@ function EntregasContent() {
             <Separator />
 
             <Tabs defaultValue="history">
-                <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="pending">Entregas Pendentes</TabsTrigger>
-                    <TabsTrigger value="history">Histórico de Entregas</TabsTrigger>
-                    <TabsTrigger value="to-receive">Entregas a Receber</TabsTrigger>
-                    <TabsTrigger value="routes">Gerenciamento de Rotas</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-1 h-auto">
+                    <TabsTrigger value="pending" className="text-xs md:text-sm px-2 py-2">
+                        <span className="hidden sm:inline">Entregas Pendentes</span>
+                        <span className="sm:hidden">📋 Pendentes</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="history" className="text-xs md:text-sm px-2 py-2">
+                        <span className="hidden sm:inline">Histórico de Entregas</span>
+                        <span className="sm:hidden">📊 Histórico</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="to-receive" className="text-xs md:text-sm px-2 py-2">
+                        <span className="hidden sm:inline">Entregas a Receber</span>
+                        <span className="sm:hidden">💰 A Receber</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="routes" className="text-xs md:text-sm px-2 py-2">
+                        <span className="hidden sm:inline">Gerenciamento de Rotas</span>
+                        <span className="sm:hidden">🗺️ Rotas</span>
+                    </TabsTrigger>
                 </TabsList>
                  <TabsContent value="pending">
                     <Card>
@@ -375,44 +387,50 @@ function EntregasContent() {
                         <CardContent>
                             <div className="space-y-4">
                                 {/* Controles de multi-seleção */}
-                                <div className="flex items-center justify-between">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                                     <div className="flex items-center space-x-2">
                                         <input 
                                             type="checkbox" 
                                             id="select-all-payments"
-                                            className="rounded border-gray-300"
+                                            className="rounded border-gray-300 mobile-checkbox"
                                             checked={selectedPayments.length === deliveriesToReceive.length && selectedPayments.length > 0}
                                             onChange={(e) => handleSelectAllPayments(e.target.checked)}
                                         />
-                                        <label htmlFor="select-all-payments" className="text-sm font-medium">
-                                            Selecionar todas as entregas ({selectedPayments.length} selecionadas)
+                                        <label htmlFor="select-all-payments" className="text-sm font-medium mobile-checkbox-label">
+                                            <span className="hidden sm:inline">Selecionar todas as entregas ({selectedPayments.length} selecionadas)</span>
+                                            <span className="sm:hidden">Todas ({selectedPayments.length})</span>
                                         </label>
                                     </div>
                                     <Button 
                                         variant="default" 
-                                        className="bg-green-600 hover:bg-green-700"
+                                        className="bg-green-600 hover:bg-green-700 mobile-button w-full sm:w-auto"
                                         onClick={handleProcessPayments}
                                         disabled={isProcessingPayments || selectedPayments.length === 0}
                                     >
-                                        {isProcessingPayments ? '🔄 Processando...' : '💰 Dar Baixa nos Pagamentos'}
+                                        <span className="hidden sm:inline">
+                                            {isProcessingPayments ? '🔄 Processando...' : '💰 Dar Baixa nos Pagamentos'}
+                                        </span>
+                                        <span className="sm:hidden">
+                                            {isProcessingPayments ? '🔄 Processando...' : '💰 Dar Baixa'}
+                                        </span>
                                     </Button>
                                 </div>
                                 
                                 {/* Lista de entregas com checkboxes */}
                                 <div className="grid gap-4">
                                     {deliveriesToReceive.map((delivery) => (
-                                        <div key={delivery.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                                        <div key={delivery.id} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 mobile-card">
                                             <div className="flex items-start space-x-3">
                                                 <input 
                                                     type="checkbox" 
                                                     id={`payment-${delivery.id}`}
-                                                    className="mt-1 rounded border-gray-300"
+                                                    className="mt-1 rounded border-gray-300 mobile-checkbox"
                                                     checked={selectedPayments.includes(delivery.id)}
                                                     onChange={(e) => handleSelectPayment(delivery.id, e.target.checked)}
                                                 />
-                                                <div className="flex-1">
-                                                    <div className="flex items-center justify-between">
-                                                        <h3 className="font-medium text-gray-900">
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                                                        <h3 className="font-medium text-gray-900 text-sm sm:text-base truncate">
                                                             {delivery.description || 'Entrega sem descrição'}
                                                         </h3>
                                                         <div className="flex items-center space-x-2">
@@ -424,13 +442,13 @@ function EntregasContent() {
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <p className="text-sm text-gray-600 mt-1">
+                                                    <p className="text-xs sm:text-sm text-gray-600 mt-1 break-words">
                                                         📍 {delivery.recipientAddress?.street && delivery.recipientAddress?.number 
                                                             ? `${delivery.recipientAddress.street}, ${delivery.recipientAddress.number}, ${delivery.recipientAddress.neighborhood}, ${delivery.recipientAddress.city}, ${delivery.recipientAddress.state}`
                                                             : 'Endereço não informado'
                                                         }
                                                     </p>
-                                                    <p className="text-sm text-gray-500">
+                                                    <p className="text-xs sm:text-sm text-gray-500">
                                                         📅 {delivery.date.toDate().toLocaleDateString('pt-BR')}
                                                     </p>
                                                 </div>
@@ -454,7 +472,7 @@ function EntregasContent() {
                             <CardTitle>Gerenciamento de Rotas</CardTitle>
                             <CardDescription>Selecione múltiplas entregas para otimizar sua rota e economizar tempo e combustível.</CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="mobile-card-content">
                             <RouteOptimizer
                                 deliveries={allDeliveries}
                                 selectedDeliveries={selectedDeliveries}
