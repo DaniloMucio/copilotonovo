@@ -353,10 +353,37 @@ function EntregasContent() {
                                         {dateRange?.to ? ` - ${format(dateRange.to, "PPP", { locale: ptBR })}` : ''}
                                     </CardDescription>
                                 </div>
-                                <DateRangePicker 
-                                    date={dateRange} 
-                                    onDateChange={setDateRange} 
-                                />
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                    <DateRangePicker 
+                                        date={dateRange} 
+                                        onDateChange={setDateRange} 
+                                    />
+                                    <Dialog open={isRouteModalOpen} onOpenChange={setIsRouteModalOpen}>
+                                        <DialogTrigger asChild>
+                                            <Button 
+                                                variant="outline" 
+                                                className="bg-blue-50 hover:bg-blue-100 border-blue-200"
+                                            >
+                                                🗺️ Gerenciar Rotas
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                                            <DialogHeader>
+                                                <DialogTitle>Gerenciamento de Rotas</DialogTitle>
+                                            </DialogHeader>
+                                            <RouteOptimizer
+                                                deliveries={allDeliveries}
+                                                selectedDeliveries={selectedDeliveries}
+                                                onSelectionChange={handleSelectDelivery}
+                                                onSelectAll={handleSelectAll}
+                                                onOptimize={handleOptimizeRoute}
+                                                isOptimizing={isOptimizing}
+                                                optimizedRoute={optimizedRoute}
+                                                onClearRoute={() => setOptimizedRoute(null)}
+                                            />
+                                        </DialogContent>
+                                    </Dialog>
+                                </div>
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -372,37 +399,8 @@ function EntregasContent() {
                 <TabsContent value="to-receive">
                      <Card>
                         <CardHeader>
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                <div>
-                                    <CardTitle>Entregas a Receber</CardTitle>
-                                    <CardDescription>Entregas que foram finalizadas mas ainda não foram pagas.</CardDescription>
-                                </div>
-                                <Dialog open={isRouteModalOpen} onOpenChange={setIsRouteModalOpen}>
-                                    <DialogTrigger asChild>
-                                        <Button 
-                                            variant="outline" 
-                                            className="bg-blue-50 hover:bg-blue-100 border-blue-200"
-                                        >
-                                            🗺️ Gerenciar Rotas
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                                        <DialogHeader>
-                                            <DialogTitle>Gerenciamento de Rotas</DialogTitle>
-                                        </DialogHeader>
-                                        <RouteOptimizer
-                                            deliveries={allDeliveries}
-                                            selectedDeliveries={selectedDeliveries}
-                                            onSelectionChange={handleSelectDelivery}
-                                            onSelectAll={handleSelectAll}
-                                            onOptimize={handleOptimizeRoute}
-                                            isOptimizing={isOptimizing}
-                                            optimizedRoute={optimizedRoute}
-                                            onClearRoute={() => setOptimizedRoute(null)}
-                                        />
-                                    </DialogContent>
-                                </Dialog>
-                            </div>
+                            <CardTitle>Entregas a Receber</CardTitle>
+                            <CardDescription>Entregas que foram finalizadas mas ainda não foram pagas.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
