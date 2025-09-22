@@ -191,7 +191,7 @@ export function Sidebar({ className }: SidebarProps) {
           </Button>
         </SheetTrigger>
         
-        <SheetContent side="left" className="w-[85vw] max-w-sm p-0">
+        <SheetContent side="left" className="w-[85vw] max-w-sm p-0 bg-white dark:bg-gray-900 border-r">
           <div className="flex flex-col h-full">
             {/* Header do menu lateral */}
             <div className="flex items-center justify-between p-3 md:p-4 border-b">
