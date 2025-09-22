@@ -154,7 +154,7 @@ export function RouteOptimizer({
                                 const googleMapsUrl = generateGoogleMapsUrl(optimizedRoute.deliveries);
                                 console.log('Google Maps URL:', googleMapsUrl);
                                 console.log('Deliveries data:', optimizedRoute.deliveries);
-                                console.log('Addresses:', optimizedRoute.deliveries.map(d => d.address));
+                                console.log('Addresses:', optimizedRoute.deliveries.map((d: any) => d.address));
                                 
                                 // Verificar se a URL foi gerada corretamente
                                 if (googleMapsUrl.includes('google.com/maps')) {
