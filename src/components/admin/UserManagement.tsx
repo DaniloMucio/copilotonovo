@@ -359,15 +359,21 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-48" />
+      <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <CardHeader className="relative z-10">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg animate-pulse"></div>
+            <Skeleton className="h-6 w-48" />
+          </div>
           <Skeleton className="h-4 w-96" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative z-10">
           <div className="space-y-4">
             {[1, 2, 3, 4, 5].map((i) => (
-              <Skeleton key={i} className="h-16 w-full" />
+              <div key={i} className="p-3 bg-white/50 backdrop-blur-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-300">
+                <Skeleton className="h-16 w-full" />
+              </div>
             ))}
           </div>
         </CardContent>
@@ -378,64 +384,67 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
   return (
     <div className="space-y-6">
       {/* Filtros */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
+      <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <CardHeader className="relative z-10">
+          <CardTitle className="flex items-center gap-2 text-gray-900">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+              <Users className="h-4 w-4 text-white" />
+            </div>
             Gestão de Usuários
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-gray-600">
             Gerencie todos os usuários do sistema
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative z-10">
           {/* Filtros avançados */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
               <Input
                 placeholder="Buscar usuários..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
               />
             </div>
 
             <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
-              <SelectTrigger>
+              <SelectTrigger className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
                 <SelectValue placeholder="Filtrar por tipo" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os tipos</SelectItem>
-                <SelectItem value="motorista">Motoristas</SelectItem>
-                <SelectItem value="cliente">Clientes</SelectItem>
-                <SelectItem value="admin">Administradores</SelectItem>
+              <SelectContent className="bg-white border-0 shadow-2xl rounded-2xl">
+                <SelectItem value="all" className="text-gray-900 hover:bg-gray-50">Todos os tipos</SelectItem>
+                <SelectItem value="motorista" className="text-gray-900 hover:bg-gray-50">Motoristas</SelectItem>
+                <SelectItem value="cliente" className="text-gray-900 hover:bg-gray-50">Clientes</SelectItem>
+                <SelectItem value="admin" className="text-gray-900 hover:bg-gray-50">Administradores</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
+              <SelectTrigger className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
                 <SelectValue placeholder="Filtrar por status" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="active">Ativos</SelectItem>
-                <SelectItem value="inactive">Inativos</SelectItem>
+              <SelectContent className="bg-white border-0 shadow-2xl rounded-2xl">
+                <SelectItem value="all" className="text-gray-900 hover:bg-gray-50">Todos os status</SelectItem>
+                <SelectItem value="active" className="text-gray-900 hover:bg-gray-50">Ativos</SelectItem>
+                <SelectItem value="inactive" className="text-gray-900 hover:bg-gray-50">Inativos</SelectItem>
               </SelectContent>
             </Select>
 
             <div className="flex gap-2">
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
                   <SelectValue placeholder="Ordenar por" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">Nome</SelectItem>
-                  <SelectItem value="email">Email</SelectItem>
-                  <SelectItem value="type">Tipo</SelectItem>
-                  <SelectItem value="deliveries">Entregas</SelectItem>
-                  <SelectItem value="revenue">Receita</SelectItem>
-                  <SelectItem value="lastActivity">Última atividade</SelectItem>
+                <SelectContent className="bg-white border-0 shadow-2xl rounded-2xl">
+                  <SelectItem value="name" className="text-gray-900 hover:bg-gray-50">Nome</SelectItem>
+                  <SelectItem value="email" className="text-gray-900 hover:bg-gray-50">Email</SelectItem>
+                  <SelectItem value="type" className="text-gray-900 hover:bg-gray-50">Tipo</SelectItem>
+                  <SelectItem value="deliveries" className="text-gray-900 hover:bg-gray-50">Entregas</SelectItem>
+                  <SelectItem value="revenue" className="text-gray-900 hover:bg-gray-50">Receita</SelectItem>
+                  <SelectItem value="lastActivity" className="text-gray-900 hover:bg-gray-50">Última atividade</SelectItem>
                 </SelectContent>
               </Select>
               
@@ -443,6 +452,7 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
               >
                 {sortOrder === 'asc' ? '↑' : '↓'}
               </Button>
@@ -467,7 +477,7 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                   size="sm"
                   onClick={() => handleBulkToggleStatus('activate')}
                   disabled={isBulkActionLoading}
-                  className="text-green-600 hover:text-green-700"
+                  className="bg-green-600 text-white hover:bg-green-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <UserCheck className="h-4 w-4 mr-2" />
                   Ativar Selecionados
@@ -478,7 +488,7 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                   size="sm"
                   onClick={() => handleBulkToggleStatus('deactivate')}
                   disabled={isBulkActionLoading}
-                  className="text-red-600 hover:text-red-700"
+                  className="bg-red-600 text-white hover:bg-red-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <UserX className="h-4 w-4 mr-2" />
                   Desativar Selecionados
@@ -488,6 +498,7 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => setSelectedUsers(new Set())}
+                  className="bg-gray-600 text-white hover:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
                 >
                   <X className="h-4 w-4 mr-2" />
                   Limpar Seleção
@@ -513,28 +524,33 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
           {/* Lista de usuários */}
           <div className="space-y-3">
             {/* Cabeçalho com seleção múltipla */}
-            <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
-                  onChange={handleSelectAll}
-                  className="rounded border-gray-300"
-                />
-                <span className="text-sm font-medium">Selecionar todos</span>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {filteredUsers.length} usuários encontrados
+            <div className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500 p-4">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10 flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
+                    onChange={handleSelectAll}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm font-medium text-gray-900">Selecionar todos</span>
+                </div>
+                <div className="text-sm text-gray-600">
+                  {filteredUsers.length} usuários encontrados
+                </div>
               </div>
             </div>
 
             {filteredUsers.map((user) => (
               <div
                 key={user.uid}
-                className={`flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors ${
-                  selectedUsers.has(user.uid) ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : ''
+                className={`shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500 p-4 ${
+                  selectedUsers.has(user.uid) ? 'ring-2 ring-blue-500 shadow-xl' : ''
                 }`}
               >
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative z-10 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {/* Checkbox de seleção */}
                   <input
@@ -547,18 +563,18 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                   
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium">{user.displayName}</p>
-                      <Badge variant="outline" className="capitalize">
+                      <p className="font-medium text-gray-900">{user.displayName}</p>
+                      <Badge variant="outline" className="capitalize bg-gradient-to-r from-blue-600/10 to-purple-600/10 text-blue-600 border-0 rounded-full shadow-sm">
                         {user.userType}
                       </Badge>
                       {getStatusBadge(user)}
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-4 text-sm text-gray-600">
                       <span className="flex items-center gap-1">
                         <Mail className="h-3 w-3" />
                         {user.email}
                         {user.needsAuthSetup && (
-                          <Badge variant="outline" className="ml-2 text-xs">
+                          <Badge variant="outline" className="ml-2 text-xs bg-yellow-100 text-yellow-600 border-0 rounded-full shadow-sm">
                             Precisa configurar login
                           </Badge>
                         )}
@@ -581,8 +597,8 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                 
                 <div className="flex items-center gap-2">
                   <div className="text-right text-sm">
-                    <p>{user.totalDeliveries || 0} entregas</p>
-                    <p className="text-muted-foreground">
+                    <p className="text-gray-900 font-medium">{user.totalDeliveries || 0} entregas</p>
+                    <p className="text-gray-600">
                       R$ {(user.totalRevenue || 0).toFixed(2)}
                     </p>
                   </div>
@@ -597,9 +613,14 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                         e.stopPropagation();
                         handleToggleUserStatus(user);
                       }}
-                      className={user.userType === 'motorista' 
-                        ? (user.isOnline ? "bg-green-100 hover:bg-green-200" : "bg-gray-100 hover:bg-gray-200")
-                        : (user.isActive ? "bg-green-100 hover:bg-green-200" : "bg-gray-100 hover:bg-gray-200")
+                      className={`rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ${
+                        user.userType === 'motorista' 
+                          ? (user.isOnline ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-600 text-white hover:bg-gray-700")
+                          : (user.isActive ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-600 text-white hover:bg-gray-700")
+                      }`}
+                      title={user.userType === 'motorista' 
+                        ? (user.isOnline ? "Motorista online - Clique para desativar" : "Motorista offline - Clique para ativar")
+                        : (user.isActive ? "Usuário ativo - Clique para desativar" : "Usuário inativo - Clique para ativar")
                       }
                     >
                       {user.userType === 'motorista' 
@@ -617,6 +638,8 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                         setEditingUser(user);
                         setShowEditDialog(true);
                       }}
+                      className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                      title="Editar usuário"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -630,6 +653,7 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                         handleUserClick(user);
                       }}
                       title="Ver detalhes"
+                      className="bg-green-600 text-white hover:bg-green-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -642,21 +666,25 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                         e.stopPropagation();
                         handleDeleteUser(user);
                       }}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="bg-red-600 text-white hover:bg-red-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                      title="Excluir usuário"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
+                </div>
                 </div>
               </div>
             ))}
           </div>
 
           {filteredUsers.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <Users className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">Nenhum usuário encontrado</p>
-              <p className="text-sm">Tente ajustar os filtros de busca</p>
+            <div className="text-center py-8">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
+                <Users className="h-8 w-8 text-white" />
+              </div>
+              <p className="text-lg font-medium text-gray-900">Nenhum usuário encontrado</p>
+              <p className="text-sm text-gray-600">Tente ajustar os filtros de busca</p>
             </div>
           )}
         </CardContent>
@@ -771,10 +799,10 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
 
       {/* Modal de edição de usuário */}
       <Dialog open={showEditDialog} onOpenChange={handleCloseEditDialog}>
-        <DialogContent className="max-w-2xl" aria-describedby="edit-user-description">
-          <DialogHeader>
-            <DialogTitle>Editar Usuário</DialogTitle>
-            <DialogDescription id="edit-user-description">
+        <DialogContent className="max-w-2xl bg-white border-0 shadow-2xl rounded-2xl" aria-describedby="edit-user-description">
+          <DialogHeader className="bg-gradient-to-r from-blue-600/5 to-purple-600/5 p-6 rounded-t-2xl">
+            <DialogTitle className="text-gray-900">Editar Usuário</DialogTitle>
+            <DialogDescription id="edit-user-description" className="text-gray-600">
               Modifique as informações do usuário selecionado
             </DialogDescription>
           </DialogHeader>
@@ -791,13 +819,13 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
 
       {/* Modal de confirmação de exclusão */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
+        <AlertDialogContent className="bg-white border-0 shadow-2xl rounded-2xl">
+          <AlertDialogHeader className="bg-gradient-to-r from-red-600/5 to-red-500/5 p-6 rounded-t-2xl">
+            <AlertDialogTitle className="flex items-center gap-2 text-gray-900">
               <Trash2 className="h-5 w-5 text-red-600" />
               Confirmar Exclusão
             </AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="text-gray-600">
               <div className="space-y-3">
                 <div>
                   Tem certeza de que deseja excluir <strong>COMPLETAMENTE</strong> o usuário <strong>{userToDelete?.displayName}</strong>?
@@ -844,13 +872,13 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={cancelDeleteUser} disabled={isDeleting}>
+            <AlertDialogCancel onClick={cancelDeleteUser} disabled={isDeleting} className="bg-gray-500 text-white hover:bg-gray-600 rounded-xl shadow-md">
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDeleteUser}
               disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-lg"
             >
               {isDeleting ? 'Excluindo...' : 'Sim, excluir usuário'}
             </AlertDialogAction>

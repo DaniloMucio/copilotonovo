@@ -70,7 +70,11 @@ export function NotesManager() {
           onChange={(e) => setNotes(e.target.value)}
           rows={10}
         />
-        <Button onClick={handleSave} disabled={isSaving}>
+        <Button 
+          onClick={handleSave} 
+          disabled={isSaving}
+          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+        >
             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isSaving ? "Salvando..." : "Salvar Anotações"}
         </Button>

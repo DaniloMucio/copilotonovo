@@ -108,14 +108,17 @@ function MaintenanceCard({
   };
 
   return (
-    <Card className={`hover:shadow-lg transition-shadow ${isUrgent ? 'ring-2 ring-orange-500' : ''}`}>
-      <CardHeader className="pb-3">
+    <Card className={`shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500 ${isUrgent ? 'ring-2 ring-orange-500' : ''}`}>
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <CardHeader className="pb-3 relative z-10">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">{getTypeIcon(item.type)}</span>
+            <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-lg">
+              <Wrench className="h-4 w-4 text-white" />
+            </div>
             <div>
-              <CardTitle className="text-lg">{item.description}</CardTitle>
-              <CardDescription className="text-sm">
+              <CardTitle className="text-lg text-gray-900">{item.description}</CardTitle>
+              <CardDescription className="text-sm text-gray-600">
                 {getTypeName(item.type)} • R$ {item.cost.toFixed(2)}
               </CardDescription>
             </div>
@@ -130,44 +133,52 @@ function MaintenanceCard({
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 relative z-10">
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <Label className="text-muted-foreground">Última manutenção</Label>
-            <p className="font-medium">{format(new Date(item.date), 'dd/MM/yyyy')}</p>
+            <Label className="text-gray-600">Última manutenção</Label>
+            <p className="font-medium text-gray-900">{format(new Date(item.date), 'dd/MM/yyyy')}</p>
           </div>
           <div>
-            <Label className="text-muted-foreground">Próxima manutenção</Label>
-            <p className="font-medium">{format(new Date(item.nextDate), 'dd/MM/yyyy')}</p>
+            <Label className="text-gray-600">Próxima manutenção</Label>
+            <p className="font-medium text-gray-900">{format(new Date(item.nextDate), 'dd/MM/yyyy')}</p>
           </div>
           <div>
-            <Label className="text-muted-foreground">KM atual</Label>
-            <p className="font-medium">{item.km.toLocaleString()}</p>
+            <Label className="text-gray-600">KM atual</Label>
+            <p className="font-medium text-gray-900">{item.km.toLocaleString()}</p>
           </div>
           <div>
-            <Label className="text-muted-foreground">Próximo KM</Label>
-            <p className="font-medium">{item.nextKm.toLocaleString()}</p>
+            <Label className="text-gray-600">Próximo KM</Label>
+            <p className="font-medium text-gray-900">{item.nextKm.toLocaleString()}</p>
           </div>
         </div>
         
         {item.notes && (
-          <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
+          <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-200">
             {item.notes}
           </div>
         )}
         
         <div className="flex items-center justify-between">
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-gray-600">
             {daysUntilNext > 0 ? `${daysUntilNext} dias restantes` : 'Vencido há ' + Math.abs(daysUntilNext) + ' dias'}
             {kmUntilNext > 0 ? ` • ${kmUntilNext.toLocaleString()} km restantes` : ' • KM vencido'}
           </div>
           
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => onEdit(item)}>
+            <Button 
+              className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+              size="sm" 
+              onClick={() => onEdit(item)}
+            >
               <Edit className="h-3 w-3 mr-1" />
               Editar
             </Button>
-            <Button variant="outline" size="sm" onClick={() => onDelete(item.id)}>
+            <Button 
+              className="bg-red-600 text-white hover:bg-red-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+              size="sm" 
+              onClick={() => onDelete(item.id)}
+            >
               <Trash2 className="h-3 w-3 mr-1" />
               Excluir
             </Button>
@@ -205,14 +216,17 @@ function FuelRecordCard({ record, onEdit, onDelete }: {
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
-      <CardHeader className="pb-3">
+    <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+      <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <CardHeader className="pb-3 relative z-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">{getFuelTypeIcon(record.fuelType)}</span>
+            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg">
+              <Fuel className="h-4 w-4 text-white" />
+            </div>
             <div>
-              <CardTitle className="text-lg">{record.station}</CardTitle>
-              <CardDescription className="text-sm">
+              <CardTitle className="text-lg text-gray-900">{record.station}</CardTitle>
+              <CardDescription className="text-sm text-gray-600">
                 {getFuelTypeName(record.fuelType)} • {format(new Date(record.date), 'dd/MM/yyyy')}
               </CardDescription>
             </div>
@@ -222,36 +236,44 @@ function FuelRecordCard({ record, onEdit, onDelete }: {
             <div className="text-lg font-bold text-green-600">
               R$ {record.cost.toFixed(2)}
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-gray-600">
               {record.liters}L • R$ {(record.cost / record.liters).toFixed(2)}/L
             </div>
           </div>
         </div>
       </CardHeader>
       
-      <CardContent>
+      <CardContent className="relative z-10">
         <div className="grid grid-cols-2 gap-4 text-sm mb-3">
           <div>
-            <Label className="text-muted-foreground">Quilometragem</Label>
-            <p className="font-medium">{record.km.toLocaleString()} km</p>
+            <Label className="text-gray-600">Quilometragem</Label>
+            <p className="font-medium text-gray-900">{record.km.toLocaleString()} km</p>
           </div>
           <div>
-            <Label className="text-muted-foreground">Consumo médio</Label>
-            <p className="font-medium">{(record.km / record.liters).toFixed(1)} km/L</p>
+            <Label className="text-gray-600">Consumo médio</Label>
+            <p className="font-medium text-gray-900">{(record.km / record.liters).toFixed(1)} km/L</p>
           </div>
         </div>
         
         <div className="flex items-center justify-between">
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-gray-600">
             KM: {record.km.toLocaleString()}
           </div>
           
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => onEdit(record)}>
+            <Button 
+              className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+              size="sm" 
+              onClick={() => onEdit(record)}
+            >
               <Edit className="h-3 w-3 mr-1" />
               Editar
             </Button>
-            <Button variant="outline" size="sm" onClick={() => onDelete(record.id || '')}>
+            <Button 
+              className="bg-red-600 text-white hover:bg-red-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+              size="sm" 
+              onClick={() => onDelete(record.id || '')}
+            >
               <Trash2 className="h-3 w-3 mr-1" />
               Excluir
             </Button>
@@ -674,29 +696,36 @@ export function VehicleManager() {
       </div>
 
       {/* Lista de veículos */}
-      <Card>
-        <CardHeader>
+      <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <CardHeader className="relative z-10">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Car className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-gray-900">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                <Car className="h-4 w-4 text-white" />
+              </div>
               Meus Veículos ({vehicles.length})
             </CardTitle>
-            <Button onClick={handleAddVehicle} variant="outline" size="sm">
+            <Button 
+              onClick={handleAddVehicle} 
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+              size="sm"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Veículo
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative z-10">
           {vehicles.length > 0 ? (
             <div className="space-y-4">
               {vehicles.map((vehicle) => (
                 <div 
                   key={vehicle.id} 
-                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                  className={`p-4 border rounded-xl cursor-pointer transition-all duration-300 ${
                     selectedVehicle?.id === vehicle.id 
-                      ? 'border-primary bg-primary/5' 
-                      : 'hover:bg-muted/50'
+                      ? 'border-blue-500 bg-blue-50 shadow-lg' 
+                      : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
                   }`}
                   onClick={() => setSelectedVehicle(vehicle)}
                 >
@@ -731,7 +760,7 @@ export function VehicleManager() {
                     </div>
                     <div className="flex gap-2 ml-4">
                       <Button 
-                        variant="outline" 
+                        className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
                         size="sm" 
                         onClick={(e) => {
                           e.stopPropagation();
@@ -743,7 +772,7 @@ export function VehicleManager() {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button 
-                            variant="outline" 
+                            className="bg-red-600 text-white hover:bg-red-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
                             size="sm"
                             onClick={(e) => e.stopPropagation()}
                           >
@@ -799,61 +828,73 @@ export function VehicleManager() {
 
       {/* Métricas rápidas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                 <Card>
-           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-             <CardTitle className="text-sm font-medium">Custo Total Manutenção</CardTitle>
-             <Wrench className="h-4 w-4 text-muted-foreground" />
-           </CardHeader>
-           <CardContent>
-             <div className="text-2xl font-bold text-red-600">
-               R$ {totalMaintenanceWithTransactions.toFixed(2)}
-             </div>
-             <p className="text-xs text-muted-foreground">
-               {maintenanceItems.length} itens + transações
-             </p>
-           </CardContent>
-         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Custo Total Combustível</CardTitle>
-            <Fuel className="h-4 w-4 text-muted-foreground" />
+        <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+          <div className="absolute inset-0 bg-gradient-to-r from-red-600/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-gray-900">Custo Total Manutenção</CardTitle>
+            <div className="w-8 h-8 bg-gradient-to-br from-red-600 to-red-500 rounded-lg flex items-center justify-center shadow-lg">
+              <Wrench className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
+            <div className="text-2xl font-bold text-red-600">
+              R$ {totalMaintenanceWithTransactions.toFixed(2)}
+            </div>
+            <p className="text-xs text-gray-600">
+              {maintenanceItems.length} itens + transações
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-600/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-gray-900">Custo Total Combustível</CardTitle>
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-orange-500 rounded-lg flex items-center justify-center shadow-lg">
+              <Fuel className="h-4 w-4 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent className="relative z-10">
             <div className="text-2xl font-bold text-orange-600">
               R$ {totalFuelCost.toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-600">
               {fuelRecords.length} abastecimentos
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Manutenções Urgentes</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-orange-600" />
+        <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-600/5 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-gray-900">Manutenções Urgentes</CardTitle>
+            <div className="w-8 h-8 bg-gradient-to-br from-yellow-600 to-yellow-500 rounded-lg flex items-center justify-center shadow-lg">
+              <AlertTriangle className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             <div className="text-2xl font-bold text-orange-600">
               {urgentMaintenance.length}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-600">
               Requerem atenção
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Eficiência</CardTitle>
-            <Zap className="h-4 w-4 text-green-600" />
+        <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+          <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-gray-900">Eficiência</CardTitle>
+            <div className="w-8 h-8 bg-gradient-to-br from-green-600 to-green-500 rounded-lg flex items-center justify-center shadow-lg">
+              <Zap className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             <div className="text-2xl font-bold text-green-600">
               {selectedVehicle?.averageConsumption || 0}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-600">
               km/L médio
             </p>
           </CardContent>
@@ -862,35 +903,62 @@ export function VehicleManager() {
 
       {/* Tabs principais */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="maintenance">Manutenção</TabsTrigger>
-          <TabsTrigger value="fuel">Combustível</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm border-0 rounded-2xl shadow-lg p-1">
+          <TabsTrigger 
+            value="overview"
+            className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+          >
+            Visão Geral
+          </TabsTrigger>
+          <TabsTrigger 
+            value="maintenance"
+            className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+          >
+            Manutenção
+          </TabsTrigger>
+          <TabsTrigger 
+            value="fuel"
+            className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+          >
+            Combustível
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                         {/* Manutenções recentes */}
-             <Card>
-               <CardHeader>
-                 <div>
-                   <CardTitle className="text-lg">Manutenções Recentes</CardTitle>
-                   <CardDescription>Últimas manutenções realizadas</CardDescription>
-                 </div>
-               </CardHeader>
-              <CardContent className="space-y-3">
+            {/* Manutenções recentes */}
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                    <Wrench className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg text-gray-900">Manutenções Recentes</CardTitle>
+                    <CardDescription className="text-gray-600">Últimas manutenções realizadas</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3 relative z-10">
                 {maintenanceItems.slice(0, 3).map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div key={item.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-md transition-all duration-300">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">🔧</span>
+                      <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-md">
+                        <Wrench className="h-4 w-4 text-white" />
+                      </div>
                       <div>
-                        <p className="font-medium">{item.description}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="font-medium text-gray-900">{item.description}</p>
+                        <p className="text-sm text-gray-600">
                           {format(new Date(item.date), 'dd/MM/yyyy')} • R$ {item.cost.toFixed(2)}
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => handleEditMaintenance(item)}>
+                    <Button 
+                      className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                      size="sm" 
+                      onClick={() => handleEditMaintenance(item)}
+                    >
                       <Edit className="h-3 w-3" />
                     </Button>
                   </div>
@@ -898,22 +966,30 @@ export function VehicleManager() {
               </CardContent>
             </Card>
 
-                         {/* Abastecimentos recentes */}
-             <Card>
-               <CardHeader>
-                 <div>
-                   <CardTitle className="text-lg">Abastecimentos Recentes</CardTitle>
-                   <CardDescription>Últimos abastecimentos registrados</CardDescription>
-                 </div>
-               </CardHeader>
-              <CardContent className="space-y-3">
+            {/* Abastecimentos recentes */}
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-green-600 to-green-500 rounded-lg flex items-center justify-center shadow-lg">
+                    <Fuel className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg text-gray-900">Abastecimentos Recentes</CardTitle>
+                    <CardDescription className="text-gray-600">Últimos abastecimentos registrados</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3 relative z-10">
                 {fuelRecords.slice(0, 3).map((record) => (
-                  <div key={record.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div key={record.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-md transition-all duration-300">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">⛽</span>
+                      <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-md">
+                        <Fuel className="h-4 w-4 text-white" />
+                      </div>
                       <div>
-                        <p className="font-medium">{record.station}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="font-medium text-gray-900">{record.station}</p>
+                        <p className="text-sm text-gray-600">
                           {format(new Date(record.date), 'dd/MM/yyyy')} • {record.liters}L
                         </p>
                       </div>
@@ -928,19 +1004,22 @@ export function VehicleManager() {
           </div>
         </TabsContent>
         
-                 <TabsContent value="maintenance" className="space-y-4">
-           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-             <div>
-               <h3 className="text-lg font-semibold">Controle de Manutenção</h3>
-               <p className="text-sm text-muted-foreground mt-1">
-                 Registre e acompanhe as manutenções do seu veículo
-               </p>
-             </div>
-             <Button onClick={handleAddMaintenance} className="bg-blue-600 hover:bg-blue-700">
-               <Plus className="h-4 w-4 mr-2" />
-               Nova Manutenção
-             </Button>
-           </div>
+        <TabsContent value="maintenance" className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Controle de Manutenção</h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Registre e acompanhe as manutenções do seu veículo
+              </p>
+            </div>
+            <Button 
+              onClick={handleAddMaintenance} 
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Manutenção
+            </Button>
+          </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {maintenanceItems.map((item) => (
@@ -955,13 +1034,13 @@ export function VehicleManager() {
           </div>
         </TabsContent>
         
-                 <TabsContent value="fuel" className="space-y-4">
-           <div>
-             <h3 className="text-lg font-semibold">Controle de Combustível</h3>
-             <p className="text-sm text-muted-foreground mt-1">
-               Abastecimentos registrados através do formulário de despesas
-             </p>
-           </div>
+        <TabsContent value="fuel" className="space-y-4">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Controle de Combustível</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Abastecimentos registrados através do formulário de despesas
+            </p>
+          </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {fuelRecords.map((record) => (

@@ -192,15 +192,21 @@ function OnlineDriversContent() {
             variant="outline"
             size="sm"
             onClick={() => router.push('/dashboard/admin')}
+            className="bg-gray-600 text-white hover:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Motoristas Online</h1>
-            <p className="text-muted-foreground">
-              {filteredDrivers.length} motorista(s) ativo(s) no momento
-            </p>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
+              <Users className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Motoristas Online</h1>
+              <p className="text-gray-600">
+                {filteredDrivers.length} motorista(s) ativo(s) no momento
+              </p>
+            </div>
           </div>
         </div>
         
@@ -208,6 +214,7 @@ function OnlineDriversContent() {
           variant="outline"
           size="sm"
           onClick={loadOnlineDrivers}
+          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
         >
           <RefreshCw className="h-4 w-4 mr-2" />
           Atualizar
@@ -215,31 +222,32 @@ function OnlineDriversContent() {
       </div>
 
       {/* Filtros */}
-      <Card>
-        <CardContent className="p-4">
+      <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <CardContent className="p-4 relative z-10">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="Buscar motorista..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
                 />
               </div>
             </div>
             
             <div className="flex gap-2">
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-[140px] bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
                   <SelectValue placeholder="Ordenar por" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">Nome</SelectItem>
-                  <SelectItem value="email">Email</SelectItem>
-                  <SelectItem value="lastActivity">Última atividade</SelectItem>
-                  <SelectItem value="deliveries">Entregas</SelectItem>
+                <SelectContent className="bg-white border-0 shadow-2xl rounded-2xl">
+                  <SelectItem value="name" className="text-gray-900 hover:bg-gray-50">Nome</SelectItem>
+                  <SelectItem value="email" className="text-gray-900 hover:bg-gray-50">Email</SelectItem>
+                  <SelectItem value="lastActivity" className="text-gray-900 hover:bg-gray-50">Última atividade</SelectItem>
+                  <SelectItem value="deliveries" className="text-gray-900 hover:bg-gray-50">Entregas</SelectItem>
                 </SelectContent>
               </Select>
               
@@ -247,6 +255,7 @@ function OnlineDriversContent() {
                 variant="outline"
                 size="sm"
                 onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                className="bg-blue-600 text-white hover:bg-blue-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
               >
                 {sortOrder === 'asc' ? '↑' : '↓'}
               </Button>
@@ -258,11 +267,14 @@ function OnlineDriversContent() {
       {/* Lista de motoristas */}
       <div className="space-y-3">
         {filteredDrivers.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <UserX className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Nenhum motorista online</h3>
-              <p className="text-muted-foreground">
+          <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardContent className="p-8 text-center relative z-10">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
+                <UserX className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2 text-gray-900">Nenhum motorista online</h3>
+              <p className="text-gray-600">
                 Não há motoristas ativos no momento.
               </p>
             </CardContent>
@@ -271,25 +283,26 @@ function OnlineDriversContent() {
           filteredDrivers.map((driver) => (
             <Card 
               key={driver.uid}
-              className={`cursor-pointer transition-colors hover:bg-muted/50 ${
-                selectedDriver?.uid === driver.uid ? 'ring-2 ring-primary' : ''
+              className={`shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500 cursor-pointer ${
+                selectedDriver?.uid === driver.uid ? 'ring-2 ring-blue-500 shadow-xl' : ''
               }`}
               onClick={() => handleDriverClick(driver)}
             >
-              <CardContent className="p-4">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardContent className="p-4 relative z-10">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Users className="h-6 w-6 text-primary" />
+                    <div className="h-12 w-12 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+                      <Users className="h-6 w-6 text-white" />
                     </div>
                     
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{driver.displayName}</h3>
+                        <h3 className="font-semibold text-gray-900">{driver.displayName}</h3>
                         {getStatusBadge(driver)}
                       </div>
                       
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
                         <span className="flex items-center gap-1">
                           <Mail className="h-3 w-3" />
                           {driver.email}
@@ -312,8 +325,8 @@ function OnlineDriversContent() {
                   
                   <div className="flex items-center gap-2">
                     <div className="text-right text-sm">
-                      <p className="font-medium">{driver.totalDeliveries || 0} entregas</p>
-                      <p className="text-muted-foreground">
+                      <p className="font-medium text-gray-900">{driver.totalDeliveries || 0} entregas</p>
+                      <p className="text-gray-600">
                         R$ {(driver.totalRevenue || 0).toFixed(2)}
                       </p>
                     </div>
@@ -334,25 +347,32 @@ function OnlineDriversSkeleton() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <Skeleton className="h-8 w-48 mb-2" />
-          <Skeleton className="h-4 w-32" />
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
+            <Users className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-32" />
+          </div>
         </div>
         <Skeleton className="h-9 w-24" />
       </div>
       
-      <Card>
-        <CardContent className="p-4">
+      <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <CardContent className="p-4 relative z-10">
           <Skeleton className="h-10 w-full" />
         </CardContent>
       </Card>
       
       <div className="space-y-3">
         {[...Array(3)].map((_, i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
+          <Card key={i} className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardContent className="p-4 relative z-10">
               <div className="flex items-center space-x-4">
-                <Skeleton className="h-12 w-12 rounded-full" />
+                <Skeleton className="h-12 w-12 rounded-2xl" />
                 <div className="space-y-2 flex-1">
                   <Skeleton className="h-4 w-[200px]" />
                   <Skeleton className="h-3 w-[150px]" />

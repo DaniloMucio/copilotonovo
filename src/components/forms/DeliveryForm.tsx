@@ -394,17 +394,17 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                     name="recipientId"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Destinatário</FormLabel>
+                            <FormLabel className="text-gray-900 font-medium">Destinatário</FormLabel>
                             <Select onValueChange={handleRecipientChange} defaultValue={field.value}>
                                 <FormControl>
-                                    <SelectTrigger>
+                                    <SelectTrigger className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
                                         <SelectValue placeholder="Selecione um destinatário ou deixe em branco para novo" />
                                     </SelectTrigger>
                                 </FormControl>
-                                <SelectContent>
-                                    <SelectItem value="new-recipient">Novo destinatário</SelectItem>
+                                <SelectContent className="bg-white border-0 shadow-2xl rounded-2xl">
+                                    <SelectItem value="new-recipient" className="text-gray-900 hover:bg-gray-50">Novo destinatário</SelectItem>
                                     {recipients.map(recipient => (
-                                        <SelectItem key={recipient.id} value={recipient.id}>
+                                        <SelectItem key={recipient.id} value={recipient.id} className="text-gray-900 hover:bg-gray-50">
                                             {recipient.name}
                                         </SelectItem>
                                     ))}
@@ -416,16 +416,26 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                 />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={form.control} name="description" render={({ field }) => (
-                        <FormItem><FormLabel>Descrição da Entrega</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem>
+                            <FormLabel className="text-gray-900 font-medium">Descrição da Entrega</FormLabel>
+                            <FormControl>
+                                <Input 
+                                    {...field} 
+                                    className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
                     )} />
                     <FormField control={form.control} name="amount" render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Valor da Entrega (R$)</FormLabel>
+                            <FormLabel className="text-gray-900 font-medium">Valor da Entrega (R$)</FormLabel>
                             <FormControl>
                                 <Input 
                                     type="number" 
                                     step="0.01" 
                                     {...field}
+                                    className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
                                     onFocus={(e) => {
                                         if (Number(field.value) === 0) {
                                             field.onChange('');
@@ -450,7 +460,7 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                         name="paymentType"
                         render={({ field }) => (
                             <FormItem className="space-y-3">
-                                <FormLabel>Tipo de Pagamento</FormLabel>
+                                <FormLabel className="text-gray-900 font-medium">Tipo de Pagamento</FormLabel>
                                 <FormControl>
                                     <RadioGroup
                                         onValueChange={field.onChange}
@@ -459,17 +469,17 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                                     >
                                         <FormItem className="flex items-center space-x-3 space-y-0">
                                             <FormControl>
-                                                <RadioGroupItem value="À vista" />
+                                                <RadioGroupItem value="À vista" className="text-blue-600" />
                                             </FormControl>
-                                            <FormLabel className="font-normal">
+                                            <FormLabel className="font-normal text-gray-900">
                                                 Pagamento à vista
                                             </FormLabel>
                                         </FormItem>
                                         <FormItem className="flex items-center space-x-3 space-y-0">
                                             <FormControl>
-                                                <RadioGroupItem value="A receber" />
+                                                <RadioGroupItem value="A receber" className="text-blue-600" />
                                             </FormControl>
-                                            <FormLabel className="font-normal">
+                                            <FormLabel className="font-normal text-gray-900">
                                                 Pagamento a receber
                                             </FormLabel>
                                         </FormItem>
@@ -482,17 +492,17 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4 p-4 border rounded-lg">
-                        <h3 className="font-semibold text-lg">Remetente</h3>
+                    <div className="space-y-4 p-4 border rounded-lg bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300">
+                        <h3 className="font-semibold text-lg text-gray-900">Remetente</h3>
                         <Separator />
                         <FormField control={form.control} name="senderCompany" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Empresa/Nome</FormLabel>
+                                <FormLabel className="text-gray-900 font-medium">Empresa/Nome</FormLabel>
                                 <FormControl>
                                     <Input 
                                         {...field} 
                                         disabled={false}
-                                        className=""
+                                        className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
                                     />
                                 </FormControl>
                                 <FormMessage />
@@ -500,7 +510,7 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                         )} />
                         <FormField control={form.control} name="senderAddress.cep" render={({ field }) => (
                              <FormItem>
-                                <FormLabel>CEP</FormLabel>
+                                <FormLabel className="text-gray-900 font-medium">CEP</FormLabel>
                                 <FormControl>
                                     <div className="flex items-center gap-2">
                                         <Input 
@@ -508,7 +518,7 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                                             type="tel" 
                                             inputMode="numeric" 
                                             disabled={false}
-                                            className=""
+                                            className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
                                             onBlur={(e) => handleCepSearch(e.target.value, 'sender')}
                                         />
                                         {isFetchingSenderCep && <Loader2 className="animate-spin h-4 w-4" />}
@@ -519,12 +529,12 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                         )} />
                         <FormField control={form.control} name="senderAddress.street" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Rua</FormLabel>
+                                <FormLabel className="text-gray-900 font-medium">Rua</FormLabel>
                                 <FormControl>
                                     <Input 
                                         {...field} 
                                         disabled={false}
-                                        className=""
+                                        className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
                                     />
                                 </FormControl>
                                 <FormMessage />
@@ -533,12 +543,12 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                              <FormField control={form.control} name="senderAddress.number" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Número</FormLabel>
+                                    <FormLabel className="text-gray-900 font-medium">Número</FormLabel>
                                     <FormControl>
                                         <Input 
                                             {...field} 
                                             disabled={false}
-                                            className=""
+                                            className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -546,12 +556,12 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                             )} />
                              <FormField control={form.control} name="senderAddress.neighborhood" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Bairro</FormLabel>
+                                    <FormLabel className="text-gray-900 font-medium">Bairro</FormLabel>
                                     <FormControl>
                                         <Input 
                                             {...field} 
                                             disabled={false}
-                                            className=""
+                                            className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -561,12 +571,12 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <FormField control={form.control} name="senderAddress.city" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Cidade</FormLabel>
+                                    <FormLabel className="text-gray-900 font-medium">Cidade</FormLabel>
                                     <FormControl>
                                         <Input 
                                             {...field} 
                                             disabled={false}
-                                            className=""
+                                            className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -574,12 +584,12 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                             )} />
                              <FormField control={form.control} name="senderAddress.state" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Estado</FormLabel>
+                                    <FormLabel className="text-gray-900 font-medium">Estado</FormLabel>
                                     <FormControl>
                                         <Input 
                                             {...field} 
                                             disabled={false}
-                                            className=""
+                                            className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -588,17 +598,17 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                         </div>
                     </div>
 
-                    <div className="space-y-4 p-4 border rounded-lg">
-                        <h3 className="font-semibold text-lg">Destinatário</h3>
+                    <div className="space-y-4 p-4 border rounded-lg bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300">
+                        <h3 className="font-semibold text-lg text-gray-900">Destinatário</h3>
                         <Separator />
                         <FormField control={form.control} name="recipientCompany" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Empresa/Nome</FormLabel>
+                                <FormLabel className="text-gray-900 font-medium">Empresa/Nome</FormLabel>
                                 <FormControl>
                                     <Input 
                                         {...field} 
                                         disabled={selectedRecipient !== null}
-                                        className={selectedRecipient ? 'bg-gray-100' : ''}
+                                        className={`${selectedRecipient ? 'bg-gray-100' : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'} rounded-xl shadow-md hover:shadow-lg transition-all duration-300`}
                                     />
                                 </FormControl>
                                 <FormMessage />
@@ -606,7 +616,7 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                         )} />
                         <FormField control={form.control} name="recipientAddress.cep" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>CEP</FormLabel>
+                                <FormLabel className="text-gray-900 font-medium">CEP</FormLabel>
                                 <FormControl>
                                     <div className="flex items-center gap-2">
                                         <Input 
@@ -614,7 +624,7 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                                             type="tel" 
                                             inputMode="numeric" 
                                             disabled={selectedRecipient !== null}
-                                            className={selectedRecipient ? 'bg-gray-100' : ''}
+                                            className={`${selectedRecipient ? 'bg-gray-100' : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'} rounded-xl shadow-md hover:shadow-lg transition-all duration-300`}
                                             onBlur={(e) => !selectedRecipient && handleCepSearch(e.target.value, 'recipient')}
                                         />
                                         {isFetchingRecipientCep && <Loader2 className="animate-spin h-4 w-4" />}
@@ -625,12 +635,12 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                         )} />
                         <FormField control={form.control} name="recipientAddress.street" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Rua</FormLabel>
+                                <FormLabel className="text-gray-900 font-medium">Rua</FormLabel>
                                 <FormControl>
                                     <Input 
                                         {...field} 
                                         disabled={selectedRecipient !== null}
-                                        className={selectedRecipient ? 'bg-gray-100' : ''}
+                                        className={`${selectedRecipient ? 'bg-gray-100' : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'} rounded-xl shadow-md hover:shadow-lg transition-all duration-300`}
                                     />
                                 </FormControl>
                                 <FormMessage />
@@ -639,12 +649,12 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <FormField control={form.control} name="recipientAddress.number" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Número</FormLabel>
+                                    <FormLabel className="text-gray-900 font-medium">Número</FormLabel>
                                     <FormControl>
                                         <Input 
                                             {...field} 
                                             disabled={selectedRecipient !== null}
-                                            className={selectedRecipient ? 'bg-gray-100' : ''}
+                                            className={`${selectedRecipient ? 'bg-gray-100' : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'} rounded-xl shadow-md hover:shadow-lg transition-all duration-300`}
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -652,12 +662,12 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                             )} />
                             <FormField control={form.control} name="recipientAddress.neighborhood" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Bairro</FormLabel>
+                                    <FormLabel className="text-gray-900 font-medium">Bairro</FormLabel>
                                     <FormControl>
                                         <Input 
                                             {...field} 
                                             disabled={selectedRecipient !== null}
-                                            className={selectedRecipient ? 'bg-gray-100' : ''}
+                                            className={`${selectedRecipient ? 'bg-gray-100' : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'} rounded-xl shadow-md hover:shadow-lg transition-all duration-300`}
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -667,12 +677,12 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                            <FormField control={form.control} name="recipientAddress.city" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Cidade</FormLabel>
+                                    <FormLabel className="text-gray-900 font-medium">Cidade</FormLabel>
                                     <FormControl>
                                         <Input 
                                             {...field} 
                                             disabled={selectedRecipient !== null}
-                                            className={selectedRecipient ? 'bg-gray-100' : ''}
+                                            className={`${selectedRecipient ? 'bg-gray-100' : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'} rounded-xl shadow-md hover:shadow-lg transition-all duration-300`}
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -680,12 +690,12 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                             )} />
                             <FormField control={form.control} name="recipientAddress.state" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Estado</FormLabel>
+                                    <FormLabel className="text-gray-900 font-medium">Estado</FormLabel>
                                     <FormControl>
                                         <Input 
                                             {...field} 
                                             disabled={selectedRecipient !== null}
-                                            className={selectedRecipient ? 'bg-gray-100' : ''}
+                                            className={`${selectedRecipient ? 'bg-gray-100' : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'} rounded-xl shadow-md hover:shadow-lg transition-all duration-300`}
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -697,12 +707,24 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
 
                 <FormField control={form.control} name="observations" render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Observações</FormLabel><FormControl><Textarea {...field} rows={4} /></FormControl><FormMessage />
+                        <FormLabel className="text-gray-900 font-medium">Observações</FormLabel>
+                        <FormControl>
+                            <Textarea 
+                                {...field} 
+                                rows={4} 
+                                className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                            />
+                        </FormControl>
+                        <FormMessage />
                     </FormItem>
                 )} />
 
                 <div className="flex justify-end">
-                    <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">
+                    <Button 
+                        type="submit" 
+                        disabled={isSubmitting} 
+                        className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+                    >
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {transactionToEdit ? 'Salvar Alterações' : 'Registrar Entrega'}
                     </Button>

@@ -22,39 +22,68 @@ import { DateRangePicker } from '@/components/ui/daterangepicker';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { DateRange } from 'react-day-picker';
+import { motion } from 'framer-motion';
+import { Car, Zap, Sparkles, Truck, MapPin, Clock } from 'lucide-react';
 
 function EntregasSkeleton() {
     return (
         <div className="space-y-6">
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-8 w-1/2" />
-                    <Skeleton className="h-4 w-3/4" />
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                            <Skeleton className="h-6 w-1/4" />
-                            <Skeleton className="h-10 w-full" />
-                            <Skeleton className="h-10 w-full" />
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+            >
+                <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <CardHeader className="relative z-10">
+                        <div className="flex items-center space-x-3">
+                            <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg"
+                            >
+                                <Truck className="h-4 w-4 text-white" />
+                            </motion.div>
+                            <Skeleton className="h-8 w-1/2" />
                         </div>
-                        <div className="space-y-4">
-                            <Skeleton className="h-6 w-1/4" />
-                            <Skeleton className="h-10 w-full" />
-                            <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                                <Skeleton className="h-6 w-1/4" />
+                                <Skeleton className="h-10 w-full" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                            <div className="space-y-4">
+                                <Skeleton className="h-6 w-1/4" />
+                                <Skeleton className="h-10 w-full" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
                         </div>
-                    </div>
-                    <Skeleton className="h-10 w-full mt-6" />
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-8 w-1/3" />
-                </CardHeader>
-                <CardContent>
-                    <Skeleton className="h-20 w-full" />
-                </CardContent>
-            </Card>
+                        <Skeleton className="h-10 w-full mt-6" />
+                    </CardContent>
+                </Card>
+            </motion.div>
+            
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+            >
+                <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <CardHeader className="relative z-10">
+                        <div className="flex items-center space-x-2">
+                            <Sparkles className="h-5 w-5 text-blue-600" />
+                            <Skeleton className="h-8 w-1/3" />
+                        </div>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                        <Skeleton className="h-20 w-full" />
+                    </CardContent>
+                </Card>
+            </motion.div>
         </div>
     );
 }
@@ -302,12 +331,18 @@ function EntregasContent() {
 
     return (
         <div className="space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Registrar Nova Entrega</CardTitle>
-                    <CardDescription>Preencha os detalhes da entrega. Isso irá gerar uma nova transação de receita.</CardDescription>
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <CardHeader className="relative z-10">
+                    <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <Truck className="h-4 w-4 text-white" />
+                        </div>
+                        <CardTitle className="text-gray-900">Registrar Nova Entrega</CardTitle>
+                    </div>
+                    <CardDescription className="text-gray-600">Preencha os detalhes da entrega. Isso irá gerar uma nova transação de receita.</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="relative z-10">
                     <DeliveryForm 
                         onFormSubmit={handleAction}
                         recipients={recipients}
@@ -320,18 +355,39 @@ function EntregasContent() {
             <Separator />
 
             <Tabs defaultValue="history">
-                <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="pending">Entregas Pendentes</TabsTrigger>
-                    <TabsTrigger value="history">Histórico de Entregas</TabsTrigger>
-                    <TabsTrigger value="to-receive">Entregas a Receber</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm border-0 rounded-2xl shadow-lg p-1">
+                    <TabsTrigger 
+                        value="pending"
+                        className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium"
+                    >
+                        Entregas Pendentes
+                    </TabsTrigger>
+                    <TabsTrigger 
+                        value="history"
+                        className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium"
+                    >
+                        Histórico de Entregas
+                    </TabsTrigger>
+                    <TabsTrigger 
+                        value="to-receive"
+                        className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium"
+                    >
+                        Entregas a Receber
+                    </TabsTrigger>
                 </TabsList>
                  <TabsContent value="pending">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Entregas Pendentes</CardTitle>
-                            <CardDescription>Novas solicitações de entrega para você aceitar ou recusar.</CardDescription>
+                    <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <CardHeader className="relative z-10">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                                    <Truck className="h-4 w-4 text-white" />
+                                </div>
+                                <CardTitle className="text-gray-900">Entregas Pendentes</CardTitle>
+                            </div>
+                            <CardDescription className="text-gray-600">Novas solicitações de entrega para você aceitar ou recusar.</CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="relative z-10">
                            <DeliveryHistory 
                                 onAction={handleAction} 
                                 deliveries={pendingDeliveries} 
@@ -343,15 +399,21 @@ function EntregasContent() {
                     </Card>
                 </TabsContent>
                 <TabsContent value="history">
-                    <Card>
-                        <CardHeader>
+                    <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <CardHeader className="relative z-10">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                                <div>
-                                    <CardTitle>Histórico de Entregas</CardTitle>
-                                    <CardDescription>
-                                        {dateRange?.from ? format(dateRange.from, "PPP", { locale: ptBR }) : ''}
-                                        {dateRange?.to ? ` - ${format(dateRange.to, "PPP", { locale: ptBR })}` : ''}
-                                    </CardDescription>
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                                        <MapPin className="h-4 w-4 text-white" />
+                                    </div>
+                                    <div>
+                                        <CardTitle className="text-gray-900">Histórico de Entregas</CardTitle>
+                                        <CardDescription className="text-gray-600">
+                                            {dateRange?.from ? format(dateRange.from, "PPP", { locale: ptBR }) : ''}
+                                            {dateRange?.to ? ` - ${format(dateRange.to, "PPP", { locale: ptBR })}` : ''}
+                                        </CardDescription>
+                                    </div>
                                 </div>
                                 <div className="flex flex-col sm:flex-row gap-2">
                                     <DateRangePicker 
@@ -361,15 +423,14 @@ function EntregasContent() {
                                     <Dialog open={isRouteModalOpen} onOpenChange={setIsRouteModalOpen}>
                                         <DialogTrigger asChild>
                                             <Button 
-                                                variant="outline" 
-                                                className="bg-blue-50 hover:bg-blue-100 border-blue-200"
+                                                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
                                             >
                                                 🗺️ Gerenciar Rotas
                                             </Button>
                                         </DialogTrigger>
-                                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                                            <DialogHeader>
-                                                <DialogTitle>Gerenciamento de Rotas</DialogTitle>
+                                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white border-0 shadow-2xl rounded-2xl">
+                                            <DialogHeader className="bg-gradient-to-r from-blue-600/5 to-purple-600/5 p-6 rounded-t-2xl">
+                                                <DialogTitle className="text-gray-900">Gerenciamento de Rotas</DialogTitle>
                                             </DialogHeader>
                                             <RouteOptimizer
                                                 deliveries={allDeliveries}
@@ -386,7 +447,7 @@ function EntregasContent() {
                                 </div>
                             </div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="relative z-10">
                             <DeliveryHistory 
                                 onAction={handleAction} 
                                 deliveries={deliveryHistory} 
@@ -397,12 +458,20 @@ function EntregasContent() {
                     </Card>
                 </TabsContent>
                 <TabsContent value="to-receive">
-                     <Card>
-                        <CardHeader>
-                            <CardTitle>Entregas a Receber</CardTitle>
-                            <CardDescription>Entregas que foram finalizadas mas ainda não foram pagas.</CardDescription>
+                     <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <CardHeader className="relative z-10">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                                    <Clock className="h-4 w-4 text-white" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-gray-900">Entregas a Receber</CardTitle>
+                                    <CardDescription className="text-gray-600">Entregas que foram finalizadas mas ainda não foram pagas.</CardDescription>
+                                </div>
+                            </div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="relative z-10">
                             <div className="space-y-4">
                                 {/* Controles de multi-seleção */}
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
@@ -420,8 +489,7 @@ function EntregasContent() {
                                         </label>
                                     </div>
                                     <Button 
-                                        variant="default" 
-                                        className="bg-green-600 hover:bg-green-700 mobile-button w-full sm:w-auto"
+                                        className="bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium mobile-button w-full sm:w-auto"
                                         onClick={handleProcessPayments}
                                         disabled={isProcessingPayments || selectedPayments.length === 0}
                                     >

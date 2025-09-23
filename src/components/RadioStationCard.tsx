@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, ExternalLink, MapPin } from 'lucide-react';
+import { Play, Pause, MapPin } from 'lucide-react';
 import { RadioStation } from '@/lib/radio-stations';
 
 interface RadioStationCardProps {
@@ -49,53 +49,36 @@ export function RadioStationCard({
     }
   };
 
-  const handleWebsiteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (station.website) {
-      window.open(station.website, '_blank');
-    }
-  };
 
   return (
     <Card 
-      className={`flex flex-col justify-between hover:shadow-lg transition-all duration-200 cursor-pointer ${
-        isCurrentStation ? 'ring-2 ring-primary shadow-lg' : ''
+      className={`shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500 cursor-pointer ${
+        isCurrentStation ? 'ring-2 ring-blue-500 shadow-xl' : ''
       }`}
       onClick={handleCardClick}
     >
-      <CardHeader className="pb-3">
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <CardHeader className="pb-3 relative z-10">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-lg font-semibold text-foreground">
+            <CardTitle className="text-lg font-semibold text-gray-900">
               {station.name}
             </CardTitle>
-            <CardDescription className="text-sm text-muted-foreground mt-1">
+            <CardDescription className="text-sm text-gray-600 mt-1">
               {station.description}
             </CardDescription>
           </div>
           
-          {/* Botão do site */}
-          {station.website && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleWebsiteClick}
-              className="h-8 w-8 p-0 hover:bg-primary/10"
-              title="Visitar site da rádio"
-            >
-              <ExternalLink className="h-4 w-4" />
-            </Button>
-          )}
         </div>
 
         {/* Categoria e região */}
         <div className="flex items-center gap-2 mt-3">
-          <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full font-medium">
+          <span className="text-xs px-2 py-1 bg-gradient-to-r from-blue-600/10 to-purple-600/10 text-blue-600 rounded-full font-medium shadow-sm">
             {getCategoryIcon(station.category)} {getCategoryName(station.category)}
           </span>
           
           {station.region && (
-            <span className="text-xs px-2 py-1 bg-muted text-muted-foreground rounded-full flex items-center gap-1">
+            <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full flex items-center gap-1 shadow-sm">
               <MapPin className="h-3 w-3" />
               {station.region}
             </span>
@@ -103,7 +86,7 @@ export function RadioStationCard({
         </div>
       </CardHeader>
 
-      <CardContent className="pt-0">
+      <CardContent className="pt-0 relative z-10">
         <Button 
           onClick={(e) => {
             e.stopPropagation();
@@ -113,8 +96,11 @@ export function RadioStationCard({
               onSelect(station);
             }
           }}
-          className="w-full"
-          variant={isCurrentStation ? "default" : "outline"}
+          className={`w-full rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium ${
+            isCurrentStation 
+              ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700' 
+              : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
+          }`}
           size="lg"
         >
           {isCurrentStation ? (

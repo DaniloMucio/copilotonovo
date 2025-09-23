@@ -9,11 +9,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { SettingsManager } from '@/components/SettingsManager';
+import { Settings, Sparkles } from 'lucide-react';
 
 function ConfiguracoesSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-4">
+        <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg animate-pulse">
+          <Settings className="h-4 w-4 text-white" />
+        </div>
         <div>
           <Skeleton className="h-8 w-64" />
           <Skeleton className="h-4 w-96 mt-2" />
@@ -84,22 +88,28 @@ function ConfiguracoesContent() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
-          <p className="text-muted-foreground">
-            Gerencie seu perfil, preferências e configurações da conta.
-          </p>
+        <div className="flex items-center space-x-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 group">
+            <Settings className="h-6 w-6 text-white group-hover:scale-110 transition-transform duration-300" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Configurações</h1>
+            <p className="text-gray-600">
+              Gerencie seu perfil, preferências e configurações da conta.
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-sm font-medium capitalize">
+        <div>
+          <Badge variant="outline" className="text-sm font-medium capitalize border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors duration-300">
             {userData.userType}
           </Badge>
         </div>
       </div>
 
-
       {/* Gerenciador de Configurações */}
-      <SettingsManager user={user} userData={userData} />
+      <div>
+        <SettingsManager user={user} userData={userData} />
+      </div>
     </div>
   );
 }

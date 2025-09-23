@@ -348,37 +348,43 @@ function FinancialContent() {
             variant="outline"
             size="sm"
             onClick={() => router.push('/dashboard/admin')}
+            className="bg-gray-600 text-white hover:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Relatórios Financeiros</h1>
-            <p className="text-muted-foreground">
-              Análise detalhada dos dados financeiros do sistema
-            </p>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
+              <DollarSign className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">Relatórios Financeiros</h1>
+              <p className="text-gray-600">
+                Análise detalhada dos dados financeiros do sistema
+              </p>
+            </div>
           </div>
         </div>
         
         <div className="flex items-center space-x-2">
           <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
               <SelectValue placeholder="Período" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7">Últimos 7 dias</SelectItem>
-              <SelectItem value="30">Últimos 30 dias</SelectItem>
-              <SelectItem value="90">Últimos 90 dias</SelectItem>
-              <SelectItem value="365">Último ano</SelectItem>
+            <SelectContent className="bg-white border-0 shadow-2xl rounded-2xl">
+              <SelectItem value="7" className="text-gray-900 hover:bg-gray-50">Últimos 7 dias</SelectItem>
+              <SelectItem value="30" className="text-gray-900 hover:bg-gray-50">Últimos 30 dias</SelectItem>
+              <SelectItem value="90" className="text-gray-900 hover:bg-gray-50">Últimos 90 dias</SelectItem>
+              <SelectItem value="365" className="text-gray-900 hover:bg-gray-50">Último ano</SelectItem>
             </SelectContent>
           </Select>
           
-          <Button variant="outline" size="sm" onClick={loadFinancialData}>
+          <Button variant="outline" size="sm" onClick={loadFinancialData} className="bg-white/80 backdrop-blur-sm border-0 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
             <RefreshCw className="h-4 w-4 mr-2" />
             Atualizar
           </Button>
           
-          <Button size="sm" onClick={handleExportPDF}>
+          <Button size="sm" onClick={handleExportPDF} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
             <Download className="h-4 w-4 mr-2" />
             Exportar PDF
           </Button>
@@ -387,61 +393,73 @@ function FinancialContent() {
       
       {/* Cards de Resumo */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
-            <DollarSign className="h-4 w-4 text-green-600" />
+        <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+          <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-gray-900">Receita Total</CardTitle>
+            <div className="w-6 h-6 bg-gradient-to-r from-green-600 to-green-500 rounded-lg flex items-center justify-center">
+              <DollarSign className="h-3 w-3 text-white" />
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             <div className="text-2xl font-bold text-green-600">
               R$ {financialStats?.totalRevenue.toFixed(2) || '0.00'}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-600">
               Período selecionado: R$ {periodRevenue.toFixed(2)}
             </p>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Lucro Líquido</CardTitle>
-            <BarChart3 className="h-4 w-4 text-blue-600" />
+        <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-gray-900">Lucro Líquido</CardTitle>
+            <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg flex items-center justify-center">
+              <BarChart3 className="h-3 w-3 text-white" />
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             <div className="text-2xl font-bold text-blue-600">
               R$ {financialStats?.netProfit.toFixed(2) || '0.00'}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-600">
               Margem: {financialStats?.totalRevenue && financialStats?.netProfit ? ((financialStats.netProfit / financialStats.totalRevenue) * 100).toFixed(1) : '0'}%
             </p>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ticket Médio</CardTitle>
-            <Target className="h-4 w-4 text-purple-600" />
+        <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-gray-900">Ticket Médio</CardTitle>
+            <div className="w-6 h-6 bg-gradient-to-r from-purple-600 to-purple-500 rounded-lg flex items-center justify-center">
+              <Target className="h-3 w-3 text-white" />
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             <div className="text-2xl font-bold text-purple-600">
               R$ {metrics.averageOrderValue.toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-600">
               Por entrega
             </p>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Taxa de Conclusão</CardTitle>
-            <CheckCircle className="h-4 w-4 text-emerald-600" />
+        <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-gray-900">Taxa de Conclusão</CardTitle>
+            <div className="w-6 h-6 bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-lg flex items-center justify-center">
+              <CheckCircle className="h-3 w-3 text-white" />
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             <div className="text-2xl font-bold text-emerald-600">
               {metrics.completionRate.toFixed(1)}%
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-600">
               Entregas concluídas
             </p>
           </CardContent>
@@ -450,39 +468,45 @@ function FinancialContent() {
 
       {/* Análises Detalhadas */}
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="deliveries">Entregas</TabsTrigger>
-          <TabsTrigger value="users">Usuários</TabsTrigger>
+        <TabsList className="bg-white/80 backdrop-blur-sm border-0 rounded-2xl shadow-lg p-1">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Visão Geral</TabsTrigger>
+          <TabsTrigger value="performance" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Performance</TabsTrigger>
+          <TabsTrigger value="deliveries" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Entregas</TabsTrigger>
+          <TabsTrigger value="users" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Usuários</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Receita por Período</CardTitle>
-                <CardDescription>
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <CardTitle className="text-gray-900 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                    <DollarSign className="h-4 w-4 text-white" />
+                  </div>
+                  Receita por Período
+                </CardTitle>
+                <CardDescription className="text-gray-600">
                   Evolução da receita nos últimos {period} dias
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Receita Total</span>
+                    <span className="text-sm font-medium text-gray-600">Receita Total</span>
                     <span className="text-lg font-bold text-green-600">
                       R$ {periodRevenue.toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Entregas</span>
-                    <span className="text-lg font-bold">
+                    <span className="text-sm font-medium text-gray-600">Entregas</span>
+                    <span className="text-lg font-bold text-gray-900">
                       {filteredDeliveries.length}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Ticket Médio</span>
-                    <span className="text-lg font-bold">
+                    <span className="text-sm font-medium text-gray-600">Ticket Médio</span>
+                    <span className="text-lg font-bold text-gray-900">
                       R$ {filteredDeliveries.length > 0 ? (periodRevenue / filteredDeliveries.length).toFixed(2) : '0.00'}
                     </span>
                   </div>
@@ -490,14 +514,20 @@ function FinancialContent() {
               </CardContent>
             </Card>
             
-            <Card>
-              <CardHeader>
-                <CardTitle>Distribuição de Status</CardTitle>
-                <CardDescription>
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <CardTitle className="text-gray-900 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                    <PieChart className="h-4 w-4 text-white" />
+                  </div>
+                  Distribuição de Status
+                </CardTitle>
+                <CardDescription className="text-gray-600">
                   Status das entregas no período
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="space-y-3">
                   {['pending', 'in_progress', 'completed', 'cancelled'].map((status) => {
                     const count = filteredDeliveries.filter(d => d.status === status).length;
@@ -516,11 +546,11 @@ function FinancialContent() {
                       <div key={status} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className={`w-3 h-3 rounded-full ${config.bg}`}></div>
-                          <span className="text-sm font-medium">{config.label}</span>
+                          <span className="text-sm font-medium text-gray-900">{config.label}</span>
                         </div>
                         <div className="text-right">
-                          <span className="text-sm font-bold">{count}</span>
-                          <span className="text-xs text-muted-foreground ml-1">({percentage.toFixed(1)}%)</span>
+                          <span className="text-sm font-bold text-gray-900">{count}</span>
+                          <span className="text-xs text-gray-600 ml-1">({percentage.toFixed(1)}%)</span>
                         </div>
                       </div>
                     );
@@ -533,50 +563,59 @@ function FinancialContent() {
 
         <TabsContent value="performance" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <CardTitle className="flex items-center gap-2 text-gray-900">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                    <Users className="h-4 w-4 text-white" />
+                  </div>
                   Motoristas Ativos
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{metrics.activeDrivers}</div>
-                <p className="text-sm text-muted-foreground">
+              <CardContent className="relative z-10">
+                <div className="text-3xl font-bold text-gray-900">{metrics.activeDrivers}</div>
+                <p className="text-sm text-gray-600">
                   de {allUsers.filter(u => u.userType === 'motorista').length} motoristas
                 </p>
               </CardContent>
             </Card>
             
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <CardTitle className="flex items-center gap-2 text-gray-900">
+                  <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-green-500 rounded-xl flex items-center justify-center">
+                    <DollarSign className="h-4 w-4 text-white" />
+                  </div>
                   Receita por Motorista
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">
+              <CardContent className="relative z-10">
+                <div className="text-3xl font-bold text-gray-900">
                   R$ {metrics.revenuePerDriver.toFixed(2)}
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-600">
                   Média por motorista ativo
                 </p>
               </CardContent>
             </Card>
             
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5" />
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <CardTitle className="flex items-center gap-2 text-gray-900">
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-purple-500 rounded-xl flex items-center justify-center">
+                    <Package className="h-4 w-4 text-white" />
+                  </div>
                   Entregas por Dia
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">
+              <CardContent className="relative z-10">
+                <div className="text-3xl font-bold text-gray-900">
                   {(filteredDeliveries.length / parseInt(period)).toFixed(1)}
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-600">
                   Média diária no período
                 </p>
               </CardContent>
@@ -585,35 +624,41 @@ function FinancialContent() {
         </TabsContent>
 
         <TabsContent value="deliveries" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Entregas Recentes</CardTitle>
-              <CardDescription>
+          <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="relative z-10">
+              <CardTitle className="text-gray-900 flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <Package className="h-4 w-4 text-white" />
+                </div>
+                Entregas Recentes
+              </CardTitle>
+              <CardDescription className="text-gray-600">
                 Últimas entregas do período selecionado
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative z-10">
               <div className="space-y-3">
                 {filteredDeliveries.slice(0, 10).map((delivery, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Package className="h-5 w-5 text-primary" />
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+                        <Package className="h-5 w-5 text-white" />
                       </div>
                       <div>
-                        <p className="font-medium">Entrega #{delivery.id?.slice(-6) || index + 1}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="font-medium text-gray-900">Entrega #{delivery.id?.slice(-6) || index + 1}</p>
+                        <p className="text-sm text-gray-600">
                           {delivery.recipientName || 'Destinatário não informado'}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold">R$ {(delivery.value || 0).toFixed(2)}</p>
+                      <p className="font-bold text-gray-900">R$ {(delivery.value || 0).toFixed(2)}</p>
                       <Badge variant={
                         delivery.status === 'completed' ? 'default' :
                         delivery.status === 'in_progress' ? 'secondary' :
                         delivery.status === 'cancelled' ? 'destructive' : 'outline'
-                      }>
+                      } className="bg-gradient-to-r from-blue-600/10 to-purple-600/10 text-blue-600 border-0 rounded-full shadow-sm">
                         {delivery.status === 'completed' ? 'Concluída' :
                          delivery.status === 'in_progress' ? 'Em Andamento' :
                          delivery.status === 'cancelled' ? 'Cancelada' : 'Pendente'}
@@ -623,9 +668,11 @@ function FinancialContent() {
                 ))}
                 
                 {filteredDeliveries.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Nenhuma entrega encontrada no período selecionado</p>
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
+                      <Package className="h-8 w-8 text-white" />
+                    </div>
+                    <p className="text-gray-900">Nenhuma entrega encontrada no período selecionado</p>
                   </div>
                 )}
               </div>
@@ -635,33 +682,39 @@ function FinancialContent() {
 
         <TabsContent value="users" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Resumo de Usuários</CardTitle>
-                <CardDescription>
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <CardTitle className="text-gray-900 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                    <Users className="h-4 w-4 text-white" />
+                  </div>
+                  Resumo de Usuários
+                </CardTitle>
+                <CardDescription className="text-gray-600">
                   Distribuição de usuários no sistema
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Total de Usuários</span>
-                    <span className="text-lg font-bold">{allUsers.length}</span>
+                    <span className="text-sm font-medium text-gray-600">Total de Usuários</span>
+                    <span className="text-lg font-bold text-gray-900">{allUsers.length}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Motoristas</span>
-                    <span className="text-lg font-bold">
+                    <span className="text-sm font-medium text-gray-600">Motoristas</span>
+                    <span className="text-lg font-bold text-gray-900">
                       {allUsers.filter(u => u.userType === 'motorista').length}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Clientes</span>
-                    <span className="text-lg font-bold">
+                    <span className="text-sm font-medium text-gray-600">Clientes</span>
+                    <span className="text-lg font-bold text-gray-900">
                       {allUsers.filter(u => u.userType === 'cliente').length}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Motoristas Online</span>
+                    <span className="text-sm font-medium text-gray-600">Motoristas Online</span>
                     <span className="text-lg font-bold text-green-600">
                       {metrics.activeDrivers}
                     </span>
@@ -670,29 +723,35 @@ function FinancialContent() {
               </CardContent>
             </Card>
             
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Motoristas</CardTitle>
-                <CardDescription>
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <CardTitle className="text-gray-900 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-green-500 rounded-xl flex items-center justify-center">
+                    <TrendingUp className="h-4 w-4 text-white" />
+                  </div>
+                  Top Motoristas
+                </CardTitle>
+                <CardDescription className="text-gray-600">
                   Motoristas com maior receita
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="space-y-3">
                   {allUsers
                     .filter(u => u.userType === 'motorista')
                     .sort((a, b) => (b.totalRevenue || 0) - (a.totalRevenue || 0))
                     .slice(0, 5)
                     .map((driver, index) => (
-                      <div key={driver.uid} className="flex items-center justify-between">
+                      <div key={driver.uid} className="flex items-center justify-between p-2 bg-white/50 backdrop-blur-sm rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">#{index + 1}</span>
-                          <span className="text-sm">{driver.displayName}</span>
+                          <span className="text-sm font-medium text-gray-900">#{index + 1}</span>
+                          <span className="text-sm text-gray-900">{driver.displayName}</span>
                           {driver.isOnline && (
-                            <Badge variant="default" className="text-xs">Online</Badge>
+                            <Badge variant="default" className="text-xs bg-gradient-to-r from-green-600/10 to-green-500/10 text-green-600 border-0 rounded-full shadow-sm">Online</Badge>
                           )}
                         </div>
-                        <span className="text-sm font-bold">
+                        <span className="text-sm font-bold text-gray-900">
                           R$ {(driver.totalRevenue || 0).toFixed(2)}
                         </span>
                       </div>
@@ -711,24 +770,30 @@ function FinancialSkeleton() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <Skeleton className="h-8 w-64 mb-2" />
-          <Skeleton className="h-4 w-96" />
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
+            <DollarSign className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <Skeleton className="h-8 w-64 mb-2" />
+            <Skeleton className="h-4 w-96" />
+          </div>
         </div>
         <div className="flex gap-2">
-          <Skeleton className="h-9 w-24" />
-          <Skeleton className="h-9 w-24" />
-          <Skeleton className="h-9 w-24" />
+          <Skeleton className="h-9 w-24 rounded-xl" />
+          <Skeleton className="h-9 w-24 rounded-xl" />
+          <Skeleton className="h-9 w-24 rounded-xl" />
         </div>
       </div>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
-          <Card key={i}>
-            <CardHeader>
+          <Card key={i} className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="relative z-10">
               <Skeleton className="h-4 w-24" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative z-10">
               <Skeleton className="h-8 w-32 mb-2" />
               <Skeleton className="h-3 w-40" />
             </CardContent>

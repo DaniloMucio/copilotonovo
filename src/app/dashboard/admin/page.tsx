@@ -64,7 +64,8 @@ import {
   Eye,
   Edit,
   Trash2,
-  X
+  X,
+  Shield
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
@@ -81,29 +82,51 @@ interface AdminDashboardProps {
 function AdminDashboardSkeleton() {
   return (
     <div className="space-y-6">
+      {/* Header Skeleton */}
+      <div className="flex items-center space-x-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg animate-pulse">
+          <Shield className="h-6 w-6 text-white" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+      </div>
+
+      {/* Stats Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[1, 2, 3, 4].map((i) => (
-          <Card key={i}>
-            <CardHeader>
-              <Skeleton className="h-6 w-24" />
+          <Card key={i} className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="relative z-10">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-6 w-24" />
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg animate-pulse"></div>
+              </div>
               <Skeleton className="h-8 w-16" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative z-10">
               <Skeleton className="h-4 w-full" />
             </CardContent>
           </Card>
         ))}
       </div>
+
+      {/* Content Skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[1, 2].map((i) => (
-          <Card key={i}>
-            <CardHeader>
-              <Skeleton className="h-8 w-48" />
+          <Card key={i} className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="relative z-10">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg animate-pulse"></div>
+                <Skeleton className="h-8 w-48" />
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative z-10">
               <div className="space-y-4">
                 {[1, 2, 3].map((j) => (
-                  <div key={j} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div key={j} className="flex items-center justify-between p-4 border rounded-lg bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300">
                     <div className="space-y-2">
                       <Skeleton className="h-4 w-32" />
                       <Skeleton className="h-3 w-24" />
@@ -420,16 +443,19 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex items-center space-x-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 group">
+          <Shield className="h-6 w-6 text-white group-hover:scale-110 transition-transform duration-300" />
+        </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard Administrativo</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard Administrativo</h1>
+          <p className="text-gray-600">
             Bem-vindo, {userData.displayName || user.email}! Gerencie todo o sistema.
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 ml-auto">
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-sm font-medium">Administrador</Badge>
+            <Badge variant="outline" className="text-sm font-medium bg-white/80 backdrop-blur-sm border-0 rounded-xl shadow-md">Administrador</Badge>
             <PWAInstallButton canInstall={pwaCanInstall} install={pwaInstall} />
           </div>
         </div>
@@ -442,17 +468,20 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
           return (
             <Card 
               key={index} 
-              className="hover:shadow-lg transition-shadow cursor-pointer hover:bg-muted/50"
+              className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500 cursor-pointer"
               onClick={() => handleCardClick(stat.title)}
             >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                <Icon className={`h-4 w-4 ${stat.color}`} />
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium text-gray-900">{stat.title}</CardTitle>
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                  <Icon className="h-4 w-4 text-white" />
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground">{stat.description}</p>
-                <p className="text-xs text-muted-foreground mt-1">Clique para ver detalhes</p>
+              <CardContent className="relative z-10">
+                <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                <p className="text-xs text-gray-600">{stat.description}</p>
+                <p className="text-xs text-gray-600 mt-1">Clique para ver detalhes</p>
               </CardContent>
             </Card>
           );
@@ -461,44 +490,47 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
 
       {/* Tabs principais */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="users">Usuários</TabsTrigger>
-          <TabsTrigger value="deliveries">Entregas</TabsTrigger>
-          <TabsTrigger value="financial">Financeiro</TabsTrigger>
-          <TabsTrigger value="reports">Relatórios</TabsTrigger>
+        <TabsList className="bg-white/80 backdrop-blur-sm border-0 rounded-2xl shadow-lg p-1">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Visão Geral</TabsTrigger>
+          <TabsTrigger value="users" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Usuários</TabsTrigger>
+          <TabsTrigger value="deliveries" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Entregas</TabsTrigger>
+          <TabsTrigger value="financial" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Financeiro</TabsTrigger>
+          <TabsTrigger value="reports" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Relatórios</TabsTrigger>
         </TabsList>
 
         {/* Visão Geral */}
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Top Usuários */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <CardTitle className="flex items-center gap-2 text-gray-900">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                    <Users className="h-4 w-4 text-white" />
+                  </div>
                   Usuários Mais Ativos
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-600">
                   Top 5 usuários por número de entregas
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 {topUsers.length > 0 ? (
                   <div className="space-y-3">
                     {topUsers.map((user, index) => (
-                      <div key={user.uid} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div key={user.uid} className="flex items-center justify-between p-3 border rounded-lg bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300">
                         <div className="space-y-1">
-                          <p className="text-sm font-medium">{user.displayName}</p>
-                          <p className="text-xs text-muted-foreground capitalize">
+                          <p className="text-sm font-medium text-gray-900">{user.displayName}</p>
+                          <p className="text-xs text-gray-600 capitalize">
                             {user.userType} • {user.email}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline">
+                          <Badge variant="outline" className="bg-gradient-to-r from-blue-600/10 to-purple-600/10 text-blue-600 border-0 rounded-full shadow-sm">
                             {user.totalDeliveries || 0} entregas
                           </Badge>
-                          <Badge variant={user.isActive ? "default" : "secondary"}>
+                          <Badge variant={user.isActive ? "default" : "secondary"} className={user.isActive ? "bg-gradient-to-r from-green-600/10 to-green-500/10 text-green-600 border-0 rounded-full shadow-sm" : "bg-gradient-to-r from-gray-600/10 to-gray-500/10 text-gray-600 border-0 rounded-full shadow-sm"}>
                             {user.isActive ? "Ativo" : "Inativo"}
                           </Badge>
                         </div>
@@ -506,43 +538,49 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-6 text-muted-foreground">
-                    <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>Nenhum usuário encontrado</p>
+                  <div className="text-center py-6">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
+                      <Users className="h-8 w-8 text-white" />
+                    </div>
+                    <p className="text-gray-900">Nenhum usuário encontrado</p>
                   </div>
                 )}
               </CardContent>
             </Card>
 
             {/* Entregas Recentes */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5" />
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <CardTitle className="flex items-center gap-2 text-gray-900">
+                  <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-green-500 rounded-xl flex items-center justify-center">
+                    <Package className="h-4 w-4 text-white" />
+                  </div>
                   Entregas Recentes
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-600">
                   Últimas entregas do sistema
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 {recentDeliveries.length > 0 ? (
                   <div className="space-y-3">
                     {recentDeliveries.map((delivery) => (
-                      <div key={delivery.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div key={delivery.id} className="flex items-center justify-between p-3 border rounded-lg bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300">
                         <div className="space-y-1">
-                          <p className="text-sm font-medium">{delivery.description}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-sm font-medium text-gray-900">{delivery.description}</p>
+                          <p className="text-xs text-gray-600">
                             {format(delivery.date instanceof Timestamp ? delivery.date.toDate() : delivery.date, 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge 
                             variant={delivery.deliveryStatus === 'Entregue' ? 'default' : 'secondary'}
+                            className={delivery.deliveryStatus === 'Entregue' ? "bg-gradient-to-r from-green-600/10 to-green-500/10 text-green-600 border-0 rounded-full shadow-sm" : "bg-gradient-to-r from-blue-600/10 to-purple-600/10 text-blue-600 border-0 rounded-full shadow-sm"}
                           >
                             {delivery.deliveryStatus}
                           </Badge>
-                          <span className="text-sm font-semibold">
+                          <span className="text-sm font-semibold text-gray-900">
                             R$ {delivery.amount?.toFixed(2) || '0.00'}
                           </span>
                         </div>
@@ -550,9 +588,11 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-6 text-muted-foreground">
-                    <Package className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>Nenhuma entrega encontrada</p>
+                  <div className="text-center py-6">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-green-600 to-green-500 rounded-2xl flex items-center justify-center">
+                      <Package className="h-8 w-8 text-white" />
+                    </div>
+                    <p className="text-gray-900">Nenhuma entrega encontrada</p>
                   </div>
                 )}
               </CardContent>
@@ -562,31 +602,34 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
 
         {/* Usuários */}
         <TabsContent value="users" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
+          <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="relative z-10">
+              <CardTitle className="flex items-center gap-2 text-gray-900">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <Users className="h-4 w-4 text-white" />
+                </div>
                 Gestão de Usuários
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-gray-600">
                 Gerencie todos os usuários do sistema
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative z-10">
               {users.length > 0 ? (
                 <div className="space-y-3">
                   {users.map((user) => (
-                    <div key={user.uid} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div key={user.uid} className="flex items-center justify-between p-4 border rounded-2xl bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300">
                       <div className="space-y-1">
-                        <p className="font-medium">{user.displayName}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                        <p className="font-medium text-gray-900">{user.displayName}</p>
+                        <p className="text-sm text-gray-600">{user.email}</p>
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="capitalize">{user.userType}</Badge>
-                          <Badge variant={user.isActive ? "default" : "secondary"}>
+                          <Badge variant="outline" className="capitalize bg-gradient-to-r from-blue-600/10 to-purple-600/10 text-blue-600 border-0 rounded-full shadow-sm">{user.userType}</Badge>
+                          <Badge variant={user.isActive ? "default" : "secondary"} className={user.isActive ? "bg-gradient-to-r from-green-600/10 to-green-500/10 text-green-600 border-0 rounded-full shadow-sm" : "bg-gradient-to-r from-gray-600/10 to-gray-500/10 text-gray-600 border-0 rounded-full shadow-sm"}>
                             {user.isActive ? "Ativo" : "Inativo"}
                           </Badge>
                           {user.userType === 'motorista' && (
-                            <Badge variant={user.isOnline ? "default" : "outline"}>
+                            <Badge variant={user.isOnline ? "default" : "outline"} className={user.isOnline ? "bg-gradient-to-r from-green-600/10 to-green-500/10 text-green-600 border-0 rounded-full shadow-sm" : "bg-gradient-to-r from-gray-600/10 to-gray-500/10 text-gray-600 border-0 rounded-full shadow-sm"}>
                               {user.isOnline ? "Online" : "Offline"}
                             </Badge>
                           )}
@@ -594,12 +637,12 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="text-right text-sm">
-                          <p>{user.totalDeliveries || 0} entregas</p>
-                          <p className="text-muted-foreground">
+                          <p className="text-gray-900">{user.totalDeliveries || 0} entregas</p>
+                          <p className="text-gray-600">
                             R$ {(user.totalRevenue || 0).toFixed(2)}
                           </p>
                         </div>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300">
                           <Eye className="h-4 w-4" />
                         </Button>
                       </div>
@@ -607,9 +650,11 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Users className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium">Nenhum usuário encontrado</p>
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
+                    <Users className="h-8 w-8 text-white" />
+                  </div>
+                  <p className="text-lg font-medium text-gray-900">Nenhum usuário encontrado</p>
                 </div>
               )}
             </CardContent>
@@ -619,89 +664,117 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
         {/* Entregas */}
         <TabsContent value="deliveries" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Total</CardTitle>
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="pb-2 relative z-10">
+                <CardTitle className="text-sm text-gray-900 flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                    <Package className="h-3 w-3 text-white" />
+                  </div>
+                  Total
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{deliveryStats?.total || 0}</div>
+              <CardContent className="relative z-10">
+                <div className="text-2xl font-bold text-gray-900">{deliveryStats?.total || 0}</div>
               </CardContent>
             </Card>
             <Card 
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
+              className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500 cursor-pointer"
               onClick={() => {
                 setShowPendingModal(true);
                 fetchPendingDeliveries();
               }}
             >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Pendentes</CardTitle>
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-600/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="pb-2 relative z-10">
+                <CardTitle className="text-sm text-gray-900 flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gradient-to-r from-orange-600 to-orange-500 rounded-lg flex items-center justify-center">
+                    <Clock className="h-3 w-3 text-white" />
+                  </div>
+                  Pendentes
+                </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="text-2xl font-bold text-orange-600">{deliveryStats?.pending || 0}</div>
-                <p className="text-xs text-muted-foreground mt-1">Clique para ver detalhes</p>
+                <p className="text-xs text-gray-600 mt-1">Clique para ver detalhes</p>
               </CardContent>
             </Card>
             <Card 
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
+              className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500 cursor-pointer"
               onClick={() => {
                 setShowInProgressModal(true);
                 fetchInProgressDeliveries();
               }}
             >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Em Andamento</CardTitle>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="pb-2 relative z-10">
+                <CardTitle className="text-sm text-gray-900 flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg flex items-center justify-center">
+                    <Truck className="h-3 w-3 text-white" />
+                  </div>
+                  Em Andamento
+                </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="text-2xl font-bold text-blue-600">{deliveryStats?.inProgress || 0}</div>
-                <p className="text-xs text-muted-foreground mt-1">Clique para ver detalhes</p>
+                <p className="text-xs text-gray-600 mt-1">Clique para ver detalhes</p>
               </CardContent>
             </Card>
             <Card 
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
+              className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500 cursor-pointer"
               onClick={() => {
                 setShowCompletedModal(true);
                 fetchCompletedDeliveries();
               }}
             >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Concluídas</CardTitle>
+              <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="pb-2 relative z-10">
+                <CardTitle className="text-sm text-gray-900 flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gradient-to-r from-green-600 to-green-500 rounded-lg flex items-center justify-center">
+                    <CheckCircle className="h-3 w-3 text-white" />
+                  </div>
+                  Concluídas
+                </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="text-2xl font-bold text-green-600">{deliveryStats?.completed || 0}</div>
-                <p className="text-xs text-muted-foreground mt-1">Clique para ver detalhes</p>
+                <p className="text-xs text-gray-600 mt-1">Clique para ver detalhes</p>
               </CardContent>
             </Card>
           </div>
           
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5" />
+          <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="relative z-10">
+              <CardTitle className="flex items-center gap-2 text-gray-900">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <Package className="h-4 w-4 text-white" />
+                </div>
                 Todas as Entregas
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-gray-600">
                 Lista completa de entregas do sistema
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative z-10">
               {deliveries.length > 0 ? (
                 <div className="space-y-3">
                   {deliveries.map((delivery) => (
-                    <div key={delivery.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div key={delivery.id} className="flex items-center justify-between p-4 border rounded-2xl bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300">
                       <div className="space-y-1">
-                        <p className="font-medium">{delivery.description}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="font-medium text-gray-900">{delivery.description}</p>
+                        <p className="text-sm text-gray-600">
                           {format(delivery.date instanceof Timestamp ? delivery.date.toDate() : delivery.date, 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge 
                           variant={delivery.deliveryStatus === 'Entregue' ? 'default' : 'secondary'}
+                          className={delivery.deliveryStatus === 'Entregue' ? "bg-gradient-to-r from-green-600/10 to-green-500/10 text-green-600 border-0 rounded-full shadow-sm" : "bg-gradient-to-r from-blue-600/10 to-purple-600/10 text-blue-600 border-0 rounded-full shadow-sm"}
                         >
                           {delivery.deliveryStatus}
                         </Badge>
-                        <span className="font-semibold">
+                        <span className="font-semibold text-gray-900">
                           R$ {delivery.amount?.toFixed(2) || '0.00'}
                         </span>
                       </div>
@@ -709,9 +782,11 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Package className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium">Nenhuma entrega encontrada</p>
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
+                    <Package className="h-8 w-8 text-white" />
+                  </div>
+                  <p className="text-lg font-medium text-gray-900">Nenhuma entrega encontrada</p>
                 </div>
               )}
             </CardContent>
@@ -721,34 +796,43 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
         {/* Financeiro */}
         <TabsContent value="financial" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
-                <TrendingUp className="h-4 w-4 text-emerald-600" />
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium text-gray-900">Receita Total</CardTitle>
+                <div className="w-6 h-6 bg-gradient-to-r from-green-600 to-green-500 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="h-3 w-3 text-white" />
+                </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="text-2xl font-bold text-emerald-600">
                   R$ {financialStats?.totalRevenue.toFixed(2) || '0.00'}
                 </div>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Despesas Total</CardTitle>
-                <TrendingDown className="h-4 w-4 text-rose-600" />
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-red-600/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium text-gray-900">Despesas Total</CardTitle>
+                <div className="w-6 h-6 bg-gradient-to-r from-red-600 to-red-500 rounded-lg flex items-center justify-center">
+                  <TrendingDown className="h-3 w-3 text-white" />
+                </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="text-2xl font-bold text-rose-600">
                   R$ {financialStats?.totalExpenses.toFixed(2) || '0.00'}
                 </div>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Lucro Líquido</CardTitle>
-                <DollarSign className="h-4 w-4 text-blue-600" />
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium text-gray-900">Lucro Líquido</CardTitle>
+                <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg flex items-center justify-center">
+                  <DollarSign className="h-3 w-3 text-white" />
+                </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className={`text-2xl font-bold ${(financialStats?.netProfit || 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                   R$ {financialStats?.netProfit.toFixed(2) || '0.00'}
                 </div>
@@ -758,21 +842,24 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Top Motoristas */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Truck className="h-5 w-5" />
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <CardTitle className="flex items-center gap-2 text-gray-900">
+                  <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-green-500 rounded-xl flex items-center justify-center">
+                    <Truck className="h-4 w-4 text-white" />
+                  </div>
                   Top Motoristas por Receita
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 {financialStats?.topRevenueDrivers && financialStats.topRevenueDrivers.length > 0 ? (
                   <div className="space-y-3">
                     {financialStats.topRevenueDrivers.map((driver, index) => (
-                      <div key={driver.driverId} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div key={driver.driverId} className="flex items-center justify-between p-3 border rounded-2xl bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300">
                         <div className="space-y-1">
-                          <p className="text-sm font-medium">{driver.driverName}</p>
-                          <p className="text-xs text-muted-foreground">#{index + 1}</p>
+                          <p className="text-sm font-medium text-gray-900">{driver.driverName}</p>
+                          <p className="text-xs text-gray-600">#{index + 1}</p>
                         </div>
                         <span className="font-semibold text-emerald-600">
                           R$ {driver.revenue.toFixed(2)}
@@ -781,30 +868,35 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-6 text-muted-foreground">
-                    <Truck className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>Nenhum dado disponível</p>
+                  <div className="text-center py-6">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-green-600 to-green-500 rounded-2xl flex items-center justify-center">
+                      <Truck className="h-8 w-8 text-white" />
+                    </div>
+                    <p className="text-gray-900">Nenhum dado disponível</p>
                   </div>
                 )}
               </CardContent>
             </Card>
 
             {/* Top Clientes */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <CardTitle className="flex items-center gap-2 text-gray-900">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                    <Users className="h-4 w-4 text-white" />
+                  </div>
                   Top Clientes por Gastos
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 {financialStats?.topSpendingClients && financialStats.topSpendingClients.length > 0 ? (
                   <div className="space-y-3">
                     {financialStats.topSpendingClients.map((client, index) => (
-                      <div key={client.clientId} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div key={client.clientId} className="flex items-center justify-between p-3 border rounded-2xl bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300">
                         <div className="space-y-1">
-                          <p className="text-sm font-medium">{client.clientName}</p>
-                          <p className="text-xs text-muted-foreground">#{index + 1}</p>
+                          <p className="text-sm font-medium text-gray-900">{client.clientName}</p>
+                          <p className="text-xs text-gray-600">#{index + 1}</p>
                         </div>
                         <span className="font-semibold text-blue-600">
                           R$ {client.spending.toFixed(2)}
@@ -813,9 +905,11 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-6 text-muted-foreground">
-                    <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>Nenhum dado disponível</p>
+                  <div className="text-center py-6">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
+                      <Users className="h-8 w-8 text-white" />
+                    </div>
+                    <p className="text-gray-900">Nenhum dado disponível</p>
                   </div>
                 )}
               </CardContent>
@@ -825,21 +919,26 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
 
         {/* Relatórios */}
         <TabsContent value="reports" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
+          <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="relative z-10">
+              <CardTitle className="flex items-center gap-2 text-gray-900">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <BarChart3 className="h-4 w-4 text-white" />
+                </div>
                 Relatórios do Sistema
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-gray-600">
                 Relatórios detalhados e análises do sistema
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <BarChart3 className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium">Relatórios em Desenvolvimento</p>
-                <p className="text-sm">Em breve você poderá gerar relatórios detalhados aqui</p>
+            <CardContent className="relative z-10">
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
+                  <BarChart3 className="h-8 w-8 text-white" />
+                </div>
+                <p className="text-lg font-medium text-gray-900">Relatórios em Desenvolvimento</p>
+                <p className="text-sm text-gray-600">Em breve você poderá gerar relatórios detalhados aqui</p>
               </div>
             </CardContent>
           </Card>

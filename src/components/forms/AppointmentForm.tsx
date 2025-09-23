@@ -111,7 +111,12 @@ export function AppointmentForm({ userId, onSuccess }: AppointmentFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit">Salvar Agendamento</Button>
+        <Button 
+          type="submit"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+        >
+          Salvar Agendamento
+        </Button>
       </form>
     </Form>
   );

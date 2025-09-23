@@ -284,20 +284,29 @@ export function JornadaManager() {
   if (loading && !shifts.length) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold tracking-tight">Jornada de Trabalho</h1>
-        <Card>
-          <CardHeader>
+        <div className="flex items-center space-x-4">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg animate-pulse">
+            <Play className="h-4 w-4 text-white" />
+          </div>
+          <Skeleton className="h-8 w-64" />
+        </div>
+        
+        <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="relative z-10">
             <Skeleton className="h-8 w-48" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             <Skeleton className="h-10 w-40" />
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Histórico de Jornadas</CardTitle>
+        
+        <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="relative z-10">
+            <CardTitle className="text-gray-900">Histórico de Jornadas</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             <div className="space-y-2">
                 {[...Array(3)].map((_, i) => (
                     <Skeleton key={i} className="h-10 w-full" />
@@ -311,45 +320,72 @@ export function JornadaManager() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight">Jornada de Trabalho</h1>
+      <div className="flex items-center space-x-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 group">
+          <Play className="h-6 w-6 text-white group-hover:scale-110 transition-transform duration-300" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Jornada de Trabalho</h1>
+          <p className="text-gray-600">Gerencie suas jornadas de trabalho</p>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Status Atual</CardTitle>
-           <CardDescription>
-            {activeShift ? `Você está em uma jornada de trabalho ${activeShift.status === 'paused' ? 'pausada' : 'ativa'}.` : 'Você não está em uma jornada de trabalho.'}
-          </CardDescription>
+      <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <CardHeader className="relative z-10">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+              <Play className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-gray-900">Status Atual</CardTitle>
+              <CardDescription className="text-gray-600">
+                {activeShift ? `Você está em uma jornada de trabalho ${activeShift.status === 'paused' ? 'pausada' : 'ativa'}.` : 'Você não está em uma jornada de trabalho.'}
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent className="flex flex-col items-start gap-4">
+        <CardContent className="flex flex-col items-start gap-4 relative z-10">
           {activeShift ? (
             <>
-              <p className="text-muted-foreground">
-                Início: <span className="font-semibold text-foreground">{format(activeShift.startTime.toDate(), "PPP 'às' HH:mm", { locale: ptBR })}</span>
+              <p className="text-gray-600">
+                Início: <span className="font-semibold text-gray-900">{format(activeShift.startTime.toDate(), "PPP 'às' HH:mm", { locale: ptBR })}</span>
               </p>
-               <p className="text-muted-foreground">
-                KM Inicial: <span className="font-semibold text-foreground">{activeShift.startKm.toLocaleString('pt-BR')} km</span>
+               <p className="text-gray-600">
+                KM Inicial: <span className="font-semibold text-gray-900">{activeShift.startKm.toLocaleString('pt-BR')} km</span>
               </p>
                 <div className="flex flex-wrap gap-2">
                     {activeShift.status === 'active' && (
-                        <Button onClick={handlePauseShift} disabled={isSubmitting} variant="outline">
+                        <Button 
+                          onClick={handlePauseShift} 
+                          disabled={isSubmitting} 
+                          className="bg-yellow-600 text-white hover:bg-yellow-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                        >
                             <Pause className="mr-2 h-4 w-4" /> Pausar
                         </Button>
                     )}
                     {activeShift.status === 'paused' && (
-                        <Button onClick={handleResumeShift} disabled={isSubmitting}>
+                        <Button 
+                          onClick={handleResumeShift} 
+                          disabled={isSubmitting}
+                          className="bg-green-600 text-white hover:bg-green-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                        >
                             <PlayCircle className="mr-2 h-4 w-4" /> Retomar
                         </Button>
                     )}
                     <AlertDialog open={isEndShiftOpen} onOpenChange={setIsEndShiftOpen}>
                             <AlertDialogTrigger asChild>
-                                <Button variant="destructive" disabled={isSubmitting}>
+                                <Button 
+                                  className="bg-red-600 text-white hover:bg-red-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                                  disabled={isSubmitting}
+                                >
                                     <StopCircle className="mr-2 h-4 w-4" /> Finalizar Jornada
                                 </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Finalizar Jornada</AlertDialogTitle>
-                                    <AlertDialogDescription>
+                            <AlertDialogContent className="bg-white border-0 shadow-2xl rounded-2xl">
+                                <AlertDialogHeader className="bg-gradient-to-r from-red-600/5 to-red-500/5 p-6 rounded-t-2xl">
+                                    <AlertDialogTitle className="text-2xl font-bold text-gray-900">Finalizar Jornada</AlertDialogTitle>
+                                    <AlertDialogDescription className="text-gray-600 text-base">
                                         Insira a quilometragem final do seu veículo para encerrar o turno.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
@@ -363,9 +399,15 @@ export function JornadaManager() {
                                         placeholder="Ex: 150420" 
                                     />
                                 </div>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleEndShift} disabled={isSubmitting}>
+                                <AlertDialogFooter className="p-6">
+                                    <AlertDialogCancel className="bg-gray-500 text-white hover:bg-gray-600 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+                                        Cancelar
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction 
+                                        onClick={handleEndShift} 
+                                        disabled={isSubmitting}
+                                        className="bg-gradient-to-r from-red-600 to-red-500 text-white hover:from-red-700 hover:to-red-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+                                    >
                                         {isSubmitting ? <Loader2 className="animate-spin" /> : 'Confirmar'}
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
@@ -376,14 +418,17 @@ export function JornadaManager() {
           ) : (
              <AlertDialog open={isStartShiftOpen} onOpenChange={setIsStartShiftOpen}>
                 <AlertDialogTrigger asChild>
-                    <Button disabled={isSubmitting}>
+                    <Button 
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+                      disabled={isSubmitting}
+                    >
                         <Play className="mr-2 h-4 w-4" /> Iniciar Jornada
                     </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Iniciar Nova Jornada</AlertDialogTitle>
-                        <AlertDialogDescription>
+                <AlertDialogContent className="bg-white border-0 shadow-2xl rounded-2xl">
+                    <AlertDialogHeader className="bg-gradient-to-r from-blue-600/5 to-purple-600/5 p-6 rounded-t-2xl">
+                        <AlertDialogTitle className="text-2xl font-bold text-gray-900">Iniciar Nova Jornada</AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-600 text-base">
                             Insira a quilometragem inicial do seu veículo para começar.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
@@ -397,9 +442,15 @@ export function JornadaManager() {
                             placeholder="Ex: 150210" 
                         />
                     </div>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleStartShift} disabled={isSubmitting}>
+                    <AlertDialogFooter className="p-6">
+                        <AlertDialogCancel className="bg-gray-500 text-white hover:bg-gray-600 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+                            Cancelar
+                        </AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={handleStartShift} 
+                            disabled={isSubmitting}
+                            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+                        >
                             {isSubmitting ? <Loader2 className="animate-spin" /> : 'Iniciar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -409,11 +460,17 @@ export function JornadaManager() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Histórico de Jornadas</CardTitle>
+      <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <CardHeader className="relative z-10">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+              <Play className="h-4 w-4 text-white" />
+            </div>
+            <CardTitle className="text-gray-900">Histórico de Jornadas</CardTitle>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative z-10">
           {shifts.length > 0 ? (
             <div className="overflow-x-auto">
             <Table>
@@ -460,14 +517,19 @@ export function JornadaManager() {
                             <TableCell className="text-right space-x-1">
                                 <Dialog open={isEditShiftOpen && shiftToEdit?.id === shift.id} onOpenChange={setIsEditShiftOpen}>
                                     <DialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" onClick={() => handleEditClick(shift)} disabled={shift.status !== 'completed'}>
+                                        <Button 
+                                          className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                                          size="icon" 
+                                          onClick={() => handleEditClick(shift)} 
+                                          disabled={shift.status !== 'completed'}
+                                        >
                                             <Pencil className="h-4 w-4" />
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>Editar Jornada</DialogTitle>
-                                            <DialogDescription>
+                                    <DialogContent className="bg-white border-0 shadow-2xl rounded-2xl">
+                                        <DialogHeader className="bg-gradient-to-r from-blue-600/5 to-purple-600/5 p-6 rounded-t-2xl">
+                                            <DialogTitle className="text-2xl font-bold text-gray-900">Editar Jornada</DialogTitle>
+                                            <DialogDescription className="text-gray-600 text-base">
                                                 Altere os dados da jornada. Lembre-se de que a senha é necessária para confirmar.
                                             </DialogDescription>
                                         </DialogHeader>
@@ -477,14 +539,19 @@ export function JornadaManager() {
 
                                 <AlertDialog open={isDeleteAlertOpen && shiftToDelete?.id === shift.id} onOpenChange={(isOpen) => { if (!isOpen) resetDeleteState(); }}>
                                     <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(shift)} disabled={shift.status !== 'completed'}>
-                                            <Trash2 className="h-4 w-4 text-red-500" />
+                                        <Button 
+                                          className="bg-red-600 text-white hover:bg-red-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                                          size="icon" 
+                                          onClick={() => openDeleteDialog(shift)} 
+                                          disabled={shift.status !== 'completed'}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-                                            <AlertDialogDescription>
+                                    <AlertDialogContent className="bg-white border-0 shadow-2xl rounded-2xl">
+                                        <AlertDialogHeader className="bg-gradient-to-r from-red-600/5 to-red-500/5 p-6 rounded-t-2xl">
+                                            <AlertDialogTitle className="text-2xl font-bold text-gray-900">Confirmar Exclusão</AlertDialogTitle>
+                                            <AlertDialogDescription className="text-gray-600 text-base">
                                                 Para sua segurança, digite sua senha para excluir esta jornada. Esta ação não pode ser desfeita.
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
@@ -498,9 +565,18 @@ export function JornadaManager() {
                                                 placeholder="Sua senha de login" 
                                             />
                                         </div>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel onClick={resetDeleteState}>Cancelar</AlertDialogCancel>
-                                            <AlertDialogAction onClick={handleDeleteConfirm} disabled={isDeleting}>
+                                        <AlertDialogFooter className="p-6">
+                                            <AlertDialogCancel 
+                                                onClick={resetDeleteState}
+                                                className="bg-gray-500 text-white hover:bg-gray-600 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                                            >
+                                                Cancelar
+                                            </AlertDialogCancel>
+                                            <AlertDialogAction 
+                                                onClick={handleDeleteConfirm} 
+                                                disabled={isDeleting}
+                                                className="bg-gradient-to-r from-red-600 to-red-500 text-white hover:from-red-700 hover:to-red-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+                                            >
                                                 {isDeleting ? 'Excluindo...' : 'Confirmar Exclusão'}
                                             </AlertDialogAction>
                                         </AlertDialogFooter>

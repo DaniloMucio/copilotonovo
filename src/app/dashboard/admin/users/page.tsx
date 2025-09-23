@@ -7,28 +7,37 @@ import { UserManagement } from '@/components/admin/UserManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Users } from 'lucide-react';
 
 function UserManagementSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-96 mt-2" />
+      {/* Header Skeleton */}
+      <div className="flex items-center space-x-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg animate-pulse">
+          <Users className="h-6 w-6 text-white" />
         </div>
-        <Skeleton className="h-10 w-32" />
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-96" />
+        </div>
+        <Skeleton className="h-10 w-32 ml-auto" />
       </div>
       
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-32" />
+      {/* Content Skeleton */}
+      <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <CardHeader className="relative z-10">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg animate-pulse"></div>
+            <Skeleton className="h-6 w-32" />
+          </div>
           <Skeleton className="h-4 w-64" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative z-10">
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center space-x-4">
+              <div key={i} className="flex items-center space-x-4 p-3 bg-white/50 backdrop-blur-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-300">
                 <Skeleton className="h-10 w-10 rounded-full" />
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-32" />
@@ -51,24 +60,25 @@ function UserManagementPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push('/dashboard/admin')}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Voltar
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Gerenciamento de Usuários</h1>
-            <p className="text-muted-foreground">
-              Gerencie todos os usuários do sistema - motoristas e clientes
-            </p>
-          </div>
+      <div className="flex items-center space-x-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 group">
+          <Users className="h-6 w-6 text-white group-hover:scale-110 transition-transform duration-300" />
         </div>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Usuários</h1>
+          <p className="text-gray-600">
+            Gerencie todos os usuários do sistema - motoristas e clientes
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.push('/dashboard/admin')}
+          className="flex items-center gap-2 bg-white/80 backdrop-blur-sm border-0 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 ml-auto"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar
+        </Button>
       </div>
       
       <UserManagement />

@@ -143,18 +143,18 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
           </Button>
         </DropdownMenuTrigger>
         
-        <DropdownMenuContent align="end" className="w-80 p-0">
-          <Card className="border-0 shadow-none">
-            <CardHeader className="pb-3">
+        <DropdownMenuContent align="end" className="w-80 p-0 bg-white border-0 shadow-2xl rounded-2xl">
+          <Card className="border-0 shadow-none bg-white">
+            <CardHeader className="pb-3 bg-white">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Notificações</CardTitle>
+                <CardTitle className="text-lg text-gray-900">Notificações</CardTitle>
                 <div className="flex items-center gap-1">
                   {unreadCount > 0 && (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={markAllAsRead}
-                      className="h-8 px-2"
+                      className="h-8 px-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
                     >
                       <CheckCheck className="h-4 w-4 mr-1" />
                       Marcar todas
@@ -166,7 +166,7 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
                         variant="ghost"
                         size="sm"
                         onClick={() => clearOldNotifications(30)}
-                        className="h-8 px-2"
+                        className="h-8 px-2 bg-gray-600 text-white hover:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
                         title="Limpar notificações antigas (30+ dias)"
                       >
                         <Calendar className="h-4 w-4" />
@@ -175,7 +175,7 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
                         variant="ghost"
                         size="sm"
                         onClick={clearAllNotifications}
-                        className="h-8 px-2 text-red-600 hover:text-red-700"
+                        className="h-8 px-2 bg-red-600 text-white hover:bg-red-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
                         title="Limpar todas as notificações"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -186,7 +186,7 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowSettings(true)}
-                    className="h-8 px-2"
+                    className="h-8 px-2 bg-gray-600 text-white hover:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
                   >
                     <Settings className="h-4 w-4" />
                   </Button>
@@ -196,17 +196,19 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
             
             <Separator />
             
-            <CardContent className="p-0">
+            <CardContent className="p-0 bg-white">
               <ScrollArea className="h-96">
                 {isLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                   </div>
                 ) : notifications.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                    <Bell className="h-12 w-12 mb-2 opacity-50" />
-                    <p className="text-sm">Nenhuma notificação</p>
-                    <p className="text-xs">Você receberá notificações aqui</p>
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
+                      <Bell className="h-8 w-8 text-white" />
+                    </div>
+                    <p className="text-sm text-gray-900">Nenhuma notificação</p>
+                    <p className="text-xs text-gray-600">Você receberá notificações aqui</p>
                   </div>
                 ) : (
                   <div className="space-y-1">
@@ -214,7 +216,7 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
                       <div
                         key={notification.id}
                         className={cn(
-                          "p-3 hover:bg-muted/50 transition-colors cursor-pointer",
+                          "p-3 hover:bg-gray-50 transition-colors cursor-pointer bg-white",
                           !notification.read && "bg-blue-50/50 border-l-2 border-l-blue-500"
                         )}
                         onClick={() => {
@@ -234,23 +236,23 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
                           
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <p className="text-sm font-medium truncate">
+                              <p className="text-sm font-medium truncate text-gray-900">
                                 {notification.title}
                               </p>
                               <Badge 
                                 variant={getBadgeVariant(notification.type)}
-                                className="text-xs"
+                                className="text-xs bg-gradient-to-r from-blue-600/10 to-purple-600/10 text-blue-600 border-0 rounded-full shadow-sm"
                               >
                                 {getTypeText(notification.type)}
                               </Badge>
                             </div>
                             
-                            <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                            <p className="text-xs text-gray-600 mb-2 line-clamp-2">
                               {notification.body}
                             </p>
                             
                             <div className="flex items-center justify-between">
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-xs text-gray-600">
                                 {format(notification.createdAt, 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                               </p>
                               

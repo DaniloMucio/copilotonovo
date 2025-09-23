@@ -191,12 +191,12 @@ export function VehicleForm({ vehicleToEdit, onSuccess, onCancel, isOpen }: Vehi
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel?.()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-0 shadow-2xl rounded-2xl">
+        <DialogHeader className="bg-gradient-to-r from-blue-600/5 to-purple-600/5 p-6 rounded-t-2xl">
+          <DialogTitle className="text-2xl font-bold text-gray-900">
             {vehicleToEdit ? 'Editar Veículo' : 'Cadastrar Veículo'}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-gray-600 text-base">
             {vehicleToEdit 
               ? 'Atualize as informações do seu veículo.' 
               : 'Cadastre as informações do seu veículo para melhor controle.'
@@ -471,10 +471,18 @@ export function VehicleForm({ vehicleToEdit, onSuccess, onCancel, isOpen }: Vehi
             </div>
 
             <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={onCancel}>
+              <Button 
+                type="button" 
+                className="bg-gray-500 text-white hover:bg-gray-600 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                onClick={onCancel}
+              >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button 
+                type="submit" 
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? 'Salvando...' : (vehicleToEdit ? 'Atualizar' : 'Cadastrar')}
               </Button>
             </div>

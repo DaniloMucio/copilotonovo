@@ -2,6 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Estilos da Landing Page - Padrão Visual */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Correções para botões e elementos transparentes */
+.btn-primary {
+  background-color: #3b82f6 !important;
+  color: white !important;
+  border: none !important;
+}
+
+.btn-primary:hover {
+  background-color: #2563eb !important;
+}
+
+.btn-secondary {
+  background-color: #6b7280 !important;
+  color: white !important;
+  border: none !important;
+}
+
+.btn-secondary:hover {
+  background-color: #4b5563 !important;
+}
+
+.btn-outline {
+  background-color: white !important;
+  color: #374151 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.btn-outline:hover {
+  background-color: #f9fafb !important;
+}
+
+/* Correções para mensagens de confirmação */
+.toast-container {
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.toast-title {
+  color: #111827 !important;
+  font-weight: 600 !important;
+}
+
+.toast-description {
+  color: #6b7280 !important;
+}
+
 /* Estilos personalizados para scroll horizontal em mobile */
 .scrollbar-hide {
   -ms-overflow-style: none;  /* IE and Edge */

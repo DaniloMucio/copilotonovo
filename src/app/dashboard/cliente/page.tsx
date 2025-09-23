@@ -41,27 +41,49 @@ interface ClienteDashboardProps {
 function ClienteDashboardSkeleton() {
   return (
     <div className="space-y-6">
+      {/* Header Skeleton */}
+      <div className="flex items-center space-x-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg animate-pulse">
+          <Package className="h-6 w-6 text-white" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+      </div>
+
+      {/* Stats Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[1, 2, 3].map((i) => (
-          <Card key={i}>
-            <CardHeader>
-              <Skeleton className="h-6 w-24" />
+          <Card key={i} className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="relative z-10">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-6 w-24" />
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg animate-pulse"></div>
+              </div>
               <Skeleton className="h-8 w-16" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative z-10">
               <Skeleton className="h-4 w-full" />
             </CardContent>
           </Card>
         ))}
       </div>
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-8 w-48" />
+
+      {/* Recent Deliveries Skeleton */}
+      <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <CardHeader className="relative z-10">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg animate-pulse"></div>
+            <Skeleton className="h-8 w-48" />
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative z-10">
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+              <div key={i} className="flex items-center justify-between p-4 border rounded-lg bg-white/50 backdrop-blur-sm">
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-32" />
                   <Skeleton className="h-3 w-24" />
@@ -217,16 +239,19 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
   return (
     <div className="space-y-6">
       {/* Header com PWA */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex items-center space-x-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 group">
+          <Package className="h-6 w-6 text-white group-hover:scale-110 transition-transform duration-300" />
+        </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard do Cliente</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard do Cliente</h1>
+          <p className="text-gray-600">
             Bem-vindo, {userData.displayName || user.email}! Acompanhe suas entregas e agendamentos.
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 ml-auto">
           <div className="flex items-center gap-2">
-            {userData && (<Badge variant="outline" className="text-sm font-medium capitalize">Perfil: {userData.userType}</Badge>)}
+            {userData && (<Badge variant="outline" className="text-sm font-medium capitalize bg-white/80 backdrop-blur-sm border-0 rounded-xl shadow-md">Perfil: {userData.userType}</Badge>)}
             <PWAInstallButton canInstall={pwaCanInstall} install={pwaInstall} />
           </div>
         </div>
@@ -237,14 +262,17 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <Card key={index} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                <Icon className={`h-4 w-4 ${stat.color}`} />
+            <Card key={index} className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium text-gray-900">{stat.title}</CardTitle>
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                  <Icon className="h-4 w-4 text-white" />
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground">{stat.description}</p>
+              <CardContent className="relative z-10">
+                <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                <p className="text-xs text-gray-600">{stat.description}</p>
               </CardContent>
             </Card>
           );
@@ -253,62 +281,66 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
 
       {/* Tabs principais */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="deliveries">Entregas (Mês Atual)</TabsTrigger>
-          <TabsTrigger value="agenda">Agenda</TabsTrigger>
+        <TabsList className="bg-white/80 backdrop-blur-sm border-0 rounded-2xl shadow-lg p-1">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Visão Geral</TabsTrigger>
+          <TabsTrigger value="deliveries" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Entregas (Mês Atual)</TabsTrigger>
+          <TabsTrigger value="agenda" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Agenda</TabsTrigger>
         </TabsList>
 
         {/* Visão Geral */}
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Entregas Recentes */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5" />
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <CardTitle className="flex items-center gap-2 text-gray-900">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                    <Package className="h-4 w-4 text-white" />
+                  </div>
                   Entregas Recentes
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-600">
                   Acompanhe o status das suas últimas entregas
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 {recentDeliveries.length > 0 ? (
                   <div className="space-y-3">
                     {recentDeliveries.map((delivery) => (
-                      <div key={delivery.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div key={delivery.id} className="flex items-center justify-between p-3 border rounded-lg bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300">
                         <div className="space-y-1">
-                          <p className="text-sm font-medium">{delivery.description}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-sm font-medium text-gray-900">{delivery.description}</p>
+                          <p className="text-xs text-gray-600">
                             {format(delivery.date instanceof Timestamp ? delivery.date.toDate() : delivery.date, 'dd/MM/yyyy', { locale: ptBR })}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge 
                             variant={delivery.deliveryStatus === 'Entregue' ? 'default' : 'secondary'}
+                            className="bg-gradient-to-r from-green-600/10 to-emerald-600/10 text-green-600 border-0 rounded-full shadow-sm"
                           >
                             {delivery.deliveryStatus}
                           </Badge>
                           {delivery.deliveryStatus === 'Pendente' && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 bg-white/50 hover:bg-red-100 rounded-lg shadow-md hover:shadow-lg transition-all duration-300">
                                   <Trash2 className="h-3 w-3" />
                                 </Button>
                               </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Excluir Entrega</AlertDialogTitle>
-                                  <AlertDialogDescription>
+                              <AlertDialogContent className="bg-white border-0 shadow-2xl rounded-2xl">
+                                <AlertDialogHeader className="bg-gradient-to-r from-red-600/5 to-red-500/5 p-6 rounded-t-2xl">
+                                  <AlertDialogTitle className="text-gray-900">Excluir Entrega</AlertDialogTitle>
+                                  <AlertDialogDescription className="text-gray-600">
                                     Tem certeza que deseja excluir esta entrega? Esta ação não pode ser desfeita.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogCancel className="bg-gray-500 text-white hover:bg-gray-600 rounded-xl shadow-md">Cancelar</AlertDialogCancel>
                                   <AlertDialogAction 
                                     onClick={() => handleDeleteDelivery(delivery.id!)}
-                                    className="bg-red-600 hover:bg-red-700"
+                                    className="bg-red-600 text-white hover:bg-red-700 rounded-xl shadow-lg"
                                   >
                                     Excluir
                                   </AlertDialogAction>
@@ -321,7 +353,7 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-6 text-muted-foreground">
+                  <div className="text-center py-6 text-gray-600">
                     <Package className="h-12 w-12 mx-auto mb-2 opacity-50" />
                     <p>Nenhuma entrega encontrada</p>
                   </div>
@@ -330,31 +362,34 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
             </Card>
 
             {/* Resumo Financeiro */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <CardTitle className="flex items-center gap-2 text-gray-900">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                    <DollarSign className="h-4 w-4 text-white" />
+                  </div>
                   Resumo Financeiro
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-600">
                   Visão geral dos seus gastos com entregas
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Total em Entregas:</span>
-                    <span className="font-semibold">R$ {totalSpent.toFixed(2)}</span>
+                  <div className="flex items-center justify-between p-3 bg-white/50 backdrop-blur-sm rounded-lg shadow-sm">
+                    <span className="text-sm text-gray-600">Total em Entregas:</span>
+                    <span className="font-semibold text-gray-900">R$ {totalSpent.toFixed(2)}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Entregas Pendentes:</span>
-                    <span className="font-semibold text-orange-600 dark:text-orange-400">
+                  <div className="flex items-center justify-between p-3 bg-white/50 backdrop-blur-sm rounded-lg shadow-sm">
+                    <span className="text-sm text-gray-600">Entregas Pendentes:</span>
+                    <span className="font-semibold text-orange-600">
                       {pendingDeliveries.length}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Entregas Concluídas:</span>
-                    <span className="font-semibold text-green-600 dark:text-green-400">
+                  <div className="flex items-center justify-between p-3 bg-white/50 backdrop-blur-sm rounded-lg shadow-sm">
+                    <span className="text-sm text-gray-600">Entregas Concluídas:</span>
+                    <span className="font-semibold text-green-600">
                       {completedDeliveries.length}
                     </span>
                   </div>
