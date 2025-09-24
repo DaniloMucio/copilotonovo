@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Suspense, useState, useEffect, useCallback } from 'react';
@@ -29,39 +28,86 @@ import {
   Truck,
   User as UserIcon,
   Plus,
-  Trash2
+  Trash2,
+  Zap,
+  Sparkles
 } from 'lucide-react';
 import { DeliveryForm } from '@/components/forms/DeliveryForm';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { motion } from 'framer-motion';
 
 function EntregasClienteSkeleton() {
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="flex items-baseline justify-between"
+      >
+        <div className="flex items-center space-x-3">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg"
+          >
+            <Package className="h-4 w-4 text-white" />
+          </motion.div>
           <Skeleton className="h-8 w-1/2" />
-          <Skeleton className="h-4 w-3/4" />
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="space-y-4">
-                <Skeleton className="h-6 w-1/4" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-8 w-1/3" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-20 w-full" />
-        </CardContent>
-      </Card>
+        </div>
+        <Skeleton className="h-4 w-24" />
+      </motion.div>
+      
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {[...Array(3)].map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 * i }}
+          >
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="relative z-10">
+                <Skeleton className="h-6 w-1/2" />
+              </CardHeader>
+              <CardContent className="relative z-10">
+                <Skeleton className="h-8 w-3/4" />
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+      
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
+        <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="relative z-10">
+            <CardTitle className="flex items-center space-x-2">
+              <Sparkles className="h-5 w-5 text-blue-600" />
+              <span>Entregas</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="relative z-10">
+            <div className="space-y-2">
+              {[...Array(3)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: 0.4 + 0.1 * i }}
+                >
+                  <Skeleton className="h-10 w-full" />
+                </motion.div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }
@@ -116,25 +162,17 @@ function EntregasClienteContent() {
 
   const fetchDrivers = useCallback(async () => {
     try {
-      console.log('🔍 Buscando motoristas online...');
-      const driversList = await getOnlineDrivers();
-      console.log('📋 Motoristas encontrados:', driversList.map(d => ({
-        uid: d.uid,
-        displayName: d.displayName,
-        isOnline: d.isOnline
-      })));
-      setDrivers(driversList);
+      const onlineDrivers = await getOnlineDrivers();
+      setDrivers(onlineDrivers);
     } catch (error) {
-      console.error("❌ Erro ao buscar motoristas online:", error);
+      console.error("Erro ao buscar motoristas:", error);
       toast({ 
         variant: 'destructive', 
         title: 'Erro', 
-        description: 'Não foi possível carregar a lista de motoristas online.'
+        description: 'Não foi possível carregar os motoristas.'
       });
     }
   }, [toast]);
-
-  
 
   const handleOpenForm = () => {
     setIsFormOpen(true);
@@ -144,9 +182,10 @@ function EntregasClienteContent() {
     setIsFormOpen(false);
   };
 
-  const handleFormSuccess = () => {
+  const handleFormSubmit = async () => {
     setIsFormOpen(false);
     if (user) {
+      // Usar refreshWithDelay para garantir que os dados sejam atualizados
       refreshWithDelay(() => fetchData(user.uid));
     }
   };
@@ -209,329 +248,383 @@ function EntregasClienteContent() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Minhas Entregas</h1>
-          <p className="text-muted-foreground">
-            Acompanhe o status e histórico das suas entregas
-          </p>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4"
+      >
+        <div className="flex items-center space-x-4">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 group"
+          >
+            <Package className="h-6 w-6 text-white group-hover:scale-110 transition-transform duration-300" />
+          </motion.div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Minhas Entregas</h1>
+            <p className="text-gray-600">
+              Acompanhe o status e histórico das suas entregas, {userData.displayName?.split(' ')[0]}.
+            </p>
+          </div>
         </div>
-        <Button 
-          className="bg-blue-600 hover:bg-blue-700"
-          onClick={handleOpenForm}
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Entrega
-        </Button>
-      </div>
+          <Button 
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+            onClick={handleOpenForm}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Entrega
+          </Button>
+        </motion.div>
+      </motion.div>
 
-      {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Entregas</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalDeliveries}</div>
-            <p className="text-xs text-muted-foreground">Todas as entregas</p>
-          </CardContent>
-        </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+      >
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            whileHover={{ y: -5, scale: 1.02 }}
+            className="group"
+          >
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group-hover:shadow-xl transition-all duration-500 border-l-4 border-l-blue-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-indigo-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium text-blue-800 flex items-center space-x-2">
+                  <Package className="h-4 w-4" />
+                  <span>Total de Entregas</span>
+                </CardTitle>
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <Package className="h-4 w-4 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent className="relative z-10">
+                <div className="text-2xl font-bold text-gray-900">{totalDeliveries}</div>
+                <p className="text-xs text-gray-500 mt-1">Todas as entregas</p>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-            <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{pendingDeliveries.length}</div>
-            <p className="text-xs text-muted-foreground">Aguardando confirmação</p>
-          </CardContent>
-        </Card>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            whileHover={{ y: -5, scale: 1.02 }}
+            className="group"
+          >
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group-hover:shadow-xl transition-all duration-500 border-l-4 border-l-orange-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-600/5 to-amber-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium text-orange-800 flex items-center space-x-2">
+                  <Clock className="h-4 w-4" />
+                  <span>Pendentes</span>
+                </CardTitle>
+                <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <Clock className="h-4 w-4 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent className="relative z-10">
+                <div className="text-2xl font-bold text-orange-600">{pendingDeliveries.length}</div>
+                <p className="text-xs text-gray-500 mt-1">Aguardando confirmação</p>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Concluídas</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{deliveryHistory.length}</div>
-            <p className="text-xs text-muted-foreground">Entregas realizadas</p>
-          </CardContent>
-        </Card>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            whileHover={{ y: -5, scale: 1.02 }}
+            className="group"
+          >
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group-hover:shadow-xl transition-all duration-500 border-l-4 border-l-green-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-emerald-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium text-green-800 flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4" />
+                  <span>Concluídas</span>
+                </CardTitle>
+                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <CheckCircle className="h-4 w-4 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent className="relative z-10">
+                <div className="text-2xl font-bold text-green-600">{deliveryHistory.length}</div>
+                <p className="text-xs text-gray-500 mt-1">Entregas realizadas</p>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Investido</CardTitle>
-            <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">R$ {totalSpent.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">Em entregas concluídas</p>
-          </CardContent>
-        </Card>
-      </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            whileHover={{ y: -5, scale: 1.02 }}
+            className="group"
+          >
+            <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group-hover:shadow-xl transition-all duration-500 border-l-4 border-l-purple-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/5 to-violet-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-sm font-medium text-purple-800 flex items-center space-x-2">
+                  <DollarSign className="h-4 w-4" />
+                  <span>Total Investido</span>
+                </CardTitle>
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-violet-500 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <DollarSign className="h-4 w-4 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent className="relative z-10">
+                <div className="text-2xl font-bold text-purple-600">R$ {totalSpent.toFixed(2)}</div>
+                <p className="text-xs text-gray-500 mt-1">Em entregas concluídas</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </motion.div>
 
-      {/* Tabs de Entregas */}
-      <Tabs defaultValue="pending" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="pending">Pendentes</TabsTrigger>
-          <TabsTrigger value="completed">Concluídas</TabsTrigger>
-          <TabsTrigger value="payment">Pagamentos</TabsTrigger>
-        </TabsList>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
+        <Tabs defaultValue="pending" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm border-0 rounded-2xl shadow-lg p-1">
+            <TabsTrigger 
+              value="pending" 
+              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+            >
+              <span className="hidden sm:inline">Pendentes</span>
+              <span className="sm:hidden">Pendentes</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="completed"
+              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+            >
+              <span className="hidden sm:inline">Concluídas</span>
+              <span className="sm:hidden">Concluídas</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="payment"
+              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+            >
+              <span className="hidden sm:inline">Pagamentos</span>
+              <span className="sm:hidden">Pagamentos</span>
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Entregas Pendentes */}
-        <TabsContent value="pending" className="space-y-6">
-          <div className="mb-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
-            </div>
-          </div>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-orange-600" />
-                Entregas Pendentes (Mês Atual)
-              </CardTitle>
-              <CardDescription>
-                Entregas aguardando confirmação ou em andamento no mês atual
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {pendingDeliveries.length > 0 ? (
-                <div className="space-y-4">
-                  {pendingDeliveries.map((delivery) => (
-                    <div key={delivery.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-2 flex-1">
-                          <div className="flex items-center gap-2">
-                            <Package className="h-4 w-4 text-muted-foreground" />
-                            <h3 className="font-medium">{delivery.description}</h3>
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {format(delivery.date instanceof Date ? delivery.date : delivery.date.toDate(), 'dd/MM/yyyy', { locale: ptBR })}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              Local da entrega
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <DollarSign className="h-3 w-3" />
-                              R$ {delivery.amount?.toFixed(2) || '0.00'}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-2 ml-4">
-                          <Badge variant="secondary" className="text-orange-600 border-orange-200">
-                            {delivery.deliveryStatus}
-                          </Badge>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                                <Trash2 className="h-3 w-3 mr-1" />
-                                Excluir
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Excluir Entrega</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Tem certeza que deseja excluir esta entrega? Esta ação não pode ser desfeita.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => handleDeleteDelivery(delivery.id!)}
-                                  className="bg-red-600 hover:bg-red-700"
-                                >
-                                  Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </div>
+          {/* Entregas Pendentes */}
+          <TabsContent value="pending" className="mt-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="flex items-center gap-2 text-gray-900">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                      <Clock className="h-4 w-4 text-white" />
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Package className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium">Nenhuma entrega pendente</p>
-                  <p className="text-sm">Todas as suas entregas foram processadas</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Entregas Concluídas */}
-        <TabsContent value="completed" className="space-y-6">
-          <div className="mb-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
-            </div>
-          </div>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                Entregas Concluídas (Mês Atual)
-              </CardTitle>
-              <CardDescription>
-                Entregas realizadas no mês atual
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {deliveryHistory.length > 0 ? (
-                <div className="space-y-4">
-                  {deliveryHistory
-                    .sort((a, b) => {
-                      const dateA = a.date instanceof Date ? a.date : a.date.toDate();
-                      const dateB = b.date instanceof Date ? b.date : b.date.toDate();
-                      return dateB.getTime() - dateA.getTime();
-                    })
-                    .map((delivery) => (
-                      <div key={delivery.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-2 flex-1">
-                            <div className="flex items-center gap-2">
-                              <Package className="h-4 w-4 text-muted-foreground" />
-                              <h3 className="font-medium">{delivery.description}</h3>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                {format(delivery.date instanceof Date ? delivery.date : delivery.date.toDate(), 'dd/MM/yyyy', { locale: ptBR })}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                Local da entrega
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <DollarSign className="h-3 w-3" />
-                                R$ {delivery.amount?.toFixed(2) || '0.00'}
-                              </span>
-                            </div>
+                    Entregas Pendentes
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">
+                    Entregas aguardando confirmação ou em andamento
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  {pendingDeliveries.length > 0 ? (
+                    <div className="space-y-4">
+                      {pendingDeliveries.map((delivery) => (
+                        <div key={delivery.id} className="flex items-center justify-between p-4 border rounded-lg bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300">
+                          <div className="space-y-1">
+                            <p className="font-medium text-gray-900">{delivery.description}</p>
+                            <p className="text-sm text-gray-600">
+                              {format(delivery.date instanceof Date ? delivery.date : delivery.date.toDate(), 'dd/MM/yyyy', { locale: ptBR })}
+                            </p>
                           </div>
-                          <div className="flex flex-col items-end gap-2 ml-4">
-                            <Badge variant="default" className="text-green-600 bg-green-100">
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant="secondary"
+                              className="bg-orange-100 text-orange-800 border-0 rounded-full shadow-sm"
+                            >
                               {delivery.deliveryStatus}
                             </Badge>
-                            <Badge variant="outline">
-                              {delivery.paymentStatus === 'Pago' ? 'Pago' : 'Pendente'}
-                            </Badge>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Excluir Entrega</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Tem certeza que deseja excluir esta entrega? Esta ação não pode ser desfeita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleDeleteDelivery(delivery.id!)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Excluir
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <CheckCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium">Nenhuma entrega concluída</p>
-                  <p className="text-sm">Suas entregas concluídas aparecerão aqui</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Pagamentos Pendentes */}
-        <TabsContent value="payment" className="space-y-6">
-          <div className="mb-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
-            </div>
-          </div>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-blue-600" />
-                Pagamentos Pendentes (Mês Atual)
-              </CardTitle>
-              <CardDescription>
-                Entregas concluídas aguardando pagamento no mês atual
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {deliveriesToReceive.length > 0 ? (
-                <div className="space-y-4">
-                  {deliveriesToReceive.map((delivery) => (
-                    <div key={delivery.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-2 flex-1">
-                          <div className="flex items-center gap-2">
-                            <Package className="h-4 w-4 text-muted-foreground" />
-                            <h3 className="font-medium">{delivery.description}</h3>
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {format(delivery.date instanceof Date ? delivery.date : delivery.date.toDate(), 'dd/MM/yyyy', { locale: ptBR })}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              Local da entrega
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <DollarSign className="h-3 w-3" />
-                              R$ {delivery.amount?.toFixed(2) || '0.00'}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-2 ml-4">
-                          <Badge variant="outline" className="text-orange-600 border-orange-200">
-                            Pagamento Pendente
-                          </Badge>
-                          <p className="text-sm font-medium text-orange-600">
-                            R$ {delivery.amount?.toFixed(2) || '0.00'}
-                          </p>
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <DollarSign className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium">Nenhum pagamento pendente</p>
-                  <p className="text-sm">Todos os seus pagamentos foram processados</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Clock className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium">Nenhuma entrega pendente</p>
+                      <p className="text-sm">Suas entregas pendentes aparecerão aqui</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
 
-      {/* Modal do Formulário de Nova Entrega */}
+          {/* Entregas Concluídas */}
+          <TabsContent value="completed" className="mt-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="flex items-center gap-2 text-gray-900">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                      <CheckCircle className="h-4 w-4 text-white" />
+                    </div>
+                    Entregas Concluídas
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">
+                    Entregas finalizadas com sucesso
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  {deliveryHistory.length > 0 ? (
+                    <div className="space-y-4">
+                      {deliveryHistory.map((delivery) => (
+                        <div key={delivery.id} className="flex items-center justify-between p-4 border rounded-lg bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300">
+                          <div className="space-y-1">
+                            <p className="font-medium text-gray-900">{delivery.description}</p>
+                            <p className="text-sm text-gray-600">
+                              {format(delivery.date instanceof Date ? delivery.date : delivery.date.toDate(), 'dd/MM/yyyy', { locale: ptBR })}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant="default"
+                              className="bg-green-100 text-green-800 border-0 rounded-full shadow-sm"
+                            >
+                              {delivery.deliveryStatus}
+                            </Badge>
+                            <span className="text-sm font-semibold text-green-600">
+                              R$ {delivery.amount.toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <CheckCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium">Nenhuma entrega concluída</p>
+                      <p className="text-sm">Suas entregas concluídas aparecerão aqui</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          {/* Pagamentos */}
+          <TabsContent value="payment" className="mt-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <CardHeader className="relative z-10">
+                  <CardTitle className="flex items-center gap-2 text-gray-900">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                      <DollarSign className="h-4 w-4 text-white" />
+                    </div>
+                    Pagamentos Pendentes
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">
+                    Entregas aguardando pagamento
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  {deliveriesToReceive.length > 0 ? (
+                    <div className="space-y-4">
+                      {deliveriesToReceive.map((delivery) => (
+                        <div key={delivery.id} className="flex items-center justify-between p-4 border rounded-lg bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300">
+                          <div className="space-y-1">
+                            <p className="font-medium text-gray-900">{delivery.description}</p>
+                            <p className="text-sm text-gray-600">
+                              {format(delivery.date instanceof Date ? delivery.date : delivery.date.toDate(), 'dd/MM/yyyy', { locale: ptBR })}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant="secondary"
+                              className="bg-yellow-100 text-yellow-800 border-0 rounded-full shadow-sm"
+                            >
+                              {delivery.paymentStatus}
+                            </Badge>
+                            <span className="text-sm font-semibold text-yellow-600">
+                              R$ {delivery.amount.toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <DollarSign className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium">Nenhum pagamento pendente</p>
+                      <p className="text-sm">Seus pagamentos pendentes aparecerão aqui</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+        </Tabs>
+      </motion.div>
+
+      {/* Modal Nova Entrega */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">Nova Entrega</h2>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleCloseForm}
-                >
-                  ✕
-                </Button>
-              </div>
-                             <DeliveryForm 
-                 onFormSubmit={handleFormSuccess}
-                 drivers={drivers} // Lista de motoristas disponíveis
-                 recipients={recipients} // Lista de destinatários disponíveis
-               />
-            </div>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DeliveryForm 
+              onFormSubmit={handleFormSubmit}
+              onCancel={handleCloseForm}
+              drivers={drivers}
+              recipients={recipients}
+            />
           </div>
         </div>
       )}

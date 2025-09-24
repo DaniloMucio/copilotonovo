@@ -12,13 +12,14 @@ import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Package, Plus, MapPin, User, DollarSign, Calendar, FileText } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { Textarea } from '../ui/textarea';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Separator } from '../ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { useAuth } from '@/context/AuthContext';
+import { motion } from 'framer-motion';
 
 const addressSchema = z.object({
     cep: z.string().min(8, 'CEP deve ter 8 dígitos.').max(9, 'CEP inválido'),
@@ -46,12 +47,13 @@ type DeliveryFormValues = z.infer<typeof deliveryFormSchema>;
 
 interface DeliveryFormProps {
     onFormSubmit: () => void;
+    onCancel?: () => void;
     transactionToEdit?: Transaction | null;
     drivers?: any[];
     recipients?: Recipient[];
 }
 
-export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], recipients = [] }: DeliveryFormProps) {
+export function DeliveryForm({ onFormSubmit, onCancel, transactionToEdit, drivers = [], recipients = [] }: DeliveryFormProps) {
     const { toast } = useToast();
     const { userData } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -345,18 +347,41 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
     };
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-4xl mx-auto bg-white/95 backdrop-blur-xl border-0 shadow-2xl rounded-3xl overflow-hidden"
+        >
+            {/* Header */}
+            <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 p-8 text-white rounded-t-3xl overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
+                <div className="relative z-10 flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg">
+                        <Package className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold">Nova Entrega</h2>
+                        <p className="text-blue-100">Preencha os dados da entrega</p>
+                    </div>
+                </div>
+            </div>
+
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="p-8 space-y-8">
                 {userData?.userType === 'cliente' && !transactionToEdit && (
                      <FormField
                         control={form.control}
                         name="driverId"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Motorista de Preferência</FormLabel>
+                                <FormLabel className="text-blue-800 font-medium flex items-center space-x-2">
+                                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                                    <span>Motorista de Preferência</span>
+                                </FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="h-12 pl-4 pr-4 border-2 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-xl text-base transition-all duration-300 bg-white">
                                             <SelectValue placeholder={
                                                 drivers.length === 0 
                                                     ? "Nenhum motorista online disponível" 
@@ -364,14 +389,14 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                                             } />
                                         </SelectTrigger>
                                     </FormControl>
-                                    <SelectContent>
+                                    <SelectContent className="bg-white border border-gray-200 rounded-xl border-0 shadow-xl">
                                         {drivers.length === 0 ? (
-                                            <SelectItem value="" disabled>
+                                            <SelectItem value="" disabled className="rounded-lg hover:bg-gray-50">
                                                 Nenhum motorista online disponível
                                             </SelectItem>
                                         ) : (
                                             drivers.map(driver => (
-                                                <SelectItem key={driver.uid} value={driver.uid}>
+                                                <SelectItem key={driver.uid} value={driver.uid} className="rounded-lg hover:bg-gray-50">
                                                     {driver.displayName || driver.name || 'Motorista sem nome'}
                                                 </SelectItem>
                                             ))
@@ -401,10 +426,10 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                                         <SelectValue placeholder="Selecione um destinatário ou deixe em branco para novo" />
                                     </SelectTrigger>
                                 </FormControl>
-                                <SelectContent className="bg-white border-0 shadow-2xl rounded-2xl">
-                                    <SelectItem value="new-recipient" className="text-gray-900 hover:bg-gray-50">Novo destinatário</SelectItem>
+                                <SelectContent className="bg-white border border-gray-200 rounded-xl border-0 shadow-xl">
+                                    <SelectItem value="new-recipient" className="rounded-lg hover:bg-gray-50">Novo destinatário</SelectItem>
                                     {recipients.map(recipient => (
-                                        <SelectItem key={recipient.id} value={recipient.id} className="text-gray-900 hover:bg-gray-50">
+                                        <SelectItem key={recipient.id} value={recipient.id} className="rounded-lg hover:bg-gray-50">
                                             {recipient.name}
                                         </SelectItem>
                                     ))}
@@ -719,17 +744,29 @@ export function DeliveryForm({ onFormSubmit, transactionToEdit, drivers = [], re
                     </FormItem>
                 )} />
 
-                <div className="flex justify-end">
-                    <Button 
-                        type="submit" 
-                        disabled={isSubmitting} 
-                        className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
-                    >
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {transactionToEdit ? 'Salvar Alterações' : 'Registrar Entrega'}
-                    </Button>
-                </div>
-            </form>
-        </Form>
+                    {/* Footer */}
+                    <div className="bg-gray-50/50 border-t border-gray-100 p-6 -m-8 mt-8">
+                        <div className="flex flex-col sm:flex-row gap-4 justify-end">
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                onClick={onCancel}
+                                className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 font-medium"
+                            >
+                                Cancelar
+                            </Button>
+                            <Button 
+                                type="submit" 
+                                disabled={isSubmitting} 
+                                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+                            >
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                {transactionToEdit ? 'Salvar Alterações' : 'Registrar Entrega'}
+                            </Button>
+                        </div>
+                    </div>
+                </form>
+            </Form>
+        </motion.div>
     );
 }
