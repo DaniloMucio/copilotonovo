@@ -473,6 +473,29 @@ function EntregasContent() {
                         </CardHeader>
                         <CardContent className="relative z-10">
                             <div className="space-y-4">
+                                {/* Resumo do valor total a receber */}
+                                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border border-green-200 mb-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                                                <span className="text-white text-xl">💰</span>
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-bold text-gray-900">Total a Receber</h3>
+                                                <p className="text-sm text-gray-600">
+                                                    {deliveriesToReceive.length} {deliveriesToReceive.length === 1 ? 'entrega' : 'entregas'} pendentes
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-3xl font-bold text-green-600">
+                                                R$ {deliveriesToReceive.reduce((total, delivery) => total + delivery.amount, 0).toFixed(2)}
+                                            </div>
+                                            <p className="text-sm text-gray-500">Valor total</p>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {/* Controles de multi-seleção */}
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                                     <div className="flex items-center space-x-2">

@@ -143,7 +143,7 @@ export function ShiftEditForm({ shift, onFormSubmit }: ShiftEditFormProps) {
                     </Button>
                     </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 rounded-xl border-0 shadow-xl bg-white border border-gray-200" align="start">
                     <Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} initialFocus />
                 </PopoverContent>
                 </Popover>
@@ -169,7 +169,7 @@ export function ShiftEditForm({ shift, onFormSubmit }: ShiftEditFormProps) {
                     </Button>
                     </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 rounded-xl border-0 shadow-xl bg-white border border-gray-200" align="start">
                     <Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} initialFocus />
                 </PopoverContent>
                 </Popover>

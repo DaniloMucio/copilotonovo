@@ -94,19 +94,30 @@ export function ExpenseManager({ user, transactions, onAction }: ExpenseManagerP
         <h1 className="text-3xl font-bold tracking-tight">Despesas</h1>
         <Dialog open={isAddFormOpen} onOpenChange={setIsAddFormOpen}>
           <DialogTrigger asChild>
-            <Button onClick={handleAddClick}>
+            <Button 
+              onClick={handleAddClick}
+              className="bg-gradient-to-r from-red-600 to-orange-600 text-white hover:from-red-700 hover:to-orange-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+            >
               <PlusCircle className="mr-2 h-4 w-4" />
               Adicionar Despesa
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Adicionar Despesa</DialogTitle>
-              <DialogDescription>
-                Preencha os dados da sua nova despesa.
+          <DialogContent className="bg-white/95 backdrop-blur-xl border-0 shadow-2xl rounded-3xl max-w-lg mx-4 overflow-hidden">
+            {/* Header com gradiente e ícone */}
+            <DialogHeader className="relative bg-gradient-to-br from-red-600 via-orange-600 to-red-800 p-8 text-white">
+              <div className="absolute top-4 right-4 w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                <PlusCircle className="h-8 w-8 text-white" />
+              </div>
+              <DialogTitle className="text-2xl font-bold mb-2">Adicionar Despesa</DialogTitle>
+              <DialogDescription className="text-red-100 text-base leading-relaxed">
+                Preencha os dados da sua nova despesa para registrar seus gastos.
               </DialogDescription>
             </DialogHeader>
-            <ExpenseForm onFormSubmit={handleFormSubmit} />
+            
+            {/* Conteúdo do formulário */}
+            <div className="p-6">
+              <ExpenseForm onFormSubmit={handleFormSubmit} />
+            </div>
           </DialogContent>
         </Dialog>
       </div>

@@ -425,34 +425,69 @@ export function JornadaManager() {
                         <Play className="mr-2 h-4 w-4" /> Iniciar Jornada
                     </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent className="bg-white border-0 shadow-2xl rounded-2xl">
-                    <AlertDialogHeader className="bg-gradient-to-r from-blue-600/5 to-purple-600/5 p-6 rounded-t-2xl">
-                        <AlertDialogTitle className="text-2xl font-bold text-gray-900">Iniciar Nova Jornada</AlertDialogTitle>
-                        <AlertDialogDescription className="text-gray-600 text-base">
-                            Insira a quilometragem inicial do seu veículo para começar.
+                <AlertDialogContent className="bg-white/95 backdrop-blur-xl border-0 shadow-2xl rounded-3xl max-w-md mx-4 overflow-hidden">
+                    {/* Header com gradiente e ícone */}
+                    <AlertDialogHeader className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 p-8 text-white">
+                        <div className="absolute top-4 right-4 w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                            <Play className="h-8 w-8 text-white" />
+                        </div>
+                        <AlertDialogTitle className="text-2xl font-bold mb-2">Iniciar Nova Jornada</AlertDialogTitle>
+                        <AlertDialogDescription className="text-blue-100 text-base leading-relaxed">
+                            Insira a quilometragem inicial do seu veículo para começar sua jornada de trabalho.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <div className="grid gap-2 py-2">
-                        <Label htmlFor="startKm">KM Inicial</Label>
-                        <Input 
-                            id="startKm" 
-                            type="number"
-                            value={startKm}
-                            onChange={(e) => setStartKm(e.target.value)}
-                            placeholder="Ex: 150210" 
-                        />
+                    
+                    {/* Conteúdo principal */}
+                    <div className="p-8 space-y-6">
+                        <div className="space-y-3">
+                            <Label htmlFor="startKm" className="text-sm font-semibold text-gray-700 flex items-center">
+                                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                Quilometragem Inicial
+                            </Label>
+                            <div className="relative">
+                                <Input 
+                                    id="startKm" 
+                                    type="number"
+                                    value={startKm}
+                                    onChange={(e) => setStartKm(e.target.value)}
+                                    placeholder="Ex: 150210" 
+                                    className="h-12 pl-4 pr-4 border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-xl text-lg font-medium transition-all duration-300"
+                                />
+                                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm font-medium">
+                                    KM
+                                </div>
+                            </div>
+                            <p className="text-xs text-gray-500 flex items-center">
+                                <span className="w-1 h-1 bg-gray-400 rounded-full mr-2"></span>
+                                Verifique o odômetro do seu veículo
+                            </p>
+                        </div>
                     </div>
-                    <AlertDialogFooter className="p-6">
-                        <AlertDialogCancel className="bg-gray-500 text-white hover:bg-gray-600 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
-                            Cancelar
-                        </AlertDialogCancel>
-                        <AlertDialogAction 
-                            onClick={handleStartShift} 
-                            disabled={isSubmitting}
-                            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
-                        >
-                            {isSubmitting ? <Loader2 className="animate-spin" /> : 'Iniciar'}
-                        </AlertDialogAction>
+                    
+                    {/* Footer com botões */}
+                    <AlertDialogFooter className="p-6 bg-gray-50/50 border-t border-gray-100">
+                        <div className="flex gap-3 w-full">
+                            <AlertDialogCancel className="flex-1 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 font-medium py-3">
+                                Cancelar
+                            </AlertDialogCancel>
+                            <AlertDialogAction 
+                                onClick={handleStartShift} 
+                                disabled={isSubmitting}
+                                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium py-3"
+                            >
+                                {isSubmitting ? (
+                                    <div className="flex items-center justify-center">
+                                        <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                                        Iniciando...
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center">
+                                        <Play className="h-4 w-4 mr-2" />
+                                        Iniciar Jornada
+                                    </div>
+                                )}
+                            </AlertDialogAction>
+                        </div>
                     </AlertDialogFooter>
                 </AlertDialogContent>
              </AlertDialog>

@@ -542,115 +542,223 @@ ${includeIncome && includeExpenses ? `• Saldo Líquido: ${netBalance.toLocaleS
     const shiftsToDisplay = includeShifts ? filteredShifts : [];
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <h1 className="text-3xl font-bold tracking-tight">Relatórios</h1>
+        <div className="space-y-8">
+            {/* Header com gradiente */}
+            <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 rounded-3xl p-8 text-white overflow-hidden">
+                <div className="absolute top-4 right-4 w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
+                    <Download className="h-10 w-10 text-white" />
+                </div>
+                <div className="relative z-10">
+                    <h1 className="text-4xl font-bold mb-2">Relatórios Financeiros</h1>
+                    <p className="text-blue-100 text-lg">
+                        Análise detalhada dos seus dados financeiros e jornadas de trabalho
+                    </p>
+                </div>
             </div>
-            <div className="flex flex-col gap-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <DateRangePicker date={dateRange} onDateChange={setDateRange} />
-                    <div className="flex flex-wrap items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={exportPDF}>
+
+            {/* Controles de filtro e exportação */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100">
+                <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
+                    <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                            <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                            Período do Relatório
+                        </h3>
+                        <DateRangePicker date={dateRange} onDateChange={setDateRange} />
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-3">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center w-full lg:w-auto">
+                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                            Exportar
+                        </h3>
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={exportPDF}
+                            className="bg-red-50 hover:bg-red-100 border-red-200 text-red-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
+                        >
                             <Download className="h-4 w-4 mr-2" />
                             PDF
                         </Button>
-                        <Button variant="outline" size="sm" onClick={exportToExcel}>
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={exportToExcel}
+                            className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
+                        >
                             <Download className="h-4 w-4 mr-2" />
                             Excel
                         </Button>
-                        <Button variant="outline" size="sm" onClick={sendReport}>
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={sendReport}
+                            className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
+                        >
                             <Mail className="h-4 w-4 mr-2" />
                             Email
                         </Button>
-                        <Button variant="outline" size="sm" onClick={sendViaWhatsApp} className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700">
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={sendViaWhatsApp} 
+                            className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
+                        >
                             <MessageCircle className="h-4 w-4 mr-2" />
                             WhatsApp
                         </Button>
                     </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-4">
-                    <div className="flex items-center space-x-2">
-                        <Checkbox id="includeIncome" checked={includeIncome} onCheckedChange={(c) => setIncludeIncome(c as boolean)} />
-                        <Label htmlFor="includeIncome">Receitas</Label>
+            </div>
+            {/* Filtros de conteúdo */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                    Conteúdo do Relatório
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-xl border border-green-200">
+                        <Checkbox 
+                            id="includeIncome" 
+                            checked={includeIncome} 
+                            onCheckedChange={(c) => setIncludeIncome(c as boolean)}
+                            className="border-green-300 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                        />
+                        <Label htmlFor="includeIncome" className="text-green-800 font-medium">Receitas</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <Checkbox id="includeExpenses" checked={includeExpenses} onCheckedChange={(c) => setIncludeExpenses(c as boolean)} />
-                        <Label htmlFor="includeExpenses">Despesas</Label>
+                    <div className="flex items-center space-x-3 p-3 bg-red-50 rounded-xl border border-red-200">
+                        <Checkbox 
+                            id="includeExpenses" 
+                            checked={includeExpenses} 
+                            onCheckedChange={(c) => setIncludeExpenses(c as boolean)}
+                            className="border-red-300 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                        />
+                        <Label htmlFor="includeExpenses" className="text-red-800 font-medium">Despesas</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <Checkbox id="includeShifts" checked={includeShifts} onCheckedChange={(c) => setIncludeShifts(c as boolean)} />
-                        <Label htmlFor="includeShifts">Jornadas</Label>
+                    <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
+                        <Checkbox 
+                            id="includeShifts" 
+                            checked={includeShifts} 
+                            onCheckedChange={(c) => setIncludeShifts(c as boolean)}
+                            className="border-blue-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                        />
+                        <Label htmlFor="includeShifts" className="text-blue-800 font-medium">Jornadas</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <Checkbox id="includePaidDeliveries" checked={includePaidDeliveries} onCheckedChange={(c) => setIncludePaidDeliveries(c as boolean)} />
-                        <Label htmlFor="includePaidDeliveries">Entregas Pagas</Label>
+                    <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-xl border border-green-200">
+                        <Checkbox 
+                            id="includePaidDeliveries" 
+                            checked={includePaidDeliveries} 
+                            onCheckedChange={(c) => setIncludePaidDeliveries(c as boolean)}
+                            className="border-green-300 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                        />
+                        <Label htmlFor="includePaidDeliveries" className="text-green-800 font-medium">Entregas Pagas</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <Checkbox id="includeUnpaidDeliveries" checked={includeUnpaidDeliveries} onCheckedChange={(c) => setIncludeUnpaidDeliveries(c as boolean)} />
-                        <Label htmlFor="includeUnpaidDeliveries">Entregas a Receber</Label>
+                    <div className="flex items-center space-x-3 p-3 bg-yellow-50 rounded-xl border border-yellow-200">
+                        <Checkbox 
+                            id="includeUnpaidDeliveries" 
+                            checked={includeUnpaidDeliveries} 
+                            onCheckedChange={(c) => setIncludeUnpaidDeliveries(c as boolean)}
+                            className="border-yellow-300 data-[state=checked]:bg-yellow-600 data-[state=checked]:border-yellow-600"
+                        />
+                        <Label htmlFor="includeUnpaidDeliveries" className="text-yellow-800 font-medium">Entregas a Receber</Label>
                     </div>
                 </div>
             </div>
 
-            { (includeIncome || includeExpenses) && <Card>
-                <CardHeader>
-                    <CardTitle>Resumo do Período Selecionado</CardTitle>
-                    <CardDescription>
-                        {dateRange?.from ? format(dateRange.from, "PPP", { locale: ptBR }) : ''}
-                        {dateRange?.to ? ` - ${format(dateRange.to, "PPP", { locale: ptBR })}` : ''}
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-4 md:grid-cols-3">
-                     { includeIncome && <div className="flex flex-col space-y-1.5">
-                        <p className="text-sm font-medium text-emerald-800">Receita Total</p>
-                        <p className="text-2xl font-bold text-emerald-600">
-                            {totalIncome.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            {/* Cards de resumo */}
+            { (includeIncome || includeExpenses) && (
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100">
+                    <div className="mb-6">
+                        <h3 className="text-2xl font-bold text-gray-900 mb-2">Resumo do Período</h3>
+                        <p className="text-gray-600">
+                            {dateRange?.from ? format(dateRange.from, "PPP", { locale: ptBR }) : ''}
+                            {dateRange?.to ? ` - ${format(dateRange.to, "PPP", { locale: ptBR })}` : ''}
                         </p>
-                    </div>}
-                    { includeExpenses && <div className="flex flex-col space-y-1.5">
-                        <p className="text-sm font-medium text-rose-800">Despesa Total</p>
-                        <p className="text-2xl font-bold text-rose-600">
-                            {totalExpenses.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                        </p>
-                    </div>}
-                    { (includeIncome && includeExpenses) && <div className="flex flex-col space-y-1.5">
-                        <p className="text-sm font-medium">Saldo Líquido</p>
-                        <p className={`text-2xl font-bold ${netBalance >= 0 ? 'text-gray-800' : 'text-rose-600'}`}>
-                            {netBalance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                        </p>
-                    </div>}
-                </CardContent>
-            </Card>}
+                    </div>
+                    
+                    <div className="grid gap-6 md:grid-cols-3">
+                        { includeIncome && (
+                            <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h4 className="text-lg font-semibold text-green-800">Receita Total</h4>
+                                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                        <span className="text-green-600 text-xl">💰</span>
+                                    </div>
+                                </div>
+                                <p className="text-3xl font-bold text-green-600">
+                                    {totalIncome.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                </p>
+                            </div>
+                        )}
+                        
+                        { includeExpenses && (
+                            <div className="bg-gradient-to-br from-red-50 to-rose-50 p-6 rounded-xl border border-red-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h4 className="text-lg font-semibold text-red-800">Despesa Total</h4>
+                                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                        <span className="text-red-600 text-xl">💸</span>
+                                    </div>
+                                </div>
+                                <p className="text-3xl font-bold text-red-600">
+                                    {totalExpenses.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                </p>
+                            </div>
+                        )}
+                        
+                        { (includeIncome && includeExpenses) && (
+                            <div className={`bg-gradient-to-br ${netBalance >= 0 ? 'from-blue-50 to-indigo-50' : 'from-red-50 to-rose-50'} p-6 rounded-xl border ${netBalance >= 0 ? 'border-blue-200' : 'border-red-200'}`}>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h4 className={`text-lg font-semibold ${netBalance >= 0 ? 'text-blue-800' : 'text-red-800'}`}>Saldo Líquido</h4>
+                                    <div className={`w-12 h-12 ${netBalance >= 0 ? 'bg-blue-100' : 'bg-red-100'} rounded-full flex items-center justify-center`}>
+                                        <span className={`${netBalance >= 0 ? 'text-blue-600' : 'text-red-600'} text-xl`}>
+                                            {netBalance >= 0 ? '📈' : '📉'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <p className={`text-3xl font-bold ${netBalance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                                    {netBalance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
-            { (includeIncome || includeExpenses) && <Card>
-                <CardHeader>
-                    <CardTitle>Detalhes das Transações</CardTitle>
-                </CardHeader>
-                <CardContent>
+            {/* Tabela de transações */}
+            { (includeIncome || includeExpenses) && (
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100">
+                    <div className="mb-6">
+                        <h3 className="text-2xl font-bold text-gray-900 mb-2">Detalhes das Transações</h3>
+                        <p className="text-gray-600">Lista completa de todas as transações no período selecionado</p>
+                    </div>
+                    
                     {transactionsToDisplay.length > 0 ? (
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto rounded-xl border border-gray-200">
                             <Table>
-                                <TableHeader>
+                                <TableHeader className="bg-gray-50">
                                     <TableRow>
-                                        <TableHead>Data</TableHead>
-                                        <TableHead>Descrição</TableHead>
-                                        <TableHead>Categoria</TableHead>
-                                        <TableHead>Tipo</TableHead>
-                                        <TableHead className="text-right">Valor</TableHead>
+                                        <TableHead className="font-semibold text-gray-700">Data</TableHead>
+                                        <TableHead className="font-semibold text-gray-700">Descrição</TableHead>
+                                        <TableHead className="font-semibold text-gray-700">Categoria</TableHead>
+                                        <TableHead className="font-semibold text-gray-700">Tipo</TableHead>
+                                        <TableHead className="text-right font-semibold text-gray-700">Valor</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {transactionsToDisplay.map(t => (
-                                        <TableRow key={t.id} className="border-b">
-                                            <TableCell>{format(t.date.toDate(), 'dd/MM/yyyy')}</TableCell>
-                                            <TableCell>{t.description}</TableCell>
-                                            <TableCell>{t.category}</TableCell>
+                                        <TableRow key={t.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
+                                            <TableCell className="font-medium text-gray-900">
+                                                {format(t.date.toDate(), 'dd/MM/yyyy')}
+                                            </TableCell>
+                                            <TableCell className="text-gray-700">{t.description}</TableCell>
+                                            <TableCell className="text-gray-600">{t.category}</TableCell>
                                             <TableCell>
-                                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${t.type === 'receita' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
-                                                    {t.type}
+                                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${t.type === 'receita' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                    {t.type === 'receita' ? 'Receita' : 'Despesa'}
                                                 </span>
                                             </TableCell>
-                                            <TableCell className={`px-4 py-2 text-right font-medium ${t.type === 'receita' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                            <TableCell className={`text-right font-bold text-lg ${t.type === 'receita' ? 'text-green-600' : 'text-red-600'}`}>
                                                 {t.type === 'despesa' && '- '}
                                                 {t.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                             </TableCell>
@@ -660,10 +768,16 @@ ${includeIncome && includeExpenses ? `• Saldo Líquido: ${netBalance.toLocaleS
                             </Table>
                         </div>
                     ) : (
-                        <p className="text-muted-foreground text-center py-4">Nenhuma transação no período selecionado.</p>
+                        <div className="text-center py-12">
+                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span className="text-gray-400 text-2xl">📊</span>
+                            </div>
+                            <p className="text-gray-500 text-lg">Nenhuma transação no período selecionado</p>
+                            <p className="text-gray-400 text-sm mt-1">Ajuste o período ou os filtros para ver os dados</p>
+                        </div>
                     )}
-                </CardContent>
-            </Card>}
+                </div>
+            )}
 
             {(includePaidDeliveries || includeUnpaidDeliveries) && <Card>
                 <CardHeader>

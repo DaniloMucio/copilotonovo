@@ -22,7 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { addTransaction, updateTransaction, type Transaction, type TransactionInput } from '@/services/transactions';
 import { getUserVehicles, type VehicleInfo } from '@/services/vehicle';
 import { auth } from '@/lib/firebase';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, PlusCircle } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
@@ -193,48 +193,74 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
 
   return (
     <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
             control={form.control}
             name="description"
             render={({ field }) => (
             <FormItem>
-                <FormLabel>Descrição</FormLabel>
+                <FormLabel className="text-sm font-semibold text-gray-700 flex items-center">
+                    <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                    Descrição da Despesa
+                </FormLabel>
                 <FormControl>
-                <Input placeholder="Ex: Gasolina" {...field} />
+                <Input 
+                    placeholder="Ex: Gasolina" 
+                    className="h-12 border-2 border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded-xl text-base transition-all duration-300"
+                    {...field} 
+                />
                 </FormControl>
                 <FormMessage />
             </FormItem>
             )}
         />
+        
         <FormField
             control={form.control}
             name="amount"
             render={({ field }) => (
             <FormItem>
-                <FormLabel>Valor</FormLabel>
+                <FormLabel className="text-sm font-semibold text-gray-700 flex items-center">
+                    <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                    Valor da Despesa
+                </FormLabel>
                 <FormControl>
-                <Input type="number" step="0.01" placeholder="0,00" {...field} />
+                <div className="relative">
+                    <Input 
+                        type="number" 
+                        step="0.01" 
+                        placeholder="0,00" 
+                        className="h-12 pl-8 pr-4 border-2 border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded-xl text-base transition-all duration-300"
+                        {...field} 
+                    />
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg font-medium">
+                        R$
+                    </div>
+                </div>
                 </FormControl>
                 <FormMessage />
             </FormItem>
             )}
         />
+        
         <FormField
             control={form.control}
             name="category"
             render={({ field }) => (
             <FormItem>
-                <FormLabel>Categoria</FormLabel>
+                <FormLabel className="text-sm font-semibold text-gray-700 flex items-center">
+                    <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                    Categoria
+                </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                 <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded-xl text-base transition-all duration-300">
                     <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
                 </FormControl>
-                <SelectContent>
+                <SelectContent className="rounded-xl border-0 shadow-xl bg-white border border-gray-200">
                     {expenseCategories.map(cat => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        <SelectItem key={cat} value={cat} className="rounded-lg hover:bg-gray-50">{cat}</SelectItem>
                     ))}
                 </SelectContent>
                 </Select>
@@ -251,16 +277,19 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
                         name="vehicleId"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Veículo</FormLabel>
+                            <FormLabel className="text-sm font-semibold text-gray-700 flex items-center">
+                                <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                                Veículo
+                            </FormLabel>
                             <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                             <FormControl>
-                                <SelectTrigger>
+                                <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded-xl text-base transition-all duration-300">
                                 <SelectValue placeholder="Selecione o veículo" />
                                 </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
+                            <SelectContent className="rounded-xl border-0 shadow-xl bg-white border border-gray-200">
                                 {vehicles.map((vehicle) => (
-                                    <SelectItem key={vehicle.id} value={vehicle.id || ''}>
+                                    <SelectItem key={vehicle.id} value={vehicle.id || ''} className="rounded-lg hover:bg-gray-50">
                                         {vehicle.brand} {vehicle.model} {vehicle.year} - {vehicle.plate}
                                     </SelectItem>
                                 ))}
@@ -271,8 +300,8 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
                         )}
                     />
                 ) : (
-                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                        <p className="text-sm text-yellow-800">
+                    <div className="p-4 bg-yellow-50 border-2 border-yellow-200 rounded-xl">
+                        <p className="text-sm text-yellow-800 font-medium">
                             ⚠️ Nenhum veículo cadastrado. Cadastre um veículo primeiro para registrar gastos com combustível.
                         </p>
                     </div>
@@ -286,9 +315,22 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
                 name="km"
                 render={({ field }) => (
                 <FormItem>
-                    <FormLabel>KM do Veículo</FormLabel>
+                    <FormLabel className="text-sm font-semibold text-gray-700 flex items-center">
+                        <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                        KM do Veículo
+                    </FormLabel>
                     <FormControl>
-                    <Input type="number" placeholder="Ex: 120000" {...field} />
+                    <div className="relative">
+                        <Input 
+                            type="number" 
+                            placeholder="Ex: 120000" 
+                            className="h-12 pr-12 border-2 border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded-xl text-base transition-all duration-300"
+                            {...field} 
+                        />
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm font-medium">
+                            KM
+                        </div>
+                    </div>
                     </FormControl>
                     <FormMessage />
                 </FormItem>
@@ -302,9 +344,23 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
                 name="pricePerLiter"
                 render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Valor por Litro</FormLabel>
+                    <FormLabel className="text-sm font-semibold text-gray-700 flex items-center">
+                        <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                        Valor por Litro
+                    </FormLabel>
                     <FormControl>
-                    <Input type="number" step="0.001" placeholder="5,50" {...field} />
+                    <div className="relative">
+                        <Input 
+                            type="number" 
+                            step="0.001" 
+                            placeholder="5,50" 
+                            className="h-12 pl-8 pr-4 border-2 border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded-xl text-base transition-all duration-300"
+                            {...field} 
+                        />
+                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg font-medium">
+                            R$
+                        </div>
+                    </div>
                     </FormControl>
                     <FormMessage />
                 </FormItem>
@@ -318,14 +374,17 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
             name="date"
             render={({ field }) => (
             <FormItem className="flex flex-col">
-                <FormLabel>Data da Despesa</FormLabel>
+                <FormLabel className="text-sm font-semibold text-gray-700 flex items-center">
+                    <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                    Data da Despesa
+                </FormLabel>
                 <Popover>
                 <PopoverTrigger asChild>
                     <FormControl>
                     <Button
                         variant={'outline'}
                         className={cn(
-                        'w-full pl-3 text-left font-normal',
+                        'w-full h-12 pl-3 text-left font-normal border-2 border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded-xl transition-all duration-300',
                         !field.value && 'text-muted-foreground'
                         )}
                     >
@@ -338,7 +397,7 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
                     </Button>
                     </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 rounded-xl border-0 shadow-xl bg-white border border-gray-200" align="start">
                     <Calendar
                     mode="single"
                     selected={field.value}
@@ -354,24 +413,56 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
             </FormItem>
             )}
         />
+        
         <FormField
           control={form.control}
           name="observations"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Observações</FormLabel>
+              <FormLabel className="text-sm font-semibold text-gray-700 flex items-center">
+                <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
+                Observações (Opcional)
+              </FormLabel>
               <FormControl>
-                <Textarea placeholder="Adicione uma observação (opcional)" {...field} />
+                <Textarea 
+                  placeholder="Adicione uma observação sobre esta despesa..." 
+                  className="border-2 border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded-xl transition-all duration-300"
+                  rows={3}
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Salvando...' : 'Salvar'}
-            </Button>
-        </DialogFooter>
+        
+        <div className="flex gap-3 pt-4">
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="flex-1 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 font-medium py-3"
+            onClick={() => form.reset()}
+          >
+            Limpar
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={isSubmitting}
+            className="flex-1 bg-gradient-to-r from-red-600 to-orange-600 text-white hover:from-red-700 hover:to-orange-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium py-3"
+          >
+            {isSubmitting ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Salvando...
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Salvar Despesa
+              </div>
+            )}
+          </Button>
+        </div>
         </form>
     </Form>
   );

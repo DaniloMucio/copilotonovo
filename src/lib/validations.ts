@@ -96,6 +96,31 @@ export const loginSchema = z.object({
   remember: z.boolean().default(false),
 });
 
+export const signupSchema = z.object({
+  name: z
+    .string()
+    .min(2, { message: "Nome deve ter pelo menos 2 caracteres." })
+    .max(50, { message: "Nome deve ter no máximo 50 caracteres." }),
+  email: emailSchema,
+  phone: z
+    .string()
+    .min(1, { message: "Telefone é obrigatório." })
+    .regex(/^\(\d{2}\)\s\d{4,5}-\d{4}$/, { 
+      message: "Telefone deve estar no formato (00) 00000-0000" 
+    }),
+  password: passwordSchema,
+  confirmPassword: z.string().min(1, { message: "Confirmação de senha é obrigatória." }),
+  userType: z.enum(['motorista', 'cliente'], {
+    errorMap: () => ({ message: "Tipo de usuário deve ser 'motorista' ou 'cliente'." })
+  }),
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: "Você deve aceitar os termos de uso."
+  }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "As senhas não coincidem.",
+  path: ["confirmPassword"],
+});
+
 export const profileUpdateSchema = z.object({
   displayName: z
     .string()

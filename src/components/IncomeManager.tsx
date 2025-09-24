@@ -95,19 +95,30 @@ export function IncomeManager({ user, transactions, onAction }: IncomeManagerPro
         <div className="flex gap-2">
             <Dialog open={isAddFormOpen} onOpenChange={setIsAddFormOpen}>
                 <DialogTrigger asChild>
-                    <Button onClick={handleAddClick}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Adicionar Receita
+                    <Button 
+                        onClick={handleAddClick}
+                        className="bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+                    >
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Adicionar Receita
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                    <DialogTitle>Adicionar Receita</DialogTitle>
-                    <DialogDescription>
-                    Preencha os dados da sua nova receita.
-                    </DialogDescription>
+                <DialogContent className="bg-white/95 backdrop-blur-xl border-0 shadow-2xl rounded-3xl max-w-lg mx-4 overflow-hidden">
+                    {/* Header com gradiente e ícone */}
+                    <DialogHeader className="relative bg-gradient-to-br from-green-600 via-emerald-600 to-green-800 p-8 text-white">
+                        <div className="absolute top-4 right-4 w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                            <PlusCircle className="h-8 w-8 text-white" />
+                        </div>
+                        <DialogTitle className="text-2xl font-bold mb-2">Adicionar Receita</DialogTitle>
+                        <DialogDescription className="text-green-100 text-base leading-relaxed">
+                            Preencha os dados da sua nova receita para registrar seus ganhos.
+                        </DialogDescription>
                     </DialogHeader>
-                    <IncomeForm onFormSubmit={handleFormSubmit} />
+                    
+                    {/* Conteúdo do formulário */}
+                    <div className="p-6">
+                        <IncomeForm onFormSubmit={handleFormSubmit} />
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>
