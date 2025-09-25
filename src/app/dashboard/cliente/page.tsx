@@ -34,6 +34,7 @@ import { usePWAInstall } from '@/hooks/use-pwa-install';
 import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { Timestamp } from 'firebase/firestore';
 import { motion } from 'framer-motion';
+import { OptimizedMotion, OptimizedSkeleton, useOptimizedAnimation } from '@/components/ui/optimized-motion';
 
 interface ClienteDashboardProps {
   canInstall?: boolean;
@@ -41,52 +42,51 @@ interface ClienteDashboardProps {
 }
 
 function ClienteDashboardSkeleton() {
+  const { animationProps } = useOptimizedAnimation();
+  
   return (
     <div className="space-y-6">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+      <OptimizedMotion 
+        {...animationProps}
         className="flex items-baseline justify-between"
       >
         <div className="flex items-center space-x-3">
-          <motion.div
+          <OptimizedMotion
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            disableOnMobile={true}
             className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg"
           >
             <Package className="h-4 w-4 text-white" />
-          </motion.div>
-          <Skeleton className="h-8 w-1/2" />
+          </OptimizedMotion>
+          <OptimizedSkeleton className="h-8 w-1/2" />
         </div>
-        <Skeleton className="h-4 w-24" />
-      </motion.div>
+        <OptimizedSkeleton className="h-4 w-24" />
+      </OptimizedMotion>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {[...Array(3)].map((_, i) => (
-          <motion.div
+          <OptimizedMotion
             key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 * i }}
+            {...animationProps}
+            transition={{ ...animationProps.transition, delay: 0.1 * i }}
           >
             <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <CardHeader className="relative z-10">
-                <Skeleton className="h-6 w-1/2" />
+                <OptimizedSkeleton className="h-6 w-1/2" />
               </CardHeader>
               <CardContent className="relative z-10">
-                <Skeleton className="h-8 w-3/4" />
+                <OptimizedSkeleton className="h-8 w-3/4" />
               </CardContent>
             </Card>
-          </motion.div>
+          </OptimizedMotion>
         ))}
       </div>
       
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
+      <OptimizedMotion
+        {...animationProps}
+        transition={{ ...animationProps.transition, delay: 0.3 }}
       >
         <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -99,19 +99,20 @@ function ClienteDashboardSkeleton() {
           <CardContent className="relative z-10">
             <div className="space-y-2">
               {[...Array(3)].map((_, i) => (
-                <motion.div
+                <OptimizedMotion
                   key={i}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.4, delay: 0.4 + 0.1 * i }}
+                  disableOnMobile={true}
                 >
-                  <Skeleton className="h-10 w-full" />
-                </motion.div>
+                  <OptimizedSkeleton className="h-10 w-full" />
+                </OptimizedMotion>
               ))}
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </OptimizedMotion>
     </div>
   );
 }
@@ -123,6 +124,7 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { animationProps } = useOptimizedAnimation();
   
   // PWA hook
   const { canInstall: pwaCanInstall, installApp: pwaInstall } = usePWAInstall();
@@ -245,20 +247,19 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
 
   return (
     <div className="space-y-6">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+      <OptimizedMotion
+        {...animationProps}
         className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4"
       >
         <div className="flex items-center space-x-4">
-          <motion.div
+          <OptimizedMotion
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            disableOnMobile={true}
             className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 group"
           >
             <Package className="h-6 w-6 text-white group-hover:scale-110 transition-transform duration-300" />
-          </motion.div>
+          </OptimizedMotion>
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">Co-Piloto Client</h1>
             <p className="text-gray-600">Acompanhe suas entregas e agendamentos, {userData.displayName?.split(' ')[0]}.</p>
@@ -267,25 +268,25 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             {userData && (
-              <motion.div
+              <OptimizedMotion
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                disableOnMobile={true}
               >
                 <Badge variant="outline" className="text-sm font-medium capitalize border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors duration-300">
                   <Zap className="h-3 w-3 mr-1" />
                   Perfil: {userData.userType}
                 </Badge>
-              </motion.div>
+              </OptimizedMotion>
             )}
             <PWAInstallButton canInstall={pwaCanInstall} install={pwaInstall} />
           </div>
         </div>
-      </motion.div>
+      </OptimizedMotion>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
+      <OptimizedMotion
+        {...animationProps}
+        transition={{ ...animationProps.transition, delay: 0.1 }}
       >
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {stats.map((stat, index) => {
@@ -298,12 +299,12 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
             const colorScheme = colors[index % colors.length];
             
             return (
-              <motion.div
+              <OptimizedMotion
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 + 0.1 * index }}
+                {...animationProps}
+                transition={{ ...animationProps.transition, delay: 0.2 + 0.1 * index }}
                 whileHover={{ y: -5, scale: 1.02 }}
+                disableOnMobile={true}
                 className="group"
               >
                 <Card className={`shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group-hover:shadow-xl transition-all duration-500 border-l-4 ${colorScheme.border}`}>
@@ -324,16 +325,15 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
                     <p className="text-xs text-gray-500 mt-1">{stat.description}</p>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </OptimizedMotion>
             );
           })}
         </div>
-      </motion.div>
+      </OptimizedMotion>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
+      <OptimizedMotion
+        {...animationProps}
+        transition={{ ...animationProps.transition, delay: 0.2 }}
       >
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm border-0 rounded-2xl shadow-lg p-1">
@@ -365,10 +365,9 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
             <div className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Entregas Recentes */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
+                <OptimizedMotion
+                  {...animationProps}
+                  transition={{ ...animationProps.transition, delay: 0.3 }}
                 >
                   <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -440,17 +439,16 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
                       )}
                     </CardContent>
                   </Card>
-                </motion.div>
+                </OptimizedMotion>
               </div>
             </div>
           </TabsContent>
 
           {/* Agenda */}
           <TabsContent value="agenda" className="mt-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
+            <OptimizedMotion
+              {...animationProps}
+              transition={{ ...animationProps.transition, delay: 0.3 }}
             >
               <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -479,10 +477,10 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </OptimizedMotion>
           </TabsContent>
         </Tabs>
-      </motion.div>
+      </OptimizedMotion>
     </div>
   );
 }

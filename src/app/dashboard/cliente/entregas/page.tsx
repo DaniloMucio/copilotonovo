@@ -35,54 +35,54 @@ import {
 import { DeliveryForm } from '@/components/forms/DeliveryForm';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
+import { OptimizedMotion, OptimizedSkeleton, useOptimizedAnimation } from '@/components/ui/optimized-motion';
 
 function EntregasClienteSkeleton() {
+  const { animationProps } = useOptimizedAnimation();
+  
   return (
     <div className="space-y-6">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+      <OptimizedMotion 
+        {...animationProps}
         className="flex items-baseline justify-between"
       >
         <div className="flex items-center space-x-3">
-          <motion.div
+          <OptimizedMotion
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            disableOnMobile={true}
             className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg"
           >
             <Package className="h-4 w-4 text-white" />
-          </motion.div>
-          <Skeleton className="h-8 w-1/2" />
+          </OptimizedMotion>
+          <OptimizedSkeleton className="h-8 w-1/2" />
         </div>
-        <Skeleton className="h-4 w-24" />
-      </motion.div>
+        <OptimizedSkeleton className="h-4 w-24" />
+      </OptimizedMotion>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {[...Array(3)].map((_, i) => (
-          <motion.div
+          <OptimizedMotion
             key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 * i }}
+            {...animationProps}
+            transition={{ ...animationProps.transition, delay: 0.1 * i }}
           >
             <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <CardHeader className="relative z-10">
-                <Skeleton className="h-6 w-1/2" />
+                <OptimizedSkeleton className="h-6 w-1/2" />
               </CardHeader>
               <CardContent className="relative z-10">
-                <Skeleton className="h-8 w-3/4" />
+                <OptimizedSkeleton className="h-8 w-3/4" />
               </CardContent>
             </Card>
-          </motion.div>
+          </OptimizedMotion>
         ))}
       </div>
       
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
+      <OptimizedMotion
+        {...animationProps}
+        transition={{ ...animationProps.transition, delay: 0.3 }}
       >
         <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -107,7 +107,7 @@ function EntregasClienteSkeleton() {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </OptimizedMotion>
     </div>
   );
 }
@@ -124,6 +124,7 @@ function EntregasClienteContent() {
   const [drivers, setDrivers] = useState<(UserData & { uid: string })[]>([]);
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const { toast } = useToast();
+  const { animationProps } = useOptimizedAnimation();
   
   // Auto refresh hook
   const { refreshWithDelay } = useAutoRefresh();
