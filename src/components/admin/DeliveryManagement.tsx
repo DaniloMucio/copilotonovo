@@ -50,36 +50,19 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { getAllDeliveries, updateDeliveryStatus, deleteDelivery } from '@/services/admin';
 import { updateTransaction } from '@/services/transactions';
+import { Transaction } from '@/services/transactions';
 import { motion } from 'framer-motion';
 
-interface Delivery {
-  id: string;
-  description: string;
-  amount: number;
-  deliveryStatus: 'Pendente' | 'Confirmada' | 'A caminho' | 'Entregue' | 'Recusada';
-  paymentStatus: 'Pendente' | 'Pago';
-  paymentType: 'À vista' | 'A receber';
-  senderCompany?: string;
-  recipientCompany?: string;
-  senderAddress?: any;
-  recipientAddress?: any;
-  driverId?: string;
-  clientId?: string;
-  assignedDriverId?: string;
-  date: any;
-  observations?: string;
-}
-
 export function DeliveryManagement() {
-  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
-  const [filteredDeliveries, setFilteredDeliveries] = useState<Delivery[]>([]);
+  const [deliveries, setDeliveries] = useState<Transaction[]>([]);
+  const [filteredDeliveries, setFilteredDeliveries] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
+  const [selectedDelivery, setSelectedDelivery] = useState<Transaction | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
@@ -87,9 +70,9 @@ export function DeliveryManagement() {
   const [editForm, setEditForm] = useState({
     description: '',
     amount: 0,
-    deliveryStatus: 'Pendente' as const,
-    paymentStatus: 'Pendente' as const,
-    paymentType: 'À vista' as const,
+    deliveryStatus: 'Pendente' as 'Pendente' | 'Confirmada' | 'A caminho' | 'Entregue' | 'Recusada',
+    paymentStatus: 'Pendente' as 'Pendente' | 'Pago',
+    paymentType: 'À vista' as 'À vista' | 'A receber',
     senderCompany: '',
     recipientCompany: '',
     observations: ''
@@ -138,19 +121,19 @@ export function DeliveryManagement() {
     setFilteredDeliveries(filtered);
   }, [deliveries, searchTerm, statusFilter]);
 
-  const handleViewDetails = (delivery: Delivery) => {
+  const handleViewDetails = (delivery: Transaction) => {
     setSelectedDelivery(delivery);
     setShowDetailsModal(true);
   };
 
-  const handleEditDelivery = (delivery: Delivery) => {
+  const handleEditDelivery = (delivery: Transaction) => {
     setSelectedDelivery(delivery);
     setEditForm({
       description: delivery.description,
       amount: delivery.amount,
-      deliveryStatus: delivery.deliveryStatus,
-      paymentStatus: delivery.paymentStatus,
-      paymentType: delivery.paymentType,
+      deliveryStatus: delivery.deliveryStatus || 'Pendente',
+      paymentStatus: delivery.paymentStatus || 'Pendente',
+      paymentType: delivery.paymentType || 'A receber',
       senderCompany: delivery.senderCompany || '',
       recipientCompany: delivery.recipientCompany || '',
       observations: delivery.observations || ''
@@ -194,7 +177,7 @@ export function DeliveryManagement() {
     }
   };
 
-  const handleDeleteDelivery = (delivery: Delivery) => {
+  const handleDeleteDelivery = (delivery: Transaction) => {
     setSelectedDelivery(delivery);
     setShowDeleteDialog(true);
   };
@@ -361,9 +344,9 @@ export function DeliveryManagement() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge className={`${getStatusColor(delivery.deliveryStatus)} flex items-center gap-1`}>
-                          {getStatusIcon(delivery.deliveryStatus)}
-                          {delivery.deliveryStatus}
+                        <Badge className={`${getStatusColor(delivery.deliveryStatus || 'Pendente')} flex items-center gap-1`}>
+                          {getStatusIcon(delivery.deliveryStatus || 'Pendente')}
+                          {delivery.deliveryStatus || 'Pendente'}
                         </Badge>
                       </div>
                     </div>
@@ -477,15 +460,15 @@ export function DeliveryManagement() {
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-700">Status da Entrega</Label>
-                  <Badge className={`${getStatusColor(selectedDelivery.deliveryStatus)} flex items-center gap-1 w-fit`}>
-                    {getStatusIcon(selectedDelivery.deliveryStatus)}
-                    {selectedDelivery.deliveryStatus}
+                  <Badge className={`${getStatusColor(selectedDelivery.deliveryStatus || 'Pendente')} flex items-center gap-1 w-fit`}>
+                    {getStatusIcon(selectedDelivery.deliveryStatus || 'Pendente')}
+                    {selectedDelivery.deliveryStatus || 'Pendente'}
                   </Badge>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-700">Status do Pagamento</Label>
-                  <Badge variant={selectedDelivery.paymentStatus === 'Pago' ? 'default' : 'secondary'}>
-                    {selectedDelivery.paymentStatus}
+                  <Badge variant={(selectedDelivery.paymentStatus || 'Pendente') === 'Pago' ? 'default' : 'secondary'}>
+                    {selectedDelivery.paymentStatus || 'Pendente'}
                   </Badge>
                 </div>
               </div>

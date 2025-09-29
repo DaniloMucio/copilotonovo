@@ -195,7 +195,7 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
     });
 
     return () => unsubscribe();
-  }, [router, refreshAllData]);
+  }, [router, refreshAllData, toast]);
 
   if (loading) {
     return <ClienteDashboardSkeleton />;
@@ -438,7 +438,7 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
                           <div className="mt-4 p-3 bg-blue-50 rounded-lg text-left">
                             <p className="text-sm text-blue-800 font-medium">💡 Como criar uma entrega:</p>
                             <p className="text-xs text-blue-600 mt-1">
-                              1. Vá para a aba "Entregas" → Clique em "Nova Entrega"<br/>
+                              1. Vá para a aba &quot;Entregas&quot; → Clique em &quot;Nova Entrega&quot;<br/>
                               2. Preencha os dados do remetente e destinatário<br/>
                               3. Escolha um motorista disponível<br/>
                               4. Confirme os detalhes da entrega
@@ -579,8 +579,8 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
                           <div className="mt-4 p-3 bg-blue-50 rounded-lg text-left">
                             <p className="text-sm text-blue-800 font-medium">💡 Como criar uma entrega:</p>
                             <p className="text-xs text-blue-600 mt-1">
-                              1. Use o menu lateral para ir em "Entregas"<br/>
-                              2. Clique em "Nova Entrega" e preencha os dados<br/>
+                              1. Use o menu lateral para ir em &quot;Entregas&quot;<br/>
+                              2. Clique em &quot;Nova Entrega&quot; e preencha os dados<br/>
                               3. Selecione um motorista disponível<br/>
                               4. Acompanhe o progresso aqui na Visão Geral
                             </p>

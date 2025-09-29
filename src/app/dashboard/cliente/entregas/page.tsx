@@ -500,7 +500,7 @@ function EntregasClienteContent() {
                       <div className="mt-4 p-3 bg-orange-50 rounded-lg text-left">
                         <p className="text-sm text-orange-800 font-medium">💡 Para criar sua primeira entrega:</p>
                         <p className="text-xs text-orange-600 mt-1">
-                          1. Clique no botão "Nova Entrega" no topo da página<br/>
+                          1. Clique no botão &quot;Nova Entrega&quot; no topo da página<br/>
                           2. Preencha os dados completos da entrega<br/>
                           3. Selecione um motorista disponível<br/>
                           4. Aguarde a confirmação do motorista
