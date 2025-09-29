@@ -10,7 +10,8 @@ import {
   updateDoc,
   deleteDoc,
   addDoc,
-  writeBatch
+  writeBatch,
+  getDoc
 } from 'firebase/firestore';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns';
 import { db } from '@/lib/firebase';
@@ -40,7 +41,8 @@ export interface UserWithStats extends UserData {
   totalDeliveries?: number;
   totalRevenue?: number;
   lastActivity?: Date;
-  isActive?: boolean;
+  hasRecentActivity?: boolean; // Nova propriedade para indicar atividade recente
+  // isActive herda do UserData (valor real do banco)
 }
 
 export interface DeliveryStats {
@@ -183,17 +185,25 @@ export const getAllUsersWithStats = async (): Promise<UserWithStats[]> => {
         (lastTransaction.date instanceof Date ? lastTransaction.date : lastTransaction.date.toDate()) : 
         undefined;
 
-      // Considerar ativo se teve atividade nos últimos 30 dias
+      // Calcular atividade baseada nos últimos 30 dias (para exibição, não para sobrescrever)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const isActive = lastActivity ? lastActivity >= thirtyDaysAgo : false;
+      const hasRecentActivity = lastActivity ? lastActivity >= thirtyDaysAgo : false;
+
+      // Log apenas em modo de desenvolvimento para debug
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`📊 [ADMIN] Stats para ${user.displayName || user.email}:`);
+        console.log(`  - isActive (original): ${user.isActive}`);
+        console.log(`  - hasRecentActivity: ${hasRecentActivity}`);
+      }
 
       return {
         ...user,
         totalDeliveries: userDeliveries.length,
         totalRevenue: userRevenue,
         lastActivity,
-        isActive
+        hasRecentActivity, // Nova propriedade para mostrar atividade recente
+        // isActive mantém o valor original do banco de dados
       };
     });
 
@@ -537,6 +547,8 @@ export const getUserAdminData = async (userId: string): Promise<{
  */
 export const updateUserByAdmin = async (userId: string, updateData: Partial<UserData>): Promise<void> => {
   try {
+    console.log(`🔄 [ADMIN] Iniciando atualização do usuário ${userId}`, updateData);
+    
     const userRef = doc(db, 'users', userId);
     
     // Adicionar timestamp de atualização
@@ -545,11 +557,45 @@ export const updateUserByAdmin = async (userId: string, updateData: Partial<User
       updatedAt: new Date(),
     };
     
+    console.log(`📝 [ADMIN] Dados para atualização:`, dataWithTimestamp);
+    
     await updateDoc(userRef, dataWithTimestamp);
     
-    console.log(`✅ Usuário ${userId} atualizado com sucesso`);
+    console.log(`✅ [ADMIN] Usuário ${userId} atualizado com sucesso no Firestore`);
+    
+    // Verificar se realmente foi salvo
+    const updatedDoc = await getDoc(userRef);
+    if (updatedDoc.exists()) {
+      const savedData = updatedDoc.data();
+      console.log(`🔍 [ADMIN] Dados salvos no banco:`, savedData);
+      
+      // Verificar especificamente os campos que foram atualizados
+      Object.keys(updateData).forEach(key => {
+        const expectedValue = updateData[key as keyof UserData];
+        const savedValue = savedData[key];
+        
+        if (savedValue !== expectedValue) {
+          console.warn(`⚠️ [ADMIN] Discrepância encontrada - Campo ${key}:`);
+          console.warn(`    Esperado: ${expectedValue} (${typeof expectedValue})`);
+          console.warn(`    Salvo: ${savedValue} (${typeof savedValue})`);
+        } else {
+          console.log(`✅ [ADMIN] Campo ${key} salvo corretamente: ${savedValue} (${typeof savedValue})`);
+        }
+      });
+      
+      // Log específico para isActive
+      if ('isActive' in updateData) {
+        console.log(`🔍 [ADMIN] Status isActive final: ${savedData.isActive}`);
+        
+        // Forçar recarregamento do contexto se necessário
+        if (savedData.userType === 'cliente') {
+          console.log(`📣 [ADMIN] Cliente atualizado - status pode precisar ser verificado novamente`);
+        }
+      }
+    }
+    
   } catch (error) {
-    console.error('❌ Erro ao atualizar usuário:', error);
+    console.error('❌ [ADMIN] Erro ao atualizar usuário:', error);
     throw new Error('Não foi possível atualizar os dados do usuário. Tente novamente.');
   }
 };

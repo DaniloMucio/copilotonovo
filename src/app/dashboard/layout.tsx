@@ -24,10 +24,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
   const handleLogout = useCallback(async () => {
     try {
-      await auth.signOut();
-      // Limpar todos os caches
+      // Limpar todos os caches primeiro
       await clearAllCaches();
-      // Redirecionar para login
+      
+      // Fazer logout
+      await auth.signOut();
+      
+      // Redirecionar para login imediatamente
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
       }

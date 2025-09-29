@@ -435,6 +435,156 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
                           <Package className="h-16 w-16 mx-auto mb-4 opacity-50" />
                           <p className="text-lg font-medium">Nenhuma entrega encontrada</p>
                           <p className="text-sm">Suas entregas aparecerão aqui quando forem criadas</p>
+                          <div className="mt-4 p-3 bg-blue-50 rounded-lg text-left">
+                            <p className="text-sm text-blue-800 font-medium">💡 Como criar uma entrega:</p>
+                            <p className="text-xs text-blue-600 mt-1">
+                              1. Vá para a aba "Entregas" → Clique em "Nova Entrega"<br/>
+                              2. Preencha os dados do remetente e destinatário<br/>
+                              3. Escolha um motorista disponível<br/>
+                              4. Confirme os detalhes da entrega
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </OptimizedMotion>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Entregas */}
+          <TabsContent value="deliveries" className="mt-6">
+            <div className="space-y-6">
+              <div className="grid gap-6">
+                {/* Lista Completa de Entregas */}
+                <OptimizedMotion
+                  {...animationProps}
+                  transition={{ ...animationProps.transition, delay: 0.1 }}
+                >
+                  <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <CardHeader className="relative z-10">
+                      <CardTitle className="flex items-center gap-2 text-gray-900">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                          <Package className="h-4 w-4 text-white" />
+                        </div>
+                        Todas as Entregas
+                      </CardTitle>
+                      <CardDescription className="text-gray-600">
+                        Lista completa das suas entregas organizadas por status
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                      {deliveryTransactions.length > 0 ? (
+                        <div className="space-y-6">
+                          {/* Entregas Pendentes */}
+                          {pendingDeliveries.length > 0 && (
+                            <div>
+                              <h3 className="text-lg font-semibold text-orange-800 mb-3 flex items-center gap-2">
+                                <ClockIcon className="h-5 w-5" />
+                                Pendentes ({pendingDeliveries.length})
+                              </h3>
+                              <div className="space-y-3">
+                                {pendingDeliveries.map((delivery) => (
+                                  <div key={delivery.id} className="flex items-center justify-between p-4 border rounded-lg bg-orange-50/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-l-orange-500">
+                                    <div className="space-y-1 flex-1">
+                                      <p className="font-medium text-gray-900">{delivery.description}</p>
+                                      <p className="text-sm text-gray-600">
+                                        {format(delivery.date instanceof Timestamp ? delivery.date.toDate() : delivery.date, 'dd/MM/yyyy', { locale: ptBR })}
+                                      </p>
+                                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                                        <span>💰 R$ {delivery.amount?.toFixed(2)}</span>
+                                        <span>📦 {delivery.paymentType}</span>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Badge 
+                                        variant="secondary"
+                                        className="bg-orange-100 text-orange-800 border-0 rounded-full shadow-sm"
+                                      >
+                                        {delivery.deliveryStatus}
+                                      </Badge>
+                                      <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                          <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                                            <Trash2 className="h-4 w-4" />
+                                          </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle>Excluir Entrega</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                              Tem certeza que deseja excluir esta entrega? Esta ação não pode ser desfeita.
+                                            </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                            <AlertDialogAction 
+                                              onClick={() => handleDeleteDelivery(delivery.id!)}
+                                              className="bg-red-600 hover:bg-red-700"
+                                            >
+                                              Excluir
+                                            </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                      </AlertDialog>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Entregas Concluídas */}
+                          {completedDeliveries.length > 0 && (
+                            <div>
+                              <h3 className="text-lg font-semibold text-green-800 mb-3 flex items-center gap-2">
+                                <CheckCircle className="h-5 w-5" />
+                                Concluídas ({completedDeliveries.length})
+                              </h3>
+                              <div className="space-y-3">
+                                {completedDeliveries.map((delivery) => (
+                                  <div key={delivery.id} className="flex items-center justify-between p-4 border rounded-lg bg-green-50/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-l-green-500">
+                                    <div className="space-y-1 flex-1">
+                                      <p className="font-medium text-gray-900">{delivery.description}</p>
+                                      <p className="text-sm text-gray-600">
+                                        {format(delivery.date instanceof Timestamp ? delivery.date.toDate() : delivery.date, 'dd/MM/yyyy', { locale: ptBR })}
+                                      </p>
+                                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                                        <span>💰 R$ {delivery.amount?.toFixed(2)}</span>
+                                        <span>📦 {delivery.paymentType}</span>
+                                        <span>💳 {delivery.paymentStatus}</span>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Badge 
+                                        variant="default"
+                                        className="bg-green-100 text-green-800 border-0 rounded-full shadow-sm"
+                                      >
+                                        {delivery.deliveryStatus}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <Package className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                          <p className="text-lg font-medium">Nenhuma entrega encontrada</p>
+                          <p className="text-sm">Suas entregas aparecerão aqui quando forem criadas</p>
+                          <div className="mt-4 p-3 bg-blue-50 rounded-lg text-left">
+                            <p className="text-sm text-blue-800 font-medium">💡 Como criar uma entrega:</p>
+                            <p className="text-xs text-blue-600 mt-1">
+                              1. Use o menu lateral para ir em "Entregas"<br/>
+                              2. Clique em "Nova Entrega" e preencha os dados<br/>
+                              3. Selecione um motorista disponível<br/>
+                              4. Acompanhe o progresso aqui na Visão Geral
+                            </p>
+                          </div>
                         </div>
                       )}
                     </CardContent>

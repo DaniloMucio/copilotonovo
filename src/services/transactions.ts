@@ -544,11 +544,14 @@ export const getCurrentMonthTransactionsSync = async (userId: string): Promise<T
 
 // Função para buscar entregas do cliente do mês atual
 export const getCurrentMonthDeliveriesByClient = async (clientId: string): Promise<Transaction[]> => {
+    console.log('🔍 getCurrentMonthDeliveriesByClient: Iniciando busca para clientId:', clientId);
+    
     const cacheKey = firestoreCache.generateKey('currentMonthClientDeliveries', { clientId });
     
     // Verificar cache primeiro
     const cached = firestoreCache.get<Transaction[]>(cacheKey);
     if (cached) {
+        console.log('📋 getCurrentMonthDeliveriesByClient: Usando cache, encontradas:', cached.length, 'entregas');
         return cached;
     }
 
@@ -557,33 +560,44 @@ export const getCurrentMonthDeliveriesByClient = async (clientId: string): Promi
         const startOfCurrentMonth = startOfMonth(now);
         const endOfCurrentMonth = endOfMonth(now);
         
-        // Query otimizada para buscar apenas entregas do mês atual
-        let q = query(
-            collection(db, "transactions"), 
-            where("clientId", "==", clientId),
-            where("date", ">=", Timestamp.fromDate(startOfCurrentMonth)),
-            where("date", "<=", Timestamp.fromDate(endOfCurrentMonth)),
-            orderBy("date", "desc")
-        );
-
-        let querySnapshot;
-        let transactions: Transaction[] = [];
+        console.log('📅 getCurrentMonthDeliveriesByClient: Buscando entregas entre', startOfCurrentMonth, 'e', endOfCurrentMonth);
         
-        try {
-            querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-                transactions.push({ id: doc.id, ...doc.data() } as Transaction);
-            });
-        } catch (indexError: any) {
-            // Se falhar por falta de índice, busca todas e filtra no cliente
-            if (indexError.code === 'failed-precondition') {
-                console.warn("⚠️ Índice não encontrado, buscando todas as entregas e filtrando no cliente");
-                const allDeliveries = await getDeliveriesByClientSync(clientId);
-                transactions = getCurrentMonthTransactions(allDeliveries);
-            } else {
-                throw indexError;
-            }
-        }
+        // Estratégia dupla: buscar por clientId E por userId (caso o cliente tenha criado entregas)
+        console.log('🔍 getCurrentMonthDeliveriesByClient: Tentando busca por clientId...');
+        const deliveriesByClientId = await getDeliveriesByClientSync(clientId);
+        console.log('📦 getCurrentMonthDeliveriesByClient: Encontradas', deliveriesByClientId.length, 'entregas por clientId');
+        
+        console.log('🔍 getCurrentMonthDeliveriesByClient: Tentando busca por userId (fallback)...');
+        const deliveriesByUserId = await getTransactions(clientId);
+        console.log('📦 getCurrentMonthDeliveriesByClient: Encontradas', deliveriesByUserId.length, 'transações por userId');
+        
+        // Combinar ambas as buscas e remover duplicatas
+        const allPossibleDeliveries = [...deliveriesByClientId, ...deliveriesByUserId];
+        const uniqueDeliveries = allPossibleDeliveries.filter((delivery, index, self) => 
+            index === self.findIndex(d => d.id === delivery.id)
+        );
+        
+        console.log('📦 getCurrentMonthDeliveriesByClient: Total único de entregas encontradas:', uniqueDeliveries.length);
+        
+        // Filtrar por categoria, data e mês atual
+        const transactions = uniqueDeliveries.filter(t => {
+            const isDelivery = t.category === 'Entrega';
+            const isCurrentMonth = t.date && (
+                (t.date instanceof Timestamp ? t.date.toDate() : t.date) >= startOfCurrentMonth &&
+                (t.date instanceof Timestamp ? t.date.toDate() : t.date) <= endOfCurrentMonth
+            );
+            return isDelivery && isCurrentMonth;
+        });
+
+        console.log('✅ getCurrentMonthDeliveriesByClient: Entregas filtradas do mês atual:', transactions.length);
+        console.log('📋 getCurrentMonthDeliveriesByClient: Detalhes das entregas:', transactions.map(t => ({
+            id: t.id,
+            description: t.description,
+            clientId: t.clientId,
+            userId: t.userId,
+            deliveryStatus: t.deliveryStatus,
+            date: t.date instanceof Timestamp ? t.date.toDate() : t.date
+        })));
 
         // Cachear resultado por 5 minutos
         firestoreCache.set(cacheKey, transactions, 5 * 60 * 1000);

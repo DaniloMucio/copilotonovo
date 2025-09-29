@@ -157,7 +157,7 @@ export function AdminEditUserForm({
               <FormItem>
                 <FormLabel>Nome Completo</FormLabel>
                 <FormControl>
-                  <Input placeholder="Digite o nome completo" {...field} />
+                  <Input placeholder="Digite o nome completo" {...field} className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -171,7 +171,7 @@ export function AdminEditUserForm({
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="Digite o email" {...field} />
+                  <Input type="email" placeholder="Digite o email" {...field} className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -185,7 +185,7 @@ export function AdminEditUserForm({
               <FormItem>
                 <FormLabel>Telefone</FormLabel>
                 <FormControl>
-                  <Input placeholder="Digite o telefone" {...field} />
+                  <Input placeholder="Digite o telefone" {...field} className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -199,7 +199,7 @@ export function AdminEditUserForm({
               <FormItem>
                 <FormLabel>Empresa</FormLabel>
                 <FormControl>
-                  <Input placeholder="Digite o nome da empresa" {...field} />
+                  <Input placeholder="Digite o nome da empresa" {...field} className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -215,7 +215,7 @@ export function AdminEditUserForm({
                 <FormItem>
                   <FormLabel>CPF</FormLabel>
                   <FormControl>
-                    <Input placeholder="000.000.000-00" {...field} />
+                    <Input placeholder="000.000.000-00" {...field} className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -229,7 +229,7 @@ export function AdminEditUserForm({
                 <FormItem>
                   <FormLabel>CNPJ</FormLabel>
                   <FormControl>
-                    <Input placeholder="00.000.000/0000-00" {...field} />
+                    <Input placeholder="00.000.000/0000-00" {...field} className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -243,7 +243,7 @@ export function AdminEditUserForm({
                 <FormItem>
                   <FormLabel>CNH</FormLabel>
                   <FormControl>
-                    <Input placeholder="Número da CNH" {...field} />
+                    <Input placeholder="Número da CNH" {...field} className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -264,14 +264,14 @@ export function AdminEditUserForm({
                 <FormLabel>Tipo de Usuário</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                       <SelectValue placeholder="Selecione o tipo de usuário" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="motorista">Motorista</SelectItem>
-                    <SelectItem value="cliente">Cliente</SelectItem>
-                    <SelectItem value="admin">Administrador</SelectItem>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                    <SelectItem value="motorista" className="hover:bg-gray-50">Motorista</SelectItem>
+                    <SelectItem value="cliente" className="hover:bg-gray-50">Cliente</SelectItem>
+                    <SelectItem value="admin" className="hover:bg-gray-50">Administrador</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -341,6 +341,7 @@ export function AdminEditUserForm({
                       placeholder="Digite a quilometragem atual" 
                       {...field}
                       onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     />
                   </FormControl>
                   <FormMessage />
@@ -362,7 +363,7 @@ export function AdminEditUserForm({
                 <FormItem>
                   <FormLabel>CEP</FormLabel>
                   <FormControl>
-                    <Input placeholder="00000-000" {...field} />
+                    <Input placeholder="00000-000" {...field} className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -376,7 +377,7 @@ export function AdminEditUserForm({
                 <FormItem>
                   <FormLabel>Rua</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nome da rua" {...field} />
+                    <Input placeholder="Nome da rua" {...field} className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -392,7 +393,7 @@ export function AdminEditUserForm({
                 <FormItem>
                   <FormLabel>Número</FormLabel>
                   <FormControl>
-                    <Input placeholder="123" {...field} />
+                    <Input placeholder="123" {...field} className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -406,7 +407,7 @@ export function AdminEditUserForm({
                 <FormItem>
                   <FormLabel>Complemento</FormLabel>
                   <FormControl>
-                    <Input placeholder="Apto 101" {...field} />
+                    <Input placeholder="Apto 101" {...field} className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -420,7 +421,7 @@ export function AdminEditUserForm({
                 <FormItem>
                   <FormLabel>Bairro</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nome do bairro" {...field} />
+                    <Input placeholder="Nome do bairro" {...field} className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -436,7 +437,7 @@ export function AdminEditUserForm({
                 <FormItem>
                   <FormLabel>Cidade</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nome da cidade" {...field} />
+                    <Input placeholder="Nome da cidade" {...field} className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -450,7 +451,7 @@ export function AdminEditUserForm({
                 <FormItem>
                   <FormLabel>Estado</FormLabel>
                   <FormControl>
-                    <Input placeholder="UF" maxLength={2} {...field} />
+                    <Input placeholder="UF" maxLength={2} {...field} className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -132,11 +132,15 @@ function EntregasClienteContent() {
   const fetchData = useCallback(async (uid: string) => {
     setLoading(true);
     try {
+      console.log('🔄 EntregasCliente: fetchData iniciado para uid:', uid);
+      
       // Para clientes, buscar entregas do mês atual pelo clientId e destinatários
       const [clientDeliveries, recipientsList] = await Promise.all([
         getCurrentMonthDeliveriesByClient(uid),
         getRecipientsByUser(uid)
       ]);
+      
+      console.log('📊 EntregasCliente: Entregas recebidas:', clientDeliveries.length);
 
       const deliveryTransactions = clientDeliveries.filter(
         (t) => t.category === 'Entrega'
@@ -493,6 +497,15 @@ function EntregasClienteContent() {
                       <Clock className="h-16 w-16 mx-auto mb-4 opacity-50" />
                       <p className="text-lg font-medium">Nenhuma entrega pendente</p>
                       <p className="text-sm">Suas entregas pendentes aparecerão aqui</p>
+                      <div className="mt-4 p-3 bg-orange-50 rounded-lg text-left">
+                        <p className="text-sm text-orange-800 font-medium">💡 Para criar sua primeira entrega:</p>
+                        <p className="text-xs text-orange-600 mt-1">
+                          1. Clique no botão "Nova Entrega" no topo da página<br/>
+                          2. Preencha os dados completos da entrega<br/>
+                          3. Selecione um motorista disponível<br/>
+                          4. Aguarde a confirmação do motorista
+                        </p>
+                      </div>
                     </div>
                   )}
                 </CardContent>
@@ -550,6 +563,15 @@ function EntregasClienteContent() {
                       <CheckCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
                       <p className="text-lg font-medium">Nenhuma entrega concluída</p>
                       <p className="text-sm">Suas entregas concluídas aparecerão aqui</p>
+                      <div className="mt-4 p-3 bg-green-50 rounded-lg text-left">
+                        <p className="text-sm text-green-800 font-medium">✅ Sobre entregas concluídas:</p>
+                        <p className="text-xs text-green-600 mt-1">
+                          • Entregas finalizadas pelos motoristas aparecem aqui<br/>
+                          • Você pode acompanhar o histórico completo<br/>
+                          • Valores e datas ficam registrados permanentemente<br/>
+                          • Use para controle financeiro e relatórios
+                        </p>
+                      </div>
                     </div>
                   )}
                 </CardContent>

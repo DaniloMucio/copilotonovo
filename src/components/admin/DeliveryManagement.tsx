@@ -1,84 +1,127 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useState, useEffect, useCallback } from 'react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
   DialogDescription,
-  DialogTrigger 
+  DialogFooter 
 } from '@/components/ui/dialog';
 import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { 
   Package, 
-  Search, 
+  Clock, 
+  Truck, 
+  CheckCircle, 
+  X, 
   Eye, 
   Edit, 
+  Trash2,
+  Search,
+  Filter,
   MapPin,
+  User,
+  Building,
+  Phone,
   Calendar,
   DollarSign,
-  Truck,
-  User,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  XCircle
+  AlertCircle
 } from 'lucide-react';
-import { getAllDeliveries, getDeliveryStats, type DeliveryStats } from '@/services/admin';
-import { type Transaction } from '@/services/transactions';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { Timestamp } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+import { getAllDeliveries, updateDeliveryStatus, deleteDelivery } from '@/services/admin';
+import { updateTransaction } from '@/services/transactions';
+import { motion } from 'framer-motion';
 
-interface DeliveryManagementProps {
-  onDeliverySelect?: (delivery: Transaction) => void;
+interface Delivery {
+  id: string;
+  description: string;
+  amount: number;
+  deliveryStatus: 'Pendente' | 'Confirmada' | 'A caminho' | 'Entregue' | 'Recusada';
+  paymentStatus: 'Pendente' | 'Pago';
+  paymentType: 'À vista' | 'A receber';
+  senderCompany?: string;
+  recipientCompany?: string;
+  senderAddress?: any;
+  recipientAddress?: any;
+  driverId?: string;
+  clientId?: string;
+  assignedDriverId?: string;
+  date: any;
+  observations?: string;
 }
 
-export function DeliveryManagement({ onDeliverySelect }: DeliveryManagementProps) {
-  const [deliveries, setDeliveries] = useState<Transaction[]>([]);
-  const [filteredDeliveries, setFilteredDeliveries] = useState<Transaction[]>([]);
-  const [deliveryStats, setDeliveryStats] = useState<DeliveryStats | null>(null);
+export function DeliveryManagement() {
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
+  const [filteredDeliveries, setFilteredDeliveries] = useState<Delivery[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [selectedDelivery, setSelectedDelivery] = useState<Transaction | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
+
+  // Estados do formulário de edição
+  const [editForm, setEditForm] = useState({
+    description: '',
+    amount: 0,
+    deliveryStatus: 'Pendente' as const,
+    paymentStatus: 'Pendente' as const,
+    paymentType: 'À vista' as const,
+    senderCompany: '',
+    recipientCompany: '',
+    observations: ''
+  });
+
+  const fetchDeliveries = useCallback(async () => {
+    setLoading(true);
+    try {
+      const deliveriesData = await getAllDeliveries();
+      setDeliveries(deliveriesData);
+      setFilteredDeliveries(deliveriesData);
+    } catch (error) {
+      console.error('Erro ao carregar entregas:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao carregar entregas',
+        description: 'Não foi possível carregar as entregas.',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [deliveriesData, statsData] = await Promise.all([
-          getAllDeliveries(),
-          getDeliveryStats()
-        ]);
-        setDeliveries(deliveriesData);
-        setFilteredDeliveries(deliveriesData);
-        setDeliveryStats(statsData);
-      } catch (error) {
-        console.error('Erro ao buscar entregas:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchDeliveries();
+  }, [fetchDeliveries]);
 
-    fetchData();
-  }, []);
-
+  // Filtrar entregas
   useEffect(() => {
     let filtered = deliveries;
 
-    // Filtrar por termo de busca
+    // Filtro por termo de busca
     if (searchTerm) {
       filtered = filtered.filter(delivery => 
         delivery.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -87,327 +130,617 @@ export function DeliveryManagement({ onDeliverySelect }: DeliveryManagementProps
       );
     }
 
-    // Filtrar por status
+    // Filtro por status
     if (statusFilter !== 'all') {
       filtered = filtered.filter(delivery => delivery.deliveryStatus === statusFilter);
     }
 
     setFilteredDeliveries(filtered);
-  }, [searchTerm, statusFilter, deliveries]);
+  }, [deliveries, searchTerm, statusFilter]);
 
-  const handleDeliveryClick = (delivery: Transaction) => {
+  const handleViewDetails = (delivery: Delivery) => {
     setSelectedDelivery(delivery);
-    onDeliverySelect?.(delivery);
+    setShowDetailsModal(true);
+  };
+
+  const handleEditDelivery = (delivery: Delivery) => {
+    setSelectedDelivery(delivery);
+    setEditForm({
+      description: delivery.description,
+      amount: delivery.amount,
+      deliveryStatus: delivery.deliveryStatus,
+      paymentStatus: delivery.paymentStatus,
+      paymentType: delivery.paymentType,
+      senderCompany: delivery.senderCompany || '',
+      recipientCompany: delivery.recipientCompany || '',
+      observations: delivery.observations || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateDelivery = async () => {
+    if (!selectedDelivery) return;
+
+    setIsProcessing(true);
+    try {
+      await updateTransaction(selectedDelivery.id, {
+        description: editForm.description,
+        amount: editForm.amount,
+        deliveryStatus: editForm.deliveryStatus,
+        paymentStatus: editForm.paymentStatus,
+        paymentType: editForm.paymentType,
+        senderCompany: editForm.senderCompany,
+        recipientCompany: editForm.recipientCompany,
+        observations: editForm.observations
+      });
+
+      toast({
+        title: 'Entrega atualizada',
+        description: 'A entrega foi atualizada com sucesso.',
+      });
+
+      await fetchDeliveries();
+      setShowEditModal(false);
+      setSelectedDelivery(null);
+    } catch (error) {
+      console.error('Erro ao atualizar entrega:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao atualizar entrega',
+        description: 'Não foi possível atualizar a entrega.',
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDeleteDelivery = (delivery: Delivery) => {
+    setSelectedDelivery(delivery);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteDelivery = async () => {
+    if (!selectedDelivery) return;
+
+    setIsProcessing(true);
+    try {
+      await deleteDelivery(selectedDelivery.id);
+      
+      toast({
+        title: 'Entrega excluída',
+        description: 'A entrega foi excluída com sucesso.',
+      });
+
+      await fetchDeliveries();
+      setShowDeleteDialog(false);
+      setSelectedDelivery(null);
+    } catch (error) {
+      console.error('Erro ao excluir entrega:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao excluir entrega',
+        description: 'Não foi possível excluir a entrega.',
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Pendente':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'Confirmada':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'A caminho':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'Entregue':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'Recusada':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'Entregue':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
       case 'Pendente':
-        return <Clock className="h-4 w-4 text-orange-600" />;
+        return <Clock className="h-4 w-4" />;
+      case 'Confirmada':
+        return <CheckCircle className="h-4 w-4" />;
       case 'A caminho':
-        return <Truck className="h-4 w-4 text-blue-600" />;
+        return <Truck className="h-4 w-4" />;
+      case 'Entregue':
+        return <CheckCircle className="h-4 w-4" />;
       case 'Recusada':
-        return <XCircle className="h-4 w-4 text-red-600" />;
+        return <X className="h-4 w-4" />;
       default:
-        return <AlertCircle className="h-4 w-4 text-gray-600" />;
+        return <Package className="h-4 w-4" />;
     }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      'Entregue': 'default',
-      'Pendente': 'secondary',
-      'A caminho': 'outline',
-      'Recusada': 'destructive',
-      'Confirmada': 'outline'
-    } as const;
-
-    return (
-      <Badge variant={variants[status as keyof typeof variants] || 'outline'}>
-        {status}
-      </Badge>
-    );
   };
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-96" />
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Skeleton key={i} className="h-16 w-full" />
-            ))}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Gerenciamento de Entregas</h2>
+            <p className="text-gray-600">Monitore e gerencie todas as entregas do sistema</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <div className="grid gap-4">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="p-4">
+              <div className="animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Estatísticas */}
-      {deliveryStats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <CardHeader className="pb-2 relative z-10">
-              <CardTitle className="text-sm text-gray-900 flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                  <Package className="h-3 w-3 text-white" />
-                </div>
-                Total
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-2xl font-bold text-gray-900">{deliveryStats.total}</div>
-            </CardContent>
-          </Card>
-          <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-600/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <CardHeader className="pb-2 relative z-10">
-              <CardTitle className="text-sm text-gray-900 flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-to-r from-orange-600 to-orange-500 rounded-lg flex items-center justify-center">
-                  <Clock className="h-3 w-3 text-white" />
-                </div>
-                Pendentes
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-2xl font-bold text-orange-600">{deliveryStats.pending}</div>
-            </CardContent>
-          </Card>
-          <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <CardHeader className="pb-2 relative z-10">
-              <CardTitle className="text-sm text-gray-900 flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg flex items-center justify-center">
-                  <Truck className="h-3 w-3 text-white" />
-                </div>
-                Em Andamento
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-2xl font-bold text-blue-600">{deliveryStats.inProgress}</div>
-            </CardContent>
-          </Card>
-          <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
-            <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <CardHeader className="pb-2 relative z-10">
-              <CardTitle className="text-sm text-gray-900 flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-to-r from-green-600 to-green-500 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="h-3 w-3 text-white" />
-                </div>
-                Concluídas
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-2xl font-bold text-green-600">{deliveryStats.completed}</div>
-            </CardContent>
-          </Card>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Gerenciamento de Entregas</h2>
+          <p className="text-gray-600">Monitore e gerencie todas as entregas do sistema</p>
         </div>
-      )}
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-sm">
+            {filteredDeliveries.length} entregas
+          </Badge>
+        </div>
+      </div>
 
       {/* Filtros */}
-      <Card className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        <CardHeader className="relative z-10">
-          <CardTitle className="flex items-center gap-2 text-gray-900">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-              <Package className="h-4 w-4 text-white" />
-            </div>
-            Gestão de Entregas
-          </CardTitle>
-          <CardDescription className="text-gray-600">
-            Gerencie todas as entregas do sistema
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="relative z-10">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <Card className="p-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Buscar entregas..."
+                placeholder="Buscar por descrição, empresa remetente ou destinatária..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                className="pl-10 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
+          </div>
+          <div className="sm:w-48">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+              <SelectTrigger className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                 <SelectValue placeholder="Filtrar por status" />
               </SelectTrigger>
-              <SelectContent className="bg-white border-0 shadow-2xl rounded-2xl">
-                <SelectItem value="all" className="text-gray-900 hover:bg-gray-50">Todos os status</SelectItem>
-                <SelectItem value="Pendente" className="text-gray-900 hover:bg-gray-50">Pendente</SelectItem>
-                <SelectItem value="Confirmada" className="text-gray-900 hover:bg-gray-50">Confirmada</SelectItem>
-                <SelectItem value="A caminho" className="text-gray-900 hover:bg-gray-50">A caminho</SelectItem>
-                <SelectItem value="Entregue" className="text-gray-900 hover:bg-gray-50">Entregue</SelectItem>
-                <SelectItem value="Recusada" className="text-gray-900 hover:bg-gray-50">Recusada</SelectItem>
+              <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                <SelectItem value="all" className="hover:bg-gray-50">Todos os status</SelectItem>
+                <SelectItem value="Pendente" className="hover:bg-gray-50">Pendente</SelectItem>
+                <SelectItem value="Confirmada" className="hover:bg-gray-50">Confirmada</SelectItem>
+                <SelectItem value="A caminho" className="hover:bg-gray-50">A caminho</SelectItem>
+                <SelectItem value="Entregue" className="hover:bg-gray-50">Entregue</SelectItem>
+                <SelectItem value="Recusada" className="hover:bg-gray-50">Recusada</SelectItem>
               </SelectContent>
             </Select>
-            <Badge variant="outline" className="bg-gradient-to-r from-blue-600/10 to-purple-600/10 text-blue-600 border-0 rounded-full shadow-sm">
-              {filteredDeliveries.length} entregas
-            </Badge>
           </div>
+        </div>
+      </Card>
 
-          {/* Lista de entregas */}
-          <div className="space-y-3">
-            {filteredDeliveries.map((delivery) => (
-              <div
-                key={delivery.id}
-                className="shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500 cursor-pointer"
-                onClick={() => handleDeliveryClick(delivery)}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative z-10 flex items-center justify-between p-4">
-                  <div className="space-y-1 flex-1">
-                    <div className="flex items-center gap-2">
-                      {getStatusIcon(delivery.deliveryStatus || 'Pendente')}
-                      <p className="font-medium text-gray-900">{delivery.description}</p>
-                      {getStatusBadge(delivery.deliveryStatus || 'Pendente')}
+      {/* Lista de Entregas */}
+      <div className="space-y-4">
+        {filteredDeliveries.length > 0 ? (
+          filteredDeliveries.map((delivery, index) => (
+            <motion.div
+              key={delivery.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <Card className="hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  <div className="flex-1 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 text-lg">
+                          {delivery.description}
+                        </h3>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <Building className="h-4 w-4" />
+                            <span>De: {delivery.senderCompany || 'N/A'}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Building className="h-4 w-4" />
+                            <span>Para: {delivery.recipientCompany || 'N/A'}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={`${getStatusColor(delivery.deliveryStatus)} flex items-center gap-1`}>
+                          {getStatusIcon(delivery.deliveryStatus)}
+                          {delivery.deliveryStatus}
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {format(delivery.date instanceof Timestamp ? delivery.date.toDate() : delivery.date, 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                      </span>
-                      {delivery.senderCompany && (
-                        <span className="flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          {delivery.senderCompany}
+
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-green-600" />
+                        <span className="font-medium text-green-600">
+                          R$ {delivery.amount.toFixed(2)}
                         </span>
-                      )}
-                      {delivery.recipientCompany && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {delivery.recipientCompany}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-blue-600" />
+                        <span>
+                          {format(
+                            delivery.date instanceof Date ? delivery.date : delivery.date.toDate(),
+                            'dd/MM/yyyy',
+                            { locale: ptBR }
+                          )}
                         </span>
-                      )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">Pagamento:</span>
+                        <span className="font-medium">{delivery.paymentType}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">Status:</span>
+                        <span className={`font-medium ${
+                          delivery.paymentStatus === 'Pago' ? 'text-green-600' : 'text-orange-600'
+                        }`}>
+                          {delivery.paymentStatus}
+                        </span>
+                      </div>
                     </div>
                   </div>
+
                   <div className="flex items-center gap-2">
-                    <div className="text-right">
-                      <p className="font-semibold text-lg text-gray-900">
-                        R$ {delivery.amount?.toFixed(2) || '0.00'}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        {delivery.paymentType || 'À vista'}
-                      </p>
-                    </div>
-                    <Button variant="outline" size="sm" className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewDetails(delivery)}
+                      className="flex items-center gap-1"
+                    >
                       <Eye className="h-4 w-4" />
+                      Ver Detalhes
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditDelivery(delivery)}
+                      className="flex items-center gap-1"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Editar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteDelivery(delivery)}
+                      className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Excluir
                     </Button>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))
+        ) : (
+          <Card className="p-8 text-center">
+            <Package className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {searchTerm || statusFilter !== 'all' ? 'Nenhuma entrega encontrada' : 'Nenhuma entrega cadastrada'}
+            </h3>
+            <p className="text-gray-600">
+              {searchTerm || statusFilter !== 'all' 
+                ? 'Tente ajustar os filtros de busca.' 
+                : 'As entregas aparecerão aqui quando forem criadas.'
+              }
+            </p>
+          </Card>
+        )}
+      </div>
 
-          {filteredDeliveries.length === 0 && (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
-                <Package className="h-8 w-8 text-white" />
-              </div>
-              <p className="text-lg font-medium text-gray-900">Nenhuma entrega encontrada</p>
-              <p className="text-sm text-gray-600">Tente ajustar os filtros de busca</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Modal de detalhes da entrega */}
-      <Dialog open={!!selectedDelivery} onOpenChange={() => setSelectedDelivery(null)}>
-        <DialogContent className="max-w-2xl bg-white border-0 shadow-2xl rounded-2xl" aria-describedby="delivery-details-description">
-          <DialogHeader className="bg-gradient-to-r from-blue-600/5 to-purple-600/5 p-6 rounded-t-2xl">
-            <DialogTitle className="text-gray-900">Detalhes da Entrega</DialogTitle>
-            <DialogDescription id="delivery-details-description" className="text-gray-600">
-              Visualize as informações completas da entrega selecionada
+      {/* Modal de Detalhes */}
+      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Detalhes da Entrega
+            </DialogTitle>
+            <DialogDescription>
+              Informações completas sobre a entrega selecionada
             </DialogDescription>
           </DialogHeader>
+
           {selectedDelivery && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-6">
+              {/* Informações Básicas */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Descrição</label>
-                  <p className="text-lg text-gray-900">{selectedDelivery.description}</p>
+                  <Label className="text-sm font-medium text-gray-700">Descrição</Label>
+                  <p className="text-gray-900 font-medium">{selectedDelivery.description}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Status</label>
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(selectedDelivery.deliveryStatus || 'Pendente')}
-                    {getStatusBadge(selectedDelivery.deliveryStatus || 'Pendente')}
-                  </div>
+                  <Label className="text-sm font-medium text-gray-700">Valor</Label>
+                  <p className="text-green-600 font-bold text-lg">R$ {selectedDelivery.amount.toFixed(2)}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Valor</label>
-                  <p className="text-lg font-semibold text-gray-900">
-                    R$ {selectedDelivery.amount?.toFixed(2) || '0.00'}
-                  </p>
+                  <Label className="text-sm font-medium text-gray-700">Status da Entrega</Label>
+                  <Badge className={`${getStatusColor(selectedDelivery.deliveryStatus)} flex items-center gap-1 w-fit`}>
+                    {getStatusIcon(selectedDelivery.deliveryStatus)}
+                    {selectedDelivery.deliveryStatus}
+                  </Badge>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Forma de Pagamento</label>
-                  <p className="text-lg text-gray-900">{selectedDelivery.paymentType || 'À vista'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Data</label>
-                  <p className="text-lg text-gray-900">
-                    {format(selectedDelivery.date instanceof Timestamp ? selectedDelivery.date.toDate() : selectedDelivery.date, 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Status do Pagamento</label>
+                  <Label className="text-sm font-medium text-gray-700">Status do Pagamento</Label>
                   <Badge variant={selectedDelivery.paymentStatus === 'Pago' ? 'default' : 'secondary'}>
-                    {selectedDelivery.paymentStatus || 'Pendente'}
+                    {selectedDelivery.paymentStatus}
                   </Badge>
                 </div>
               </div>
 
-              {(selectedDelivery.senderCompany || selectedDelivery.recipientCompany) && (
-                <div className="border-t pt-4">
-                  <h4 className="font-medium mb-2">Empresas</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    {selectedDelivery.senderCompany && (
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Remetente</label>
-                        <p className="text-lg">{selectedDelivery.senderCompany}</p>
+              {/* Empresas */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Empresa Remetente</Label>
+                  <p className="text-gray-900">{selectedDelivery.senderCompany || 'N/A'}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Empresa Destinatária</Label>
+                  <p className="text-gray-900">{selectedDelivery.recipientCompany || 'N/A'}</p>
+                </div>
+              </div>
+
+              {/* Endereços */}
+              {(selectedDelivery.senderAddress || selectedDelivery.recipientAddress) && (
+                <div className="space-y-4">
+                  {selectedDelivery.senderAddress && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Endereço de Origem</Label>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-900">
+                          {selectedDelivery.senderAddress.street}, {selectedDelivery.senderAddress.number}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {selectedDelivery.senderAddress.neighborhood} - {selectedDelivery.senderAddress.city}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          CEP: {selectedDelivery.senderAddress.cep}
+                        </p>
                       </div>
-                    )}
-                    {selectedDelivery.recipientCompany && (
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Destinatário</label>
-                        <p className="text-lg">{selectedDelivery.recipientCompany}</p>
+                    </div>
+                  )}
+
+                  {selectedDelivery.recipientAddress && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Endereço de Destino</Label>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-900">
+                          {selectedDelivery.recipientAddress.street}, {selectedDelivery.recipientAddress.number}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {selectedDelivery.recipientAddress.neighborhood} - {selectedDelivery.recipientAddress.city}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          CEP: {selectedDelivery.recipientAddress.cep}
+                        </p>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               )}
 
+              {/* Observações */}
               {selectedDelivery.observations && (
-                <div className="border-t pt-4">
-                  <h4 className="font-medium mb-2">Observações</h4>
-                  <p className="text-sm text-muted-foreground">{selectedDelivery.observations}</p>
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Observações</Label>
+                  <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">
+                    {selectedDelivery.observations}
+                  </p>
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setSelectedDelivery(null)}>
-                  Fechar
-                </Button>
-                <Button>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Editar Entrega
-                </Button>
+              {/* Data */}
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Data de Criação</Label>
+                <p className="text-gray-900">
+                  {format(
+                    selectedDelivery.date instanceof Date ? selectedDelivery.date : selectedDelivery.date.toDate(),
+                    'dd/MM/yyyy HH:mm',
+                    { locale: ptBR }
+                  )}
+                </p>
               </div>
             </div>
           )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDetailsModal(false)}>
+              Fechar
+            </Button>
+            <Button onClick={() => {
+              setShowDetailsModal(false);
+              handleEditDelivery(selectedDelivery!);
+            }}>
+              Editar Entrega
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Edição */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5" />
+              Editar Entrega
+            </DialogTitle>
+            <DialogDescription>
+              Modifique as informações da entrega
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="description">Descrição</Label>
+                <Input
+                  id="description"
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <Label htmlFor="amount">Valor (R$)</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  value={editForm.amount}
+                  onChange={(e) => setEditForm({ ...editForm, amount: parseFloat(e.target.value) || 0 })}
+                  className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="deliveryStatus">Status da Entrega</Label>
+                <Select
+                  value={editForm.deliveryStatus}
+                  onValueChange={(value: any) => setEditForm({ ...editForm, deliveryStatus: value })}
+                >
+                  <SelectTrigger className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                    <SelectItem value="Pendente" className="hover:bg-gray-50">Pendente</SelectItem>
+                    <SelectItem value="Confirmada" className="hover:bg-gray-50">Confirmada</SelectItem>
+                    <SelectItem value="A caminho" className="hover:bg-gray-50">A caminho</SelectItem>
+                    <SelectItem value="Entregue" className="hover:bg-gray-50">Entregue</SelectItem>
+                    <SelectItem value="Recusada" className="hover:bg-gray-50">Recusada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="paymentStatus">Status do Pagamento</Label>
+                <Select
+                  value={editForm.paymentStatus}
+                  onValueChange={(value: any) => setEditForm({ ...editForm, paymentStatus: value })}
+                >
+                  <SelectTrigger className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                    <SelectItem value="Pendente" className="hover:bg-gray-50">Pendente</SelectItem>
+                    <SelectItem value="Pago" className="hover:bg-gray-50">Pago</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="paymentType">Tipo de Pagamento</Label>
+              <Select
+                value={editForm.paymentType}
+                onValueChange={(value: any) => setEditForm({ ...editForm, paymentType: value })}
+              >
+                <SelectTrigger className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                  <SelectItem value="À vista" className="hover:bg-gray-50">À vista</SelectItem>
+                  <SelectItem value="A receber" className="hover:bg-gray-50">A receber</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="senderCompany">Empresa Remetente</Label>
+                <Input
+                  id="senderCompany"
+                  value={editForm.senderCompany}
+                  onChange={(e) => setEditForm({ ...editForm, senderCompany: e.target.value })}
+                  className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <Label htmlFor="recipientCompany">Empresa Destinatária</Label>
+                <Input
+                  id="recipientCompany"
+                  value={editForm.recipientCompany}
+                  onChange={(e) => setEditForm({ ...editForm, recipientCompany: e.target.value })}
+                  className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="observations">Observações</Label>
+              <Textarea
+                id="observations"
+                value={editForm.observations}
+                onChange={(e) => setEditForm({ ...editForm, observations: e.target.value })}
+                rows={3}
+                className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditModal(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleUpdateDelivery} disabled={isProcessing}>
+              {isProcessing ? 'Salvando...' : 'Salvar Alterações'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Confirmação de Exclusão */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+              Confirmar Exclusão
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir esta entrega? Esta ação não pode ser desfeita.
+              <br />
+              <br />
+              <strong>Entrega:</strong> {selectedDelivery?.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteDelivery}
+              disabled={isProcessing}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isProcessing ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

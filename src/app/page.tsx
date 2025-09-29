@@ -65,51 +65,81 @@ export default function HomePage() {
     {
       icon: <Car className="h-8 w-8" />,
       title: "Gestão de Veículos",
-      description: "Controle completo de informações, manutenções e histórico do seu veículo"
+      description: "Controle completo de informações, manutenções e histórico do seu veículo",
+      color: "from-blue-500 to-blue-600"
     },
     {
       icon: <Fuel className="h-8 w-8" />,
       title: "Controle de Combustível",
-      description: "Acompanhe abastecimentos, consumo médio e custos de combustível"
+      description: "Acompanhe abastecimentos, consumo médio e custos de combustível",
+      color: "from-green-500 to-green-600"
     },
     {
       icon: <Wrench className="h-8 w-8" />,
       title: "Manutenções Inteligentes",
-      description: "Agende e acompanhe manutenções com lembretes automáticos"
+      description: "Agende e acompanhe manutenções com lembretes automáticos",
+      color: "from-orange-500 to-orange-600"
     },
     {
       icon: <Calendar className="h-8 w-8" />,
       title: "Gestão de Jornadas",
-      description: "Controle horários de trabalho, pausas e quilometragem"
+      description: "Controle horários de trabalho, pausas e quilometragem",
+      color: "from-purple-500 to-purple-600"
     },
     {
       icon: <TrendingUp className="h-8 w-8" />,
       title: "Relatórios Financeiros",
-      description: "Análises detalhadas de receitas, despesas e lucro"
+      description: "Análises detalhadas de receitas, despesas e lucro",
+      color: "from-emerald-500 to-emerald-600"
     },
     {
       icon: <Shield className="h-8 w-8" />,
       title: "Segurança Total",
-      description: "Autenticação Firebase e dados protegidos com criptografia"
+      description: "Autenticação Firebase e dados protegidos com criptografia",
+      color: "from-red-500 to-red-600"
     }
   ];
 
   const stats = [
-    { label: "Motoristas Ativos", value: "500+", icon: <Users className="h-6 w-6" /> },
-    { label: "Entregas Realizadas", value: "10K+", icon: <Globe className="h-6 w-6" /> },
-    { label: "Economia Média", value: "R$ 2.5K", icon: <TrendingUp className="h-6 w-6" /> },
-    { label: "Tempo Economizado", value: "15h/mês", icon: <Clock className="h-6 w-6" /> }
+    { label: "Motoristas Ativos", value: "2.5K+", icon: <Users className="h-6 w-6" />, color: "from-blue-500 to-blue-600" },
+    { label: "Entregas Realizadas", value: "50K+", icon: <Globe className="h-6 w-6" />, color: "from-green-500 to-green-600" },
+    { label: "Economia Média", value: "R$ 3.2K", icon: <TrendingUp className="h-6 w-6" />, color: "from-emerald-500 to-emerald-600" },
+    { label: "Tempo Economizado", value: "20h/mês", icon: <Clock className="h-6 w-6" />, color: "from-purple-500 to-purple-600" }
   ];
 
   const benefits = [
     "Controle financeiro detalhado em tempo real",
     "Gestão completa de jornadas de trabalho",
     "Administração inteligente de entregas",
-    "Relatórios automatizados em PDF",
+    "Relatórios automatizados em PDF e Excel",
     "Interface otimizada para dispositivos móveis",
     "Funcionamento offline com sincronização automática",
     "Notificações push para lembretes importantes",
     "Backup automático na nuvem"
+  ];
+
+  const testimonials = [
+    {
+      name: "Carlos Silva",
+      role: "Motorista Autônomo",
+      content: "O Co-Piloto Driver revolucionou minha gestão financeira. Agora sei exatamente quanto ganho e gasto por dia.",
+      avatar: "CS",
+      rating: 5
+    },
+    {
+      name: "Maria Santos",
+      role: "Entregadora",
+      content: "A interface é incrível! Consigo gerenciar todas as minhas entregas e finanças em um só lugar.",
+      avatar: "MS",
+      rating: 5
+    },
+    {
+      name: "João Oliveira",
+      role: "Motorista de Aplicativo",
+      content: "Os relatórios me ajudaram a otimizar minhas rotas e aumentar minha receita em 30%.",
+      avatar: "JO",
+      rating: 5
+    }
   ];
 
   const technologies = [
@@ -313,16 +343,17 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                whileHover={{ y: -5 }}
+                whileHover={{ y: -5, scale: 1.02 }}
+                className="group"
               >
-                <Card className="p-6 hover:shadow-2xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm">
+                <Card className="p-6 hover:shadow-2xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm group-hover:bg-white">
                   <CardHeader>
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <div className="text-blue-600 group-hover:text-purple-600 transition-colors duration-300">
+                    <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                      <div className="text-white">
                         {feature.icon}
                       </div>
                     </div>
-                    <CardTitle className="text-xl font-bold">{feature.title}</CardTitle>
+                    <CardTitle className="text-xl font-bold group-hover:text-blue-600 transition-colors duration-300">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <CardDescription className="text-gray-600 leading-relaxed">
@@ -368,7 +399,7 @@ export default function HomePage() {
                 whileHover={{ scale: 1.05 }}
                 className="text-center group"
               >
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <div className={`w-20 h-20 bg-gradient-to-br ${stat.color} rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
                   <div className="text-white">
                     {stat.icon}
                   </div>
@@ -385,9 +416,111 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section className="py-20 bg-gradient-to-br from-blue-50 to-purple-50 relative">
+        <div className="container mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              O que nossos{" "}
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Usuários
+              </span>{" "}
+              Dizem
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Depoimentos reais de motoristas que transformaram sua gestão
+            </p>
+          </motion.div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                whileHover={{ y: -5 }}
+                className="group"
+              >
+                <Card className="p-6 hover:shadow-2xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm">
+                  <CardContent className="p-0">
+                    <div className="flex items-center mb-4">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                      ))}
+                    </div>
+                    <p className="text-gray-600 mb-4 italic">"{testimonial.content}"</p>
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                        {testimonial.avatar}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-gray-900">{testimonial.name}</div>
+                        <div className="text-sm text-gray-600">{testimonial.role}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-20 bg-white relative">
+        <div className="container mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Por que escolher o{" "}
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Co-Piloto Driver
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Vantagens exclusivas para motoristas que buscam excelência
+            </p>
+          </motion.div>
+          
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {benefits.map((benefit, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="flex items-start space-x-4 group"
+              >
+                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                  <CheckCircle className="h-5 w-5 text-white" />
+                </div>
+                <p className="text-gray-700 text-lg group-hover:text-gray-900 transition-colors duration-300">
+                  {benefit}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.1)_100%)]"></div>
         <div className="container mx-auto px-6 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -405,7 +538,7 @@ export default function HomePage() {
             <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
               Junte-se a milhares de motoristas que já otimizaram sua gestão financeira e operacional
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Link href="/signup">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
@@ -428,22 +561,84 @@ export default function HomePage() {
                 </motion.div>
               </Link>
             </div>
+            
+            {/* Trust Indicators */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-8 text-blue-100">
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                <span className="text-sm">100% Seguro</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="h-5 w-5" />
+                <span className="text-sm">Setup em 2 minutos</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Heart className="h-5 w-5" />
+                <span className="text-sm">Suporte 24/7</span>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 relative">
+      <footer className="bg-gray-900 text-white py-16 relative">
         <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <Car className="h-5 w-5 text-white" />
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div className="md:col-span-2">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Car className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-lg font-semibold">Co-Piloto Driver</span>
               </div>
-              <span className="text-lg font-semibold">Co-Piloto Driver</span>
+              <p className="text-gray-400 mb-4 max-w-md">
+                A plataforma completa para motoristas que buscam excelência na gestão financeira e operacional.
+              </p>
+              <div className="flex space-x-4">
+                <div className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-colors duration-300 cursor-pointer">
+                  <span className="text-sm font-bold">FB</span>
+                </div>
+                <div className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-colors duration-300 cursor-pointer">
+                  <span className="text-sm font-bold">IG</span>
+                </div>
+                <div className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-colors duration-300 cursor-pointer">
+                  <span className="text-sm font-bold">TW</span>
+                </div>
+              </div>
             </div>
-            <div className="text-gray-400">
-              © 2025 Co-Piloto Driver. Todos os direitos reservados.
+            
+            <div>
+              <h3 className="font-semibold mb-4">Produto</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><a href="#" className="hover:text-white transition-colors duration-300">Funcionalidades</a></li>
+                <li><a href="#" className="hover:text-white transition-colors duration-300">Preços</a></li>
+                <li><a href="#" className="hover:text-white transition-colors duration-300">API</a></li>
+                <li><a href="#" className="hover:text-white transition-colors duration-300">Integrações</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="font-semibold mb-4">Suporte</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><a href="#" className="hover:text-white transition-colors duration-300">Central de Ajuda</a></li>
+                <li><a href="#" className="hover:text-white transition-colors duration-300">Contato</a></li>
+                <li><a href="#" className="hover:text-white transition-colors duration-300">Status</a></li>
+                <li><a href="#" className="hover:text-white transition-colors duration-300">Comunidade</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-800 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div className="text-gray-400 text-sm mb-4 md:mb-0">
+                © 2025 Co-Piloto Driver. Todos os direitos reservados.
+              </div>
+              <div className="flex space-x-6 text-sm text-gray-400">
+                <a href="#" className="hover:text-white transition-colors duration-300">Privacidade</a>
+                <a href="#" className="hover:text-white transition-colors duration-300">Termos</a>
+                <a href="#" className="hover:text-white transition-colors duration-300">Cookies</a>
+              </div>
             </div>
           </div>
         </div>

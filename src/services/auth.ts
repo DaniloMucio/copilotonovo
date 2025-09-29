@@ -6,9 +6,10 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
   updatePassword,
-  deleteUser
+  deleteUser,
+  signOut
 } from 'firebase/auth';
-import { createUserDocument } from './firestore';
+import { createUserDocument, getUserDocument } from './firestore';
 import { AppErrorHandler } from '@/lib/errors';
 
 export type UserType = "motorista" | "cliente" | "admin";
@@ -26,6 +27,9 @@ export const signUp = async (email: string, password: string, displayName: strin
       displayName,
       email,
       userType,
+      isActive: true, // Novos usuários são criados ativos por padrão
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
     return userCredential;
@@ -38,11 +42,58 @@ export const signUp = async (email: string, password: string, displayName: strin
 
 export const signIn = async (email: string, password: string) => {
   try {
-    return await signInWithEmailAndPassword(auth, email, password);
-  } catch (error) {
-    const appError = AppErrorHandler.handleFirebaseAuthError(error);
-    AppErrorHandler.logError(appError);
-    throw appError;
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    // Verificar se o usuário está ativo
+    const userData = await getUserDocument(user.uid);
+    
+    if (!userData) {
+      // Se não encontrar dados do usuário, deslogar
+      await signOut(auth);
+      throw new Error('USER_NOT_FOUND');
+    }
+    
+    // Verificar se o usuário está ativo
+    // REGRA: Apenas CLIENTES podem ser bloqueados por inatividade
+    // Admins e Motoristas sempre podem fazer login
+    const isUserActive = userData.userType === 'cliente' 
+      ? userData.isActive === true // Apenas clientes são bloqueados quando inativos
+      : true; // Admins e motoristas sempre podem fazer login
+    
+    // Log apenas em desenvolvimento ou para usuários inativos
+    if (process.env.NODE_ENV === 'development' || !isUserActive) {
+      console.log(`🔍 [AUTH] Verificando ${userData.userType}: ${userData.email}`);
+      console.log(`🔍 [AUTH] isActive: ${userData.isActive}, isOnline: ${userData.isOnline}`);
+      console.log(`🎯 [AUTH] Login ${isUserActive ? 'PERMITIDO' : 'BLOQUEADO'}`);
+      
+      if (userData.userType === 'motorista') {
+        console.log(`🚛 [AUTH] Motorista pode fazer login independente do status (inatividade só afeta recebimento de entregas)`);
+      }
+    }
+      
+    if (!isUserActive) {
+      // Usuário inativo - deslogar e mostrar erro
+      await signOut(auth);
+      throw new Error('USER_INACTIVE');
+    }
+    
+    return userCredential;
+  } catch (error: any) {
+    if (error.message === 'USER_INACTIVE') {
+      // Erro personalizado para usuário inativo
+      const customError = new Error('USER_INACTIVE');
+      customError.name = 'UserInactiveError';
+      throw customError;
+    } else if (error.message === 'USER_NOT_FOUND') {
+      const customError = new Error('USER_NOT_FOUND');
+      customError.name = 'UserNotFoundError';
+      throw customError;
+    } else {
+      const appError = AppErrorHandler.handleFirebaseAuthError(error);
+      AppErrorHandler.logError(appError);
+      throw appError;
+    }
   }
 };
 

@@ -43,6 +43,7 @@ import {
   AlertCircle,
   X
 } from 'lucide-react';
+import { ActivityIndicator } from './ActivityIndicator';
 import { getAllUsersWithStats, type UserWithStats } from '@/services/admin';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -238,6 +239,16 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
   };
 
   const handleToggleUserStatus = async (user: UserWithStats) => {
+    // REGRA ESPECIAL: Administradores não podem ser desativados
+    if (user.userType === 'admin') {
+      toast({
+        variant: 'destructive',
+        title: 'Operação não permitida',
+        description: '⚠️ Administradores não podem ser desativados. Eles sempre permanecem ativos no sistema.',
+      });
+      return;
+    }
+
     try {
       const updateData = user.userType === 'motorista' 
         ? { isOnline: !user.isOnline }
@@ -254,9 +265,31 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
       setUsers(updatedUsers);
       setFilteredUsers(updatedUsers);
 
+      // Se é um cliente sendo ativado/desativado, forçar verificação de sessão
+      if (user.userType === 'cliente') {
+        console.log(`📣 [ADMIN] Cliente ${user.displayName} ${updateData.isActive ? 'ativado' : 'desativado'} - sessões serão verificadas`);
+        
+        // Disparar evento global para verificação de sessão
+        window.dispatchEvent(new CustomEvent('user-status-changed', {
+          detail: { userId: user.uid, isActive: updateData.isActive }
+        }));
+      } else if (user.userType === 'motorista') {
+        console.log(`🚛 [ADMIN] Motorista ${user.displayName} agora está ${updateData.isOnline ? 'disponível' : 'indisponível'} para entregas (login sempre permitido)`);
+      }
+
+      const statusMessage = user.userType === 'motorista' 
+        ? (user.isOnline 
+            ? 'indisponibilizado para entregas' 
+            : 'disponibilizado para entregas'
+          )
+        : (user.isActive 
+            ? 'desativado (login bloqueado)' 
+            : 'ativado (login liberado)'
+          );
+
       toast({
-        title: 'Status atualizado',
-        description: `Usuário ${user.userType === 'motorista' ? (user.isOnline ? 'desativado' : 'ativado') : (user.isActive ? 'desativado' : 'ativado')} com sucesso.`,
+        title: '✅ Status atualizado',
+        description: `${user.userType === 'motorista' ? 'Motorista' : 'Cliente'} ${statusMessage} com sucesso.`,
       });
 
     } catch (error) {
@@ -291,11 +324,27 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
   const handleBulkToggleStatus = async (action: 'activate' | 'deactivate') => {
     if (selectedUsers.size === 0) return;
 
+    // Verificar se há administradores na seleção que não podem ser desativados
+    const selectedUsersData = Array.from(selectedUsers).map(userId => users.find(u => u.uid === userId)).filter(Boolean) as UserWithStats[];
+    const adminsInSelection = selectedUsersData.filter(u => u.userType === 'admin');
+    
+    if (action === 'deactivate' && adminsInSelection.length > 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Operação não permitida',
+        description: `⚠️ ${adminsInSelection.length} administrador(es) na seleção não podem ser desativados. Remova-os da seleção primeiro.`,
+      });
+      return;
+    }
+
     setIsBulkActionLoading(true);
     try {
       const promises = Array.from(selectedUsers).map(async (userId) => {
         const user = users.find(u => u.uid === userId);
         if (!user) return;
+
+        // Pular administradores (segurança extra)
+        if (user.userType === 'admin' && action === 'deactivate') return;
 
         const updateData = user.userType === 'motorista' 
           ? { isOnline: action === 'activate' }
@@ -308,7 +357,7 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
 
       // Atualizar lista local
       const updatedUsers = users.map(u => {
-        if (selectedUsers.has(u.uid)) {
+        if (selectedUsers.has(u.uid) && !(u.userType === 'admin' && action === 'deactivate')) {
           return {
             ...u,
             ...(u.userType === 'motorista' 
@@ -323,8 +372,8 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
       setFilteredUsers(updatedUsers);
 
       toast({
-        title: 'Ação em lote concluída',
-        description: `${selectedUsers.size} usuários ${action === 'activate' ? 'ativados' : 'desativados'} com sucesso.`,
+        title: '✅ Ação em lote concluída',
+        description: `${selectedUsers.size} usuário(s) ${action === 'activate' ? 'ativado(s)' : 'desativado(s)'} com sucesso.`,
       });
 
       setSelectedUsers(new Set());
@@ -596,11 +645,12 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <div className="text-right text-sm">
+                  <div className="text-right text-sm space-y-1">
                     <p className="text-gray-900 font-medium">{user.totalDeliveries || 0} entregas</p>
                     <p className="text-gray-600">
                       R$ {(user.totalRevenue || 0).toFixed(2)}
                     </p>
+                    <ActivityIndicator user={user} />
                   </div>
                   
                   {/* Ações rápidas */}
@@ -613,19 +663,26 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                         e.stopPropagation();
                         handleToggleUserStatus(user);
                       }}
+                      disabled={user.userType === 'admin'}
                       className={`rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ${
-                        user.userType === 'motorista' 
-                          ? (user.isOnline ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-600 text-white hover:bg-gray-700")
-                          : (user.isActive ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-600 text-white hover:bg-gray-700")
+                        user.userType === 'admin'
+                          ? "bg-yellow-500 text-white cursor-not-allowed" // Admin sempre ativo
+                          : user.userType === 'motorista' 
+                            ? (user.isOnline ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-gray-600 text-white hover:bg-gray-700")
+                            : (user.isActive ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-600 text-white hover:bg-gray-700")
                       }`}
-                      title={user.userType === 'motorista' 
-                        ? (user.isOnline ? "Motorista online - Clique para desativar" : "Motorista offline - Clique para ativar")
-                        : (user.isActive ? "Usuário ativo - Clique para desativar" : "Usuário inativo - Clique para ativar")
+                      title={user.userType === 'admin'
+                        ? "⭐ Administrador - Sempre ativo (não pode ser desativado)"
+                        : user.userType === 'motorista' 
+                          ? (user.isOnline ? "🚛 Motorista disponível para entregas - Clique para indisponibilizar" : "🚛 Motorista indisponível para entregas - Clique para disponibilizar (pode fazer login mesmo assim)")
+                          : (user.isActive ? "👤 Cliente ativo - Clique para desativar (bloqueará login)" : "👤 Cliente inativo - Login bloqueado - Clique para ativar")
                       }
                     >
-                      {user.userType === 'motorista' 
-                        ? (user.isOnline ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />)
-                        : (user.isActive ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />)
+                      {user.userType === 'admin' 
+                        ? <UserCheck className="h-4 w-4" /> // Admin sempre com ícone ativo
+                        : user.userType === 'motorista' 
+                          ? (user.isOnline ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />)
+                          : (user.isActive ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />)
                       }
                     </Button>
 

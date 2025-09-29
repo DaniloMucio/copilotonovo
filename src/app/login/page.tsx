@@ -84,11 +84,27 @@ export default function LoginPage() {
       });
       router.push("/dashboard");
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro no login",
-        description: "Email ou senha incorretos. Tente novamente.",
-      });
+      console.error('Login error:', error);
+      
+      if (error.name === 'UserInactiveError' || error.message === 'USER_INACTIVE') {
+        // Disparar evento para mostrar o alerta de usuário inativo
+        const event = new CustomEvent('show-inactive-user-alert');
+        window.dispatchEvent(event);
+        return;
+      } else if (error.name === 'UserNotFoundError' || error.message === 'USER_NOT_FOUND') {
+        toast({
+          variant: "destructive",
+          title: "Usuário não encontrado",
+          description: "Não foi possível encontrar os dados do usuário. Entre em contato com o suporte.",
+        });
+      } else {
+        // Outros erros (credenciais inválidas, etc.)
+        toast({
+          variant: "destructive",
+          title: "Erro no login",
+          description: "Email ou senha incorretos. Tente novamente.",
+        });
+      }
     }
   }
 
