@@ -33,7 +33,7 @@ export const OptimizedMotion = memo(function OptimizedMotion({
     const simplifiedProps = {
       initial: { opacity: 0 },
       animate: { opacity: 1 },
-      transition: { duration: 0.2, ease: "easeOut" }
+      transition: { duration: 0.2 }
     };
     
     return <motion.div className={className} {...simplifiedProps}>{children}</motion.div>;
@@ -91,7 +91,7 @@ export function useOptimizedAnimation() {
     animationProps: {
       initial: isMobile ? { opacity: 0 } : { opacity: 0, y: 20 },
       animate: isMobile ? { opacity: 1 } : { opacity: 1, y: 0 },
-      transition: isMobile ? { duration: 0.15, ease: "easeOut" } : { duration: 0.3, ease: "easeOut" }
+      transition: isMobile ? { duration: 0.15 } : { duration: 0.3 }
     }
   };
 }

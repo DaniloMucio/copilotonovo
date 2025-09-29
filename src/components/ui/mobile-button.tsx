@@ -4,7 +4,7 @@ import { Button, ButtonProps } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
-interface MobileButtonProps extends ButtonProps {
+interface MobileButtonProps extends Omit<ButtonProps, 'variant' | 'size'> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
   size?: 'sm' | 'md' | 'lg';
 }
