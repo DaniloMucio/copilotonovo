@@ -15,47 +15,120 @@
 /* Melhorar a experiência de scroll horizontal */
 .overflow-x-auto {
   scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
 }
 
-/* Estilos para abas em mobile */
+/* Estilos para abas em mobile otimizados */
 .mobile-tabs {
   @apply flex overflow-x-auto scrollbar-hide space-x-1 pb-2;
+  scroll-snap-type: x mandatory;
 }
 
 .mobile-tab {
   @apply flex-shrink-0 text-xs px-3 py-2 whitespace-nowrap;
+  scroll-snap-align: start;
+  min-width: fit-content;
 }
 
-/* Responsividade para cards em mobile */
+/* Responsividade para cards em mobile otimizada */
 @media (max-width: 768px) {
   .mobile-card {
-    @apply mx-1;
+    @apply mx-1 mb-3;
+    min-height: 44px; /* Touch target mínimo */
   }
   
   .mobile-card-content {
     @apply px-3 py-4;
   }
+  
+  /* Cards mais compactos em mobile */
+  .mobile-card-compact {
+    @apply p-3;
+  }
+  
+  /* Grid responsivo melhorado */
+  .mobile-grid {
+    @apply grid grid-cols-1 gap-3;
+  }
+  
+  .mobile-grid-2 {
+    @apply grid grid-cols-2 gap-3;
+  }
 }
 
-/* Estilos para botões em mobile */
+/* Estilos para botões em mobile otimizados */
 @media (max-width: 640px) {
   .mobile-button {
-    @apply text-xs px-2 py-1;
+    @apply text-sm px-4 py-3 min-h-[44px] min-w-[44px]; /* Touch target mínimo */
+    touch-action: manipulation; /* Evita zoom duplo tap */
   }
   
   .mobile-button-group {
-    @apply flex flex-col space-y-2;
+    @apply flex flex-col space-y-3;
+  }
+  
+  /* Botões de ação principais */
+  .mobile-button-primary {
+    @apply bg-blue-600 text-white rounded-lg font-medium;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  /* Botões secundários */
+  .mobile-button-secondary {
+    @apply bg-gray-100 text-gray-700 border border-gray-300 rounded-lg;
   }
 }
 
-/* Estilos para checkboxes em mobile */
+/* Estilos para checkboxes em mobile otimizados */
 @media (max-width: 640px) {
   .mobile-checkbox {
-    @apply w-4 h-4;
+    @apply w-5 h-5; /* Maior para touch */
   }
   
   .mobile-checkbox-label {
-    @apply text-xs;
+    @apply text-sm leading-5;
+    min-height: 44px; /* Touch target */
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* Melhorias para tabelas em mobile */
+@media (max-width: 768px) {
+  .mobile-table {
+    @apply block overflow-x-auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .mobile-table-cell {
+    @apply whitespace-nowrap px-2 py-3 text-sm;
+    min-width: 120px;
+  }
+  
+  /* Cards para dados de tabela em mobile */
+  .mobile-table-card {
+    @apply block border rounded-lg p-3 mb-2;
+  }
+}
+
+/* Otimizações de performance para mobile */
+@media (max-width: 768px) {
+  /* Reduzir animações em mobile */
+  * {
+    animation-duration: 0.2s !important;
+    transition-duration: 0.2s !important;
+  }
+  
+  /* Melhorar renderização */
+  .mobile-optimized {
+    will-change: auto;
+    transform: translateZ(0); /* Force hardware acceleration */
+  }
+  
+  /* Reduzir blur effects em mobile */
+  .backdrop-blur-sm {
+    backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.9);
   }
 }
 

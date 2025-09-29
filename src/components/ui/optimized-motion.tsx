@@ -2,7 +2,7 @@
 
 import { motion, MotionProps } from 'framer-motion';
 import { useIsMobile, useIsLowEndDevice } from '@/hooks/use-mobile';
-import { ReactNode } from 'react';
+import { ReactNode, memo } from 'react';
 
 interface OptimizedMotionProps extends Omit<MotionProps, 'children'> {
   children: ReactNode;
@@ -12,7 +12,7 @@ interface OptimizedMotionProps extends Omit<MotionProps, 'children'> {
   className?: string;
 }
 
-export function OptimizedMotion({ 
+export const OptimizedMotion = memo(function OptimizedMotion({ 
   children, 
   fallback, 
   disableOnMobile = false,
@@ -28,16 +28,12 @@ export function OptimizedMotion({
     return <div className={className}>{fallback || children}</div>;
   }
 
-  // Animações simplificadas para mobile
+  // Animações simplificadas para mobile - apenas fade
   if (isMobile) {
     const simplifiedProps = {
-      ...motionProps,
-      initial: motionProps.initial || { opacity: 0 },
-      animate: motionProps.animate || { opacity: 1 },
-      transition: {
-        duration: 0.3, // Duração mais curta
-        ...motionProps.transition
-      }
+      initial: { opacity: 0 },
+      animate: { opacity: 1 },
+      transition: { duration: 0.2, ease: "easeOut" }
     };
     
     return <motion.div className={className} {...simplifiedProps}>{children}</motion.div>;
@@ -45,10 +41,10 @@ export function OptimizedMotion({
 
   // Animações completas para desktop
   return <motion.div className={className} {...motionProps}>{children}</motion.div>;
-}
+});
 
 // Componente específico para skeletons otimizados
-export function OptimizedSkeleton({ 
+export const OptimizedSkeleton = memo(function OptimizedSkeleton({ 
   children, 
   className = "",
   ...props 
@@ -81,9 +77,9 @@ export function OptimizedSkeleton({
       {children}
     </OptimizedMotion>
   );
-}
+});
 
-// Hook para animações condicionais
+// Hook para animações condicionais otimizado
 export function useOptimizedAnimation() {
   const isMobile = useIsMobile();
   const isLowEnd = useIsLowEndDevice();
@@ -95,7 +91,7 @@ export function useOptimizedAnimation() {
     animationProps: {
       initial: isMobile ? { opacity: 0 } : { opacity: 0, y: 20 },
       animate: isMobile ? { opacity: 1 } : { opacity: 1, y: 0 },
-      transition: isMobile ? { duration: 0.2 } : { duration: 0.4 }
+      transition: isMobile ? { duration: 0.15, ease: "easeOut" } : { duration: 0.3, ease: "easeOut" }
     }
   };
 }

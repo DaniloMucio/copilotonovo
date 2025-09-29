@@ -635,38 +635,38 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
         transition={{ duration: 0.6, delay: 0.2 }}
       >
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 bg-white/80 backdrop-blur-sm border-0 rounded-2xl shadow-lg p-1">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 bg-white/90 backdrop-blur-sm border-0 rounded-xl shadow-lg p-1 mobile-tabs">
             <TabsTrigger 
               value="overview" 
-              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab mobile-button"
             >
               <span className="hidden sm:inline">Visão Geral</span>
               <span className="sm:hidden">Geral</span>
             </TabsTrigger>
             <TabsTrigger 
               value="users"
-              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab mobile-button"
             >
               <span className="hidden sm:inline">Usuários</span>
               <span className="sm:hidden">Usuários</span>
             </TabsTrigger>
             <TabsTrigger 
               value="deliveries"
-              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab mobile-button"
             >
               <span className="hidden sm:inline">Entregas</span>
               <span className="sm:hidden">Entregas</span>
             </TabsTrigger>
             <TabsTrigger 
               value="financial"
-              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab mobile-button"
             >
               <span className="hidden sm:inline">Financeiro</span>
               <span className="sm:hidden">Financeiro</span>
             </TabsTrigger>
             <TabsTrigger 
               value="reports"
-              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab mobile-button"
             >
               <span className="hidden sm:inline">Relatórios</span>
               <span className="sm:hidden">Relatórios</span>

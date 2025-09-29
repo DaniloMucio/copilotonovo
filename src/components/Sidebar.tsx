@@ -179,43 +179,47 @@ export function Sidebar({ className }: SidebarProps) {
 
   return (
     <>
-      {/* Botão do menu para dispositivos móveis */}
+      {/* Botão do menu para dispositivos móveis otimizado */}
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <Button
             variant="outline"
             size="icon"
-            className="lg:hidden fixed top-3 left-3 z-50 bg-background/95 backdrop-blur-sm border-2 hover:bg-background shadow-lg h-10 w-10"
+            className="lg:hidden fixed top-3 left-3 z-50 bg-white/95 backdrop-blur-sm border-2 hover:bg-white shadow-lg h-12 w-12 mobile-button"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-6 w-6" />
           </Button>
         </SheetTrigger>
         
-        <SheetContent side="left" className="w-[85vw] max-w-sm p-0 bg-white dark:bg-gray-900 border-r">
+        <SheetContent 
+          side="left" 
+          className="w-[90vw] max-w-sm p-0 bg-white border-r mobile-optimized"
+          style={{ touchAction: 'pan-y' }}
+        >
           <div className="flex flex-col h-full">
-            {/* Header do menu lateral */}
-            <div className="flex items-center justify-between p-3 md:p-4 border-b">
-              <h2 className="text-base md:text-lg font-semibold">Menu Principal</h2>
+            {/* Header do menu lateral otimizado */}
+            <div className="flex items-center justify-between p-4 border-b bg-white">
+              <h2 className="text-lg font-semibold text-gray-900">Menu Principal</h2>
               <div className="flex items-center gap-2">
                 <NotificationCenter />
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsOpen(false)}
-                  className="h-8 w-8 md:h-10 md:w-10"
+                  className="h-10 w-10 mobile-button"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </Button>
               </div>
             </div>
             
             {/* Toggle de status online/offline para motoristas */}
-            <div className="px-3 py-2 border-b">
+            <div className="px-4 py-3 border-b bg-gray-50">
               <OnlineStatusToggle />
             </div>
             
-            {/* Lista de itens do menu */}
-            <nav className="flex-1 p-3 md:p-4 space-y-1 md:space-y-2">
+            {/* Lista de itens do menu otimizada */}
+            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -223,16 +227,17 @@ export function Sidebar({ className }: SidebarProps) {
                     key={item.href}
                     variant={isActive(item.href) ? "default" : "ghost"}
                     className={cn(
-                      "w-full justify-start h-auto p-3 md:p-4 text-sm md:text-base",
-                      isActive(item.href) && "bg-primary text-primary-foreground"
+                      "w-full justify-start h-auto p-4 text-sm mobile-button",
+                      "min-h-[48px]", // Touch target mínimo
+                      isActive(item.href) && "bg-blue-600 text-white shadow-md"
                     )}
                     onClick={() => handleNavigation(item.href)}
                   >
-                    <div className="flex items-center space-x-2 md:space-x-3">
-                      <Icon className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+                    <div className="flex items-center space-x-3 w-full">
+                      <Icon className="h-5 w-5 flex-shrink-0" />
                       <div className="text-left min-w-0 flex-1">
                         <div className="font-medium truncate">{item.name}</div>
-                        <div className="text-xs opacity-80 truncate">{item.description}</div>
+                        <div className="text-xs opacity-80 truncate mt-1">{item.description}</div>
                       </div>
                     </div>
                   </Button>

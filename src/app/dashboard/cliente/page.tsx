@@ -288,7 +288,7 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
         {...animationProps}
         transition={{ ...animationProps.transition, delay: 0.1 }}
       >
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 mobile-grid md:grid-cols-2 lg:grid-cols-3">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             const colors = [
@@ -303,13 +303,13 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
                 key={index}
                 {...animationProps}
                 transition={{ ...animationProps.transition, delay: 0.2 + 0.1 * index }}
-                whileHover={{ y: -5, scale: 1.02 }}
+                whileHover={{ y: -2, scale: 1.01 }}
                 disableOnMobile={true}
-                className="group"
+                className="group mobile-card"
               >
-                <Card className={`shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group-hover:shadow-xl transition-all duration-500 border-l-4 ${colorScheme.border}`}>
-                  <div className={`absolute inset-0 bg-gradient-to-r ${colorScheme.bg} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <Card className={`shadow-lg bg-white/90 backdrop-blur-sm border-0 rounded-xl overflow-hidden group-hover:shadow-xl transition-all duration-300 border-l-4 ${colorScheme.border} mobile-optimized`}>
+                  <div className={`absolute inset-0 bg-gradient-to-r ${colorScheme.bg} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10 mobile-card-content">
                     <CardTitle className={`text-sm font-medium ${colorScheme.text} flex items-center space-x-2`}>
                       <Icon className="h-4 w-4" />
                       <span>{stat.title}</span>
@@ -318,8 +318,8 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
                       <Icon className="h-4 w-4 text-white" />
                     </div>
                   </CardHeader>
-                  <CardContent className="relative z-10">
-                    <div className="text-2xl font-bold text-gray-900">
+                  <CardContent className="relative z-10 mobile-card-content">
+                    <div className="text-xl md:text-2xl font-bold text-gray-900">
                       {stat.value}
                     </div>
                     <p className="text-xs text-gray-500 mt-1">{stat.description}</p>
@@ -336,24 +336,24 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
         transition={{ ...animationProps.transition, delay: 0.2 }}
       >
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm border-0 rounded-2xl shadow-lg p-1">
+          <TabsList className="grid w-full grid-cols-3 bg-white/90 backdrop-blur-sm border-0 rounded-xl shadow-lg p-1 mobile-tabs">
             <TabsTrigger 
               value="overview" 
-              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab mobile-button"
             >
               <span className="hidden sm:inline">Visão Geral</span>
               <span className="sm:hidden">Geral</span>
             </TabsTrigger>
             <TabsTrigger 
               value="deliveries"
-              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab mobile-button"
             >
               <span className="hidden sm:inline">Entregas</span>
               <span className="sm:hidden">Entregas</span>
             </TabsTrigger>
             <TabsTrigger 
               value="agenda"
-              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab mobile-button"
             >
               <span className="hidden sm:inline">Agenda</span>
               <span className="sm:hidden">Agenda</span>
