@@ -142,24 +142,24 @@ export default function FinanceiroPage() {
         transition={{ duration: 0.6, delay: 0.1 }}
       >
         <Tabs defaultValue="plans" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 bg-white/80 backdrop-blur-sm border-0 rounded-2xl shadow-lg p-1">
+          <TabsList className="tabs-list-mobile grid w-full grid-cols-3 border-0 rounded-2xl shadow-lg p-1">
             <TabsTrigger 
               value="plans"
-              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="tabs-trigger-mobile rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
             >
               <span className="hidden sm:inline">Planos Disponíveis</span>
               <span className="sm:hidden">Planos</span>
             </TabsTrigger>
             <TabsTrigger 
               value="comparison"
-              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="tabs-trigger-mobile rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
             >
               <span className="hidden sm:inline">Comparação</span>
               <span className="sm:hidden">Comparar</span>
             </TabsTrigger>
             <TabsTrigger 
               value="status"
-              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="tabs-trigger-mobile rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
             >
               <span className="hidden sm:inline">Minha Assinatura</span>
               <span className="sm:hidden">Assinatura</span>

@@ -8,7 +8,7 @@ import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// Tabs removidos - usando implementação custom para mobile
 import { auth } from '@/lib/firebase';
 import { getCurrentMonthDeliveriesByClient, deleteTransaction, type Transaction } from '@/services/transactions';
 import { getUserDocument, type UserData } from '@/services/firestore';
@@ -123,6 +123,7 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
   const [userData, setUserData] = useState<UserData | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
   const { toast } = useToast();
   const { animationProps } = useOptimizedAnimation();
   
@@ -335,33 +336,62 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
         {...animationProps}
         transition={{ ...animationProps.transition, delay: 0.2 }}
       >
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-white/90 backdrop-blur-sm border-0 rounded-xl shadow-lg p-1 mobile-tabs">
-            <TabsTrigger 
-              value="overview" 
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab"
+        <div className="w-full">
+          {/* Mobile Tabs Custom - Corrigido para mobile */}
+          <div className="mobile-tabs-container grid w-full grid-cols-3 border-0 rounded-2xl shadow-lg p-1">
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveTab('overview');
+              }}
+              className={`mobile-tab-button rounded-xl px-2 py-1.5 text-sm font-medium transition-all duration-300 ${
+                activeTab === 'overview' 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              type="button"
             >
               <span className="hidden sm:inline">Visão Geral</span>
               <span className="sm:hidden">Geral</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="deliveries"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab"
+            </button>
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveTab('deliveries');
+              }}
+              className={`mobile-tab-button rounded-xl px-2 py-1.5 text-sm font-medium transition-all duration-300 ${
+                activeTab === 'deliveries' 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              type="button"
             >
               <span className="hidden sm:inline">Entregas</span>
               <span className="sm:hidden">Entregas</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="agenda"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab"
+            </button>
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveTab('agenda');
+              }}
+              className={`mobile-tab-button rounded-xl px-2 py-1.5 text-sm font-medium transition-all duration-300 ${
+                activeTab === 'agenda' 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              type="button"
             >
               <span className="hidden sm:inline">Agenda</span>
               <span className="sm:hidden">Agenda</span>
-            </TabsTrigger>
-          </TabsList>
+            </button>
+          </div>
 
           {/* Visão Geral */}
-          <TabsContent value="overview" className="mt-6">
+          {activeTab === 'overview' && (
+            <div className="mt-6">
             <div className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Entregas Recentes */}
@@ -451,10 +481,12 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
                 </OptimizedMotion>
               </div>
             </div>
-          </TabsContent>
+            </div>
+          )}
 
           {/* Entregas */}
-          <TabsContent value="deliveries" className="mt-6">
+          {activeTab === 'deliveries' && (
+            <div className="mt-6">
             <div className="space-y-6">
               <div className="grid gap-6">
                 {/* Lista Completa de Entregas */}
@@ -592,10 +624,12 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
                 </OptimizedMotion>
               </div>
             </div>
-          </TabsContent>
+            </div>
+          )}
 
           {/* Agenda */}
-          <TabsContent value="agenda" className="mt-6">
+          {activeTab === 'agenda' && (
+            <div className="mt-6">
             <OptimizedMotion
               {...animationProps}
               transition={{ ...animationProps.transition, delay: 0.3 }}
@@ -628,8 +662,9 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
                 </CardContent>
               </Card>
             </OptimizedMotion>
-          </TabsContent>
-        </Tabs>
+            </div>
+          )}
+        </div>
       </OptimizedMotion>
     </div>
   );

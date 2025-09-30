@@ -402,24 +402,24 @@ function EntregasClienteContent() {
         transition={{ duration: 0.6, delay: 0.2 }}
       >
         <Tabs defaultValue="pending" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm border-0 rounded-2xl shadow-lg p-1">
+          <TabsList className="tabs-list-mobile grid w-full grid-cols-3 border-0 rounded-2xl shadow-lg p-1">
             <TabsTrigger 
               value="pending" 
-              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="tabs-trigger-mobile rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
             >
               <span className="hidden sm:inline">Pendentes</span>
               <span className="sm:hidden">Pendentes</span>
             </TabsTrigger>
             <TabsTrigger 
               value="completed"
-              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="tabs-trigger-mobile rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
             >
               <span className="hidden sm:inline">Concluídas</span>
               <span className="sm:hidden">Concluídas</span>
             </TabsTrigger>
             <TabsTrigger 
               value="payment"
-              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="tabs-trigger-mobile rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
             >
               <span className="hidden sm:inline">Pagamentos</span>
               <span className="sm:hidden">Pagamentos</span>

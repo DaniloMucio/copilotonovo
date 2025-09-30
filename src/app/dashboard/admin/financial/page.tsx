@@ -468,11 +468,11 @@ function FinancialContent() {
 
       {/* Análises Detalhadas */}
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="bg-white/80 backdrop-blur-sm border-0 rounded-2xl shadow-lg p-1">
-          <TabsTrigger value="overview" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Visão Geral</TabsTrigger>
-          <TabsTrigger value="performance" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Performance</TabsTrigger>
-          <TabsTrigger value="deliveries" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Entregas</TabsTrigger>
-          <TabsTrigger value="users" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Usuários</TabsTrigger>
+        <TabsList className="tabs-list-mobile grid w-full grid-cols-4 border-0 rounded-2xl shadow-lg p-1">
+          <TabsTrigger value="overview" className="tabs-trigger-mobile data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Visão Geral</TabsTrigger>
+          <TabsTrigger value="performance" className="tabs-trigger-mobile data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Performance</TabsTrigger>
+          <TabsTrigger value="deliveries" className="tabs-trigger-mobile data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Entregas</TabsTrigger>
+          <TabsTrigger value="users" className="tabs-trigger-mobile data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300 font-medium">Usuários</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">

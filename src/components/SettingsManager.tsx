@@ -89,12 +89,42 @@ export function SettingsManager({ user, userData }: SettingsManagerProps) {
   return (
     <div className="mt-8">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className={`w-full ${isMobile ? 'flex overflow-x-auto scrollbar-hide' : 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7'}`}>
-          <TabsTrigger value="profile" className={isMobile ? 'flex-shrink-0' : ''}>Perfil</TabsTrigger>
-          <TabsTrigger value="security" className={isMobile ? 'flex-shrink-0' : ''}>Segurança</TabsTrigger>
-          <TabsTrigger value="notifications" className={isMobile ? 'flex-shrink-0' : ''}>Notificações</TabsTrigger>
-          <TabsTrigger value="app" className={isMobile ? 'flex-shrink-0' : ''}>App</TabsTrigger>
-          <TabsTrigger value="danger" className={isMobile ? 'flex-shrink-0' : ''}>Conta</TabsTrigger>
+        <TabsList className="tabs-list-mobile grid w-full grid-cols-5 border-0 rounded-2xl shadow-lg p-1">
+          <TabsTrigger 
+            value="profile" 
+            className="tabs-trigger-mobile rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+          >
+            <span className="hidden sm:inline">Perfil</span>
+            <span className="sm:hidden">Perfil</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="security" 
+            className="tabs-trigger-mobile rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+          >
+            <span className="hidden sm:inline">Segurança</span>
+            <span className="sm:hidden">Segurança</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="notifications" 
+            className="tabs-trigger-mobile rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+          >
+            <span className="hidden sm:inline">Notificações</span>
+            <span className="sm:hidden">Notif.</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="app" 
+            className="tabs-trigger-mobile rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+          >
+            <span className="hidden sm:inline">App</span>
+            <span className="sm:hidden">App</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="danger" 
+            className="tabs-trigger-mobile rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+          >
+            <span className="hidden sm:inline">Conta</span>
+            <span className="sm:hidden">Conta</span>
+          </TabsTrigger>
         </TabsList>
 
         {/* Aba Perfil */}

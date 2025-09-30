@@ -8,7 +8,7 @@ import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// Tabs removidos - usando implementação custom para mobile
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
@@ -151,6 +151,7 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
   const [inProgressDeliveries, setInProgressDeliveries] = useState<any[]>([]);
   const [completedDeliveries, setCompletedDeliveries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
   const [loadingPending, setLoadingPending] = useState(false);
   const [loadingInProgress, setLoadingInProgress] = useState(false);
   const [loadingCompleted, setLoadingCompleted] = useState(false);
@@ -634,47 +635,94 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 bg-white/90 backdrop-blur-sm border-0 rounded-xl shadow-lg p-1 mobile-tabs">
-            <TabsTrigger 
-              value="overview" 
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab"
+        <div className="w-full">
+          {/* Mobile Tabs Custom - Corrigido para mobile */}
+          <div className="mobile-tabs-container grid w-full grid-cols-2 sm:grid-cols-5 border-0 rounded-2xl shadow-lg p-1">
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveTab('overview');
+              }}
+              type="button"
+              className={`mobile-tab-button rounded-xl px-2 py-1.5 text-sm font-medium transition-all duration-300 ${
+                activeTab === 'overview' 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
             >
               <span className="hidden sm:inline">Visão Geral</span>
               <span className="sm:hidden">Geral</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="users"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab"
+            </button>
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveTab('users');
+              }}
+              type="button"
+              className={`mobile-tab-button rounded-xl px-2 py-1.5 text-sm font-medium transition-all duration-300 ${
+                activeTab === 'users' 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
             >
               <span className="hidden sm:inline">Usuários</span>
               <span className="sm:hidden">Usuários</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="deliveries"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab"
+            </button>
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveTab('deliveries');
+              }}
+              type="button"
+              className={`mobile-tab-button rounded-xl px-2 py-1.5 text-sm font-medium transition-all duration-300 ${
+                activeTab === 'deliveries' 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
             >
               <span className="hidden sm:inline">Entregas</span>
               <span className="sm:hidden">Entregas</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="financial"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab"
+            </button>
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveTab('financial');
+              }}
+              type="button"
+              className={`mobile-tab-button rounded-xl px-2 py-1.5 text-sm font-medium transition-all duration-300 ${
+                activeTab === 'financial' 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
             >
               <span className="hidden sm:inline">Financeiro</span>
               <span className="sm:hidden">Financeiro</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="reports"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab"
+            </button>
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveTab('reports');
+              }}
+              type="button"
+              className={`mobile-tab-button rounded-xl px-2 py-1.5 text-sm font-medium transition-all duration-300 ${
+                activeTab === 'reports' 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
             >
               <span className="hidden sm:inline">Relatórios</span>
               <span className="sm:hidden">Relatórios</span>
-            </TabsTrigger>
-          </TabsList>
+            </button>
+          </div>
 
           {/* Visão Geral */}
-          <TabsContent value="overview" className="mt-6">
+          {activeTab === 'overview' && (
+            <div className="mt-6">
             <div className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Top Usuários */}
@@ -781,10 +829,12 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
                 </motion.div>
               </div>
             </div>
-          </TabsContent>
+            </div>
+          )}
 
           {/* Aba Usuários */}
-          <TabsContent value="users" className="mt-6">
+          {activeTab === 'users' && (
+            <div className="mt-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -792,10 +842,12 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
             >
               <UserManagement />
             </motion.div>
-          </TabsContent>
+            </div>
+          )}
 
           {/* Aba Entregas */}
-          <TabsContent value="deliveries" className="mt-6">
+          {activeTab === 'deliveries' && (
+            <div className="mt-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -803,10 +855,12 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
             >
               <DeliveryManagement />
             </motion.div>
-          </TabsContent>
+            </div>
+          )}
 
           {/* Aba Financeiro */}
-          <TabsContent value="financial" className="mt-6">
+          {activeTab === 'financial' && (
+            <div className="mt-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -993,10 +1047,12 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
               </Card>
               </div>
             </motion.div>
-          </TabsContent>
+            </div>
+          )}
 
           {/* Aba Relatórios */}
-          <TabsContent value="reports" className="mt-6">
+          {activeTab === 'reports' && (
+            <div className="mt-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1301,8 +1357,9 @@ function AdminDashboard({ canInstall = false, install = () => {} }: AdminDashboa
               </Card>
               </div>
             </motion.div>
-          </TabsContent>
-        </Tabs>
+            </div>
+          )}
+        </div>
       </motion.div>
     </div>
   );

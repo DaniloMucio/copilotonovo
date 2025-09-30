@@ -50,16 +50,16 @@ export default function AgendaPage() {
       </div>
 
       <Tabs defaultValue="appointments">
-        <TabsList className="grid w-full grid-cols-2 bg-white/80 backdrop-blur-sm border-0 rounded-2xl shadow-lg p-1">
+        <TabsList className="tabs-list-mobile grid w-full grid-cols-2 border-0 rounded-2xl shadow-lg p-1">
           <TabsTrigger 
             value="appointments"
-            className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+            className="tabs-trigger-mobile rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
           >
             Compromissos
           </TabsTrigger>
           <TabsTrigger 
             value="notes"
-            className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+            className="tabs-trigger-mobile rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
           >
             Anotações
           </TabsTrigger>

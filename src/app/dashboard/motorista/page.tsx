@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Suspense, useEffect, useState, useCallback } from 'react';
@@ -17,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// Tabs removidos - usando implementação custom para mobile
 import { auth } from '@/lib/firebase';
 import { getCurrentMonthTransactionsSync, getTransactions, type Transaction } from '@/services/transactions';
 import { getShifts, type WorkShift } from '@/services/workShifts';
@@ -75,6 +74,29 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
   const { refreshData, refreshWithDelay } = useAutoRefresh();
 
   const defaultTab = searchParams.get('tab') || 'overview';
+  const [activeTab, setActiveTab] = useState(defaultTab);
+  
+  console.log('🔍 ActiveTab atual:', activeTab);
+  
+  // Debug: Log quando activeTab muda
+  useEffect(() => {
+    console.log('🔄 ActiveTab mudou para:', activeTab);
+  }, [activeTab]);
+  
+  // Função para debug de cliques
+  const handleTabClick = (tabName: string, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    console.log(`🖱️ Clique registrado na aba: ${tabName}`);
+    console.log('🖱️ Event details:', {
+      type: event.type,
+      target: event.target,
+      currentTarget: event.currentTarget,
+      bubbles: event.bubbles,
+      cancelable: event.cancelable
+    });
+    setActiveTab(tabName);
+  };
   
   const fetchUserData = useCallback(async (uid: string) => {
     const data = await getUserDocument(uid);
@@ -116,7 +138,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
         variant: "destructive",
         title: "Erro ao carregar dados",
         description: "Não foi possível carregar todas as informações do dashboard."
-      })
+      });
     } finally {
       setLoading(false);
     }
@@ -321,39 +343,61 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.1 }}
       >
-        <Tabs defaultValue={defaultTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-white/90 backdrop-blur-sm border-0 rounded-xl shadow-lg p-1 mobile-tabs">
-            <TabsTrigger 
-              value="overview" 
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab"
+        <div className="w-full">
+          {/* Mobile Tabs Custom - Corrigido para mobile */}
+          <div className="mobile-tabs-container grid w-full grid-cols-2 sm:grid-cols-4 border-0 rounded-2xl shadow-lg p-1">
+            <button 
+              onClick={(e) => handleTabClick('overview', e)}
+              className={`mobile-tab-button rounded-xl px-2 py-1.5 text-sm font-medium transition-all duration-300 ${
+                activeTab === 'overview' 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              type="button"
             >
               <span className="hidden sm:inline">Visão Geral</span>
               <span className="sm:hidden">Geral</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="receitas"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab"
+            </button>
+            <button 
+              onClick={(e) => handleTabClick('receitas', e)}
+              className={`mobile-tab-button rounded-xl px-2 py-1.5 text-sm font-medium transition-all duration-300 ${
+                activeTab === 'receitas' 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              type="button"
             >
               <span className="hidden sm:inline">Receitas</span>
               <span className="sm:hidden">Receitas</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="despesas"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab"
+            </button>
+            <button 
+              onClick={(e) => handleTabClick('despesas', e)}
+              className={`mobile-tab-button rounded-xl px-2 py-1.5 text-sm font-medium transition-all duration-300 ${
+                activeTab === 'despesas' 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              type="button"
             >
               <span className="hidden sm:inline">Despesas</span>
               <span className="sm:hidden">Despesas</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="reports"
-              className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 mobile-tab"
+            </button>
+            <button 
+              onClick={(e) => handleTabClick('reports', e)}
+              className={`mobile-tab-button rounded-xl px-2 py-1.5 text-sm font-medium transition-all duration-300 ${
+                activeTab === 'reports' 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              type="button"
             >
               <span className="hidden sm:inline">Relatórios</span>
               <span className="sm:hidden">Relatórios</span>
-            </TabsTrigger>
-          </TabsList>
+            </button>
+          </div>
 
-        <TabsContent value="overview" className="mt-6">
+        {activeTab === 'overview' && (
+          <div className="mt-6">
           <div className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               <motion.div
@@ -484,27 +528,37 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-        <TabsContent value="receitas">
-          <div className="mb-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
-            </div>
           </div>
-          <IncomeManager user={user} transactions={incomeTransactions} onAction={() => refreshWithDelay(() => refreshAllData(user.uid))} />
-        </TabsContent>
-        <TabsContent value="despesas">
-          <div className="mb-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+        )}
+        
+        {activeTab === 'receitas' && (
+          <div className="mt-6">
+            <div className="mb-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+              </div>
             </div>
+            <IncomeManager user={user} transactions={incomeTransactions} onAction={() => refreshWithDelay(() => refreshAllData(user.uid))} />
           </div>
-          <ExpenseManager user={user} transactions={expenseTransactions} onAction={() => refreshWithDelay(() => refreshAllData(user.uid))} />
-        </TabsContent>
-        <TabsContent value="reports"><ReportsManager transactions={allTransactions} shifts={shifts} user={user} /></TabsContent>
-      </Tabs>
+        )}
+        
+        {activeTab === 'despesas' && (
+          <div className="mt-6">
+            <div className="mb-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+              </div>
+            </div>
+            <ExpenseManager user={user} transactions={expenseTransactions} onAction={() => refreshWithDelay(() => refreshAllData(user.uid))} />
+          </div>
+        )}
+        
+        {activeTab === 'reports' && (
+          <ReportsManager transactions={allTransactions} shifts={shifts} user={user} />
+        )}
+        </div>
       </motion.div>
     </div>
   );
