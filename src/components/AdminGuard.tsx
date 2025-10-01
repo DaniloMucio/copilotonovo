@@ -17,6 +17,7 @@ export function AdminGuard({ children, fallback }: AdminGuardProps) {
   const { isAdmin, loading, user, userData } = useAdmin();
   const router = useRouter();
   const [showAccessDenied, setShowAccessDenied] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     // Se não há usuário (logout), redirecionar diretamente para login
@@ -28,7 +29,7 @@ export function AdminGuard({ children, fallback }: AdminGuardProps) {
     // Se há usuário mas não é admin, mostrar tela de bloqueio
     // Mas só se o usuário não estiver sendo limpo (logout em progresso)
     // Verificar se userData existe para evitar mostrar tela durante logout
-    if (!loading && user && !isAdmin && userData && userData.userType !== 'admin') {
+    if (!loading && user && !isAdmin && userData && userData.userType !== 'admin' && !isLoggingOut) {
       setShowAccessDenied(true);
       // Redirecionar após 3 segundos
       const timer = setTimeout(() => {
@@ -38,7 +39,27 @@ export function AdminGuard({ children, fallback }: AdminGuardProps) {
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, [isAdmin, loading, user, userData, router]);
+  }, [isAdmin, loading, user, userData, router, isLoggingOut]);
+
+  // Detectar quando o usuário está fazendo logout
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      setIsLoggingOut(true);
+    };
+
+    const handleLogout = () => {
+      setIsLoggingOut(true);
+    };
+
+    // Escutar eventos de logout
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('logout', handleLogout);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('logout', handleLogout);
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -61,6 +82,18 @@ export function AdminGuard({ children, fallback }: AdminGuardProps) {
   }
 
   if (!isAdmin) {
+    // Se está fazendo logout, não mostrar tela de acesso negado
+    if (isLoggingOut) {
+      return (
+        <div className="flex min-h-screen items-center justify-center p-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Saindo...</p>
+          </div>
+        </div>
+      );
+    }
+
     if (fallback) {
       return <>{fallback}</>;
     }

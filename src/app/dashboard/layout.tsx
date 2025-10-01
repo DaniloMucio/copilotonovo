@@ -24,6 +24,11 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
   const handleLogout = useCallback(async () => {
     try {
+      // Disparar evento de logout para componentes que precisam saber
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('logout'));
+      }
+      
       // Limpar todos os caches primeiro
       await clearAllCaches();
       
