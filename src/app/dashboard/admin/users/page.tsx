@@ -13,15 +13,17 @@ function UserManagementSkeleton() {
   return (
     <div className="space-y-6">
       {/* Header Skeleton */}
-      <div className="flex items-center space-x-4">
-        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg animate-pulse">
-          <Users className="h-6 w-6 text-white" />
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg animate-pulse">
+            <Users className="h-6 w-6 text-white" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-6 sm:h-8 w-48" />
+            <Skeleton className="h-4 w-64 sm:w-96" />
+          </div>
         </div>
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-96" />
-        </div>
-        <Skeleton className="h-10 w-32 ml-auto" />
+        <Skeleton className="h-10 w-full sm:w-32 sm:ml-auto" />
       </div>
       
       {/* Content Skeleton */}
@@ -60,21 +62,23 @@ function UserManagementPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-4">
-        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 group">
-          <Users className="h-6 w-6 text-white group-hover:scale-110 transition-transform duration-300" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Usuários</h1>
-          <p className="text-gray-600">
-            Gerencie todos os usuários do sistema - motoristas e clientes
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 group">
+            <Users className="h-6 w-6 text-white group-hover:scale-110 transition-transform duration-300" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Gerenciamento de Usuários</h1>
+            <p className="text-sm sm:text-base text-gray-600">
+              Gerencie todos os usuários do sistema - motoristas e clientes
+            </p>
+          </div>
         </div>
         <Button
           variant="outline"
           size="sm"
           onClick={() => router.push('/dashboard/admin')}
-          className="flex items-center gap-2 bg-white/80 backdrop-blur-sm border-0 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 ml-auto"
+          className="flex items-center gap-2 bg-white/80 backdrop-blur-sm border-0 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 sm:ml-auto w-full sm:w-auto"
         >
           <ArrowLeft className="h-4 w-4" />
           Voltar

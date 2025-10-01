@@ -448,7 +448,7 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
         </CardHeader>
         <CardContent className="relative z-10">
           {/* Filtros avançados */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
               <Input
@@ -510,26 +510,27 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
 
           {/* Controles de seleção múltipla */}
           {selectedUsers.size > 0 && (
-            <div className="flex items-center gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg mb-4">
               <div className="flex items-center gap-2">
                 <Badge variant="default" className="bg-blue-600">
                   {selectedUsers.size} selecionados
                 </Badge>
-                <span className="text-sm text-blue-700 dark:text-blue-300">
+                <span className="text-sm text-blue-700 dark:text-blue-300 hidden sm:inline">
                   Ações em lote disponíveis:
                 </span>
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleBulkToggleStatus('activate')}
                   disabled={isBulkActionLoading}
-                  className="bg-green-600 text-white hover:bg-green-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-green-600 text-white hover:bg-green-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   <UserCheck className="h-4 w-4 mr-2" />
-                  Ativar Selecionados
+                  <span className="hidden sm:inline">Ativar Selecionados</span>
+                  <span className="sm:hidden">Ativar</span>
                 </Button>
                 
                 <Button
@@ -537,20 +538,22 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
                   size="sm"
                   onClick={() => handleBulkToggleStatus('deactivate')}
                   disabled={isBulkActionLoading}
-                  className="bg-red-600 text-white hover:bg-red-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-red-600 text-white hover:bg-red-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   <UserX className="h-4 w-4 mr-2" />
-                  Desativar Selecionados
+                  <span className="hidden sm:inline">Desativar Selecionados</span>
+                  <span className="sm:hidden">Desativar</span>
                 </Button>
                 
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setSelectedUsers(new Set())}
-                  className="bg-gray-600 text-white hover:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                  className="bg-gray-600 text-white hover:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-sm"
                 >
                   <X className="h-4 w-4 mr-2" />
-                  Limpar Seleção
+                  <span className="hidden sm:inline">Limpar Seleção</span>
+                  <span className="sm:hidden">Limpar</span>
                 </Button>
               </div>
             </div>
@@ -594,142 +597,155 @@ export function UserManagement({ onUserSelect }: UserManagementProps) {
             {filteredUsers.map((user) => (
               <div
                 key={user.uid}
-                className={`shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500 p-4 ${
+                className={`shadow-lg bg-white/80 backdrop-blur-sm border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500 p-3 sm:p-4 ${
                   selectedUsers.has(user.uid) ? 'ring-2 ring-blue-500 shadow-xl' : ''
                 }`}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative z-10 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {/* Checkbox de seleção */}
-                  <input
-                    type="checkbox"
-                    checked={selectedUsers.has(user.uid)}
-                    onChange={() => handleSelectUser(user.uid)}
-                    onClick={(e) => e.stopPropagation()}
-                    className="rounded border-gray-300"
-                  />
-                  
-                  <div className="space-y-1 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-gray-900">{user.displayName}</p>
-                      <Badge variant="outline" className="capitalize bg-gradient-to-r from-blue-600/10 to-purple-600/10 text-blue-600 border-0 rounded-full shadow-sm">
-                        {user.userType}
-                      </Badge>
-                      {getStatusBadge(user)}
+                <div className="relative z-10">
+                  {/* Layout mobile-first */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    {/* Seção principal - informações do usuário */}
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      {/* Checkbox de seleção */}
+                      <input
+                        type="checkbox"
+                        checked={selectedUsers.has(user.uid)}
+                        onChange={() => handleSelectUser(user.uid)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="rounded border-gray-300 mt-1"
+                      />
+                      
+                      <div className="space-y-2 flex-1 min-w-0">
+                        {/* Nome e badges */}
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                          <p className="font-medium text-gray-900 truncate">{user.displayName}</p>
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant="outline" className="capitalize bg-gradient-to-r from-blue-600/10 to-purple-600/10 text-blue-600 border-0 rounded-full shadow-sm text-xs">
+                              {user.userType}
+                            </Badge>
+                            {getStatusBadge(user)}
+                          </div>
+                        </div>
+                        
+                        {/* Informações de contato - layout responsivo */}
+                        <div className="space-y-1 text-sm text-gray-600">
+                          <div className="flex items-center gap-1 truncate">
+                            <Mail className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{user.email}</span>
+                            {user.needsAuthSetup && (
+                              <Badge variant="outline" className="ml-2 text-xs bg-yellow-100 text-yellow-600 border-0 rounded-full shadow-sm flex-shrink-0">
+                                Precisa configurar login
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          {user.phone && (
+                            <div className="flex items-center gap-1">
+                              <Phone className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">{user.phone}</span>
+                            </div>
+                          )}
+                          
+                          {user.lastActivity && (
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3 flex-shrink-0" />
+                              <span>{format(user.lastActivity, 'dd/MM/yyyy', { locale: ptBR })}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span className="flex items-center gap-1">
-                        <Mail className="h-3 w-3" />
-                        {user.email}
-                        {user.needsAuthSetup && (
-                          <Badge variant="outline" className="ml-2 text-xs bg-yellow-100 text-yellow-600 border-0 rounded-full shadow-sm">
-                            Precisa configurar login
-                          </Badge>
-                        )}
-                      </span>
-                      {user.phone && (
-                        <span className="flex items-center gap-1">
-                          <Phone className="h-3 w-3" />
-                          {user.phone}
-                        </span>
-                      )}
-                      {user.lastActivity && (
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {format(user.lastActivity, 'dd/MM/yyyy', { locale: ptBR })}
-                        </span>
-                      )}
+                    
+                    {/* Seção de estatísticas e ações - layout responsivo */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      {/* Estatísticas */}
+                      <div className="text-right text-sm space-y-1">
+                        <p className="text-gray-900 font-medium">{user.totalDeliveries || 0} entregas</p>
+                        <p className="text-gray-600">
+                          R$ {(user.totalRevenue || 0).toFixed(2)}
+                        </p>
+                        <ActivityIndicator user={user} />
+                      </div>
+                      
+                      {/* Ações - layout responsivo */}
+                      <div className="flex flex-wrap gap-1 justify-end">
+                        {/* Toggle Status Online/Ativo */}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleUserStatus(user);
+                          }}
+                          disabled={user.userType === 'admin'}
+                          className={`rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ${
+                            user.userType === 'admin'
+                              ? "bg-yellow-500 text-white cursor-not-allowed" // Admin sempre ativo
+                              : user.userType === 'motorista' 
+                                ? (user.isOnline ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-gray-600 text-white hover:bg-gray-700")
+                                : (user.isActive ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-600 text-white hover:bg-gray-700")
+                          }`}
+                          title={user.userType === 'admin'
+                            ? "⭐ Administrador - Sempre ativo (não pode ser desativado)"
+                            : user.userType === 'motorista' 
+                              ? (user.isOnline ? "🚛 Motorista disponível para entregas - Clique para indisponibilizar" : "🚛 Motorista indisponível para entregas - Clique para disponibilizar (pode fazer login mesmo assim)")
+                              : (user.isActive ? "👤 Cliente ativo - Clique para desativar (bloqueará login)" : "👤 Cliente inativo - Login bloqueado - Clique para ativar")
+                          }
+                        >
+                          {user.userType === 'admin' 
+                            ? <UserCheck className="h-4 w-4" /> // Admin sempre com ícone ativo
+                            : user.userType === 'motorista' 
+                              ? (user.isOnline ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />)
+                              : (user.isActive ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />)
+                          }
+                        </Button>
+
+                        {/* Editar */}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingUser(user);
+                            setShowEditDialog(true);
+                          }}
+                          className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                          title="Editar usuário"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+
+                        {/* Ver detalhes */}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUserClick(user);
+                          }}
+                          title="Ver detalhes"
+                          className="bg-green-600 text-white hover:bg-green-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+
+                        {/* Excluir */}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteUser(user);
+                          }}
+                          className="bg-red-600 text-white hover:bg-red-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                          title="Excluir usuário"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <div className="text-right text-sm space-y-1">
-                    <p className="text-gray-900 font-medium">{user.totalDeliveries || 0} entregas</p>
-                    <p className="text-gray-600">
-                      R$ {(user.totalRevenue || 0).toFixed(2)}
-                    </p>
-                    <ActivityIndicator user={user} />
-                  </div>
-                  
-                  {/* Ações rápidas */}
-                  <div className="flex items-center gap-1">
-                    {/* Toggle Status Online/Ativo */}
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleUserStatus(user);
-                      }}
-                      disabled={user.userType === 'admin'}
-                      className={`rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ${
-                        user.userType === 'admin'
-                          ? "bg-yellow-500 text-white cursor-not-allowed" // Admin sempre ativo
-                          : user.userType === 'motorista' 
-                            ? (user.isOnline ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-gray-600 text-white hover:bg-gray-700")
-                            : (user.isActive ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-600 text-white hover:bg-gray-700")
-                      }`}
-                      title={user.userType === 'admin'
-                        ? "⭐ Administrador - Sempre ativo (não pode ser desativado)"
-                        : user.userType === 'motorista' 
-                          ? (user.isOnline ? "🚛 Motorista disponível para entregas - Clique para indisponibilizar" : "🚛 Motorista indisponível para entregas - Clique para disponibilizar (pode fazer login mesmo assim)")
-                          : (user.isActive ? "👤 Cliente ativo - Clique para desativar (bloqueará login)" : "👤 Cliente inativo - Login bloqueado - Clique para ativar")
-                      }
-                    >
-                      {user.userType === 'admin' 
-                        ? <UserCheck className="h-4 w-4" /> // Admin sempre com ícone ativo
-                        : user.userType === 'motorista' 
-                          ? (user.isOnline ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />)
-                          : (user.isActive ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />)
-                      }
-                    </Button>
-
-                    {/* Editar */}
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditingUser(user);
-                        setShowEditDialog(true);
-                      }}
-                      className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
-                      title="Editar usuário"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-
-                    {/* Ver detalhes */}
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleUserClick(user);
-                      }}
-                      title="Ver detalhes"
-                      className="bg-green-600 text-white hover:bg-green-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-
-                    {/* Excluir */}
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteUser(user);
-                      }}
-                      className="bg-red-600 text-white hover:bg-red-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
-                      title="Excluir usuário"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
                 </div>
               </div>
             ))}
