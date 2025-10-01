@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/firebase';
-import { getPendingDeliveriesForDriver, getAllDeliveriesForDriver, updateTransaction, type Transaction } from '@/services/transactions';
+import { getPendingDeliveriesForDriver, getAllDeliveriesForDriver, updateTransaction, deleteTransaction, type Transaction } from '@/services/transactions';
 import { getUserDocument, type UserData } from '@/services/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -25,7 +25,8 @@ import {
   Truck,
   User as UserIcon,
   Check,
-  X
+  X,
+  Trash2
 } from 'lucide-react';
 
 function EntregasPendentesSkeleton() {
@@ -64,6 +65,8 @@ function EntregasPendentesContent() {
   const fetchData = useCallback(async (uid: string) => {
     setLoading(true);
     try {
+      // Para entregas pendentes, buscar todas independente da data
+      // Para todas as entregas, manter o filtro normal
       const [pending, all] = await Promise.all([
         getPendingDeliveriesForDriver(uid),
         getAllDeliveriesForDriver(uid)
@@ -103,6 +106,33 @@ function EntregasPendentesContent() {
         variant: 'destructive', 
         title: 'Erro', 
         description: 'Não foi possível processar a entrega.'
+      });
+    }
+  };
+
+  const handleDeleteDelivery = async (deliveryId: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta entrega pendente? Esta ação não pode ser desfeita.')) {
+      return;
+    }
+
+    try {
+      await deleteTransaction(deliveryId);
+      
+      toast({ 
+        title: 'Sucesso!', 
+        description: 'Entrega excluída com sucesso.' 
+      });
+      
+      // Recarregar dados
+      if (user) {
+        await fetchData(user.uid);
+      }
+    } catch (error) {
+      console.error("Erro ao excluir entrega:", error);
+      toast({ 
+        variant: 'destructive', 
+        title: 'Erro', 
+        description: 'Não foi possível excluir a entrega.'
       });
     }
   };
@@ -257,6 +287,14 @@ function EntregasPendentesContent() {
                             >
                               <X className="h-3 w-3 mr-1" />
                               Recusar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDeleteDelivery(delivery.id!)}
+                              className="text-gray-400 hover:text-red-600 hover:bg-red-50 p-2"
+                            >
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>

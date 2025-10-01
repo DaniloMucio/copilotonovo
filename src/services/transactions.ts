@@ -608,3 +608,58 @@ export const getCurrentMonthDeliveriesByClient = async (clientId: string): Promi
         throw error;
     }
 };
+
+// Função para buscar todas as entregas do cliente (incluindo pendentes de meses anteriores)
+export const getAllDeliveriesByClient = async (clientId: string): Promise<Transaction[]> => {
+    console.log('🔍 getAllDeliveriesByClient: Iniciando busca para clientId:', clientId);
+    
+    const cacheKey = firestoreCache.generateKey('allClientDeliveries', { clientId });
+    
+    // Verificar cache primeiro
+    const cached = firestoreCache.get<Transaction[]>(cacheKey);
+    if (cached) {
+        console.log('📋 getAllDeliveriesByClient: Usando cache, encontradas:', cached.length, 'entregas');
+        return cached;
+    }
+
+    try {
+        // Estratégia dupla: buscar por clientId E por userId (caso o cliente tenha criado entregas)
+        console.log('🔍 getAllDeliveriesByClient: Tentando busca por clientId...');
+        const deliveriesByClientId = await getDeliveriesByClientSync(clientId);
+        console.log('📦 getAllDeliveriesByClient: Encontradas', deliveriesByClientId.length, 'entregas por clientId');
+        
+        console.log('🔍 getAllDeliveriesByClient: Tentando busca por userId (fallback)...');
+        const deliveriesByUserId = await getTransactions(clientId);
+        console.log('📦 getAllDeliveriesByClient: Encontradas', deliveriesByUserId.length, 'transações por userId');
+        
+        // Combinar ambas as buscas e remover duplicatas
+        const allPossibleDeliveries = [...deliveriesByClientId, ...deliveriesByUserId];
+        const uniqueDeliveries = allPossibleDeliveries.filter((delivery, index, self) => 
+            index === self.findIndex(d => d.id === delivery.id)
+        );
+        
+        console.log('📦 getAllDeliveriesByClient: Total único de entregas encontradas:', uniqueDeliveries.length);
+        
+        // Filtrar apenas por categoria (sem filtro de data)
+        const transactions = uniqueDeliveries.filter(t => t.category === 'Entrega');
+
+        console.log('✅ getAllDeliveriesByClient: Entregas filtradas:', transactions.length);
+        console.log('📋 getAllDeliveriesByClient: Detalhes das entregas:', transactions.map(t => ({
+            id: t.id,
+            description: t.description,
+            clientId: t.clientId,
+            userId: t.userId,
+            deliveryStatus: t.deliveryStatus,
+            paymentStatus: t.paymentStatus,
+            date: t.date instanceof Timestamp ? t.date.toDate() : t.date
+        })));
+
+        // Cachear resultado por 5 minutos
+        firestoreCache.set(cacheKey, transactions, 5 * 60 * 1000);
+        
+        return transactions;
+    } catch (error) {
+        console.error("❌ Erro ao buscar todas as entregas do cliente:", error);
+        throw error;
+    }
+};

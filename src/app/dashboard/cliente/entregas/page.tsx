@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { auth } from '@/lib/firebase';
-import { getCurrentMonthDeliveriesByClient, deleteTransaction, type Transaction, updateTransaction } from '@/services/transactions';
+import { getCurrentMonthDeliveriesByClient, getAllDeliveriesByClient, deleteTransaction, type Transaction, updateTransaction } from '@/services/transactions';
 import { getUserDocument, type UserData, getOnlineDrivers } from '@/services/firestore';
 import { getRecipientsByUser, type Recipient } from '@/services/recipients';
 import { useToast } from '@/hooks/use-toast';
@@ -134,9 +134,9 @@ function EntregasClienteContent() {
     try {
       console.log('🔄 EntregasCliente: fetchData iniciado para uid:', uid);
       
-      // Para clientes, buscar entregas do mês atual pelo clientId e destinatários
+      // Para clientes, buscar todas as entregas (incluindo pendentes de meses anteriores)
       const [clientDeliveries, recipientsList] = await Promise.all([
-        getCurrentMonthDeliveriesByClient(uid),
+        getAllDeliveriesByClient(uid),
         getRecipientsByUser(uid)
       ]);
       
@@ -196,6 +196,10 @@ function EntregasClienteContent() {
   };
 
   const handleDeleteDelivery = async (deliveryId: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta entrega? Esta ação não pode ser desfeita.')) {
+      return;
+    }
+
     try {
       await deleteTransaction(deliveryId);
       toast({

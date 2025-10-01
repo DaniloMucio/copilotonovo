@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 // Tabs removidos - usando implementação custom para mobile
 import { auth } from '@/lib/firebase';
-import { getCurrentMonthDeliveriesByClient, deleteTransaction, type Transaction } from '@/services/transactions';
+import { getCurrentMonthDeliveriesByClient, getAllDeliveriesByClient, deleteTransaction, type Transaction } from '@/services/transactions';
 import { getUserDocument, type UserData } from '@/services/firestore';
 import { 
   Package, 
@@ -140,7 +140,8 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
 
   const fetchTransactions = useCallback(async (uid: string) => {
     console.log('🔄 ClienteDashboard: fetchTransactions iniciado para uid:', uid);
-    const userTransactions = await getCurrentMonthDeliveriesByClient(uid);
+    // Usar getAllDeliveriesByClient para incluir entregas pendentes de meses anteriores
+    const userTransactions = await getAllDeliveriesByClient(uid);
     console.log('📊 ClienteDashboard: Transações carregadas:', userTransactions.length);
     setTransactions(userTransactions);
     console.log('✅ ClienteDashboard: fetchTransactions concluído');

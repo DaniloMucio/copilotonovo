@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { getTransactions, type Transaction, updateTransaction } from '@/services/transactions';
+import { getTransactions, type Transaction, updateTransaction, deleteTransaction } from '@/services/transactions';
 import { getRecipientsByUser, type Recipient } from '@/services/recipients';
 import { optimizeRoute } from '@/services/route-optimization';
 import { useToast } from '@/hooks/use-toast';
@@ -23,7 +23,7 @@ import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { DateRange } from 'react-day-picker';
 import { motion } from 'framer-motion';
-import { Car, Zap, Sparkles, Truck, MapPin, Clock } from 'lucide-react';
+import { Car, Zap, Sparkles, Truck, MapPin, Clock, Trash2 } from 'lucide-react';
 
 function EntregasSkeleton() {
     return (
@@ -122,16 +122,21 @@ function EntregasContent() {
 
     // Função para filtrar entregas por período
     const filterDeliveriesByDate = useCallback((deliveries: Transaction[]) => {
+        // Entregas pendentes e entregas com pagamento pendente sempre aparecem (não filtradas por data)
+        const pendingDeliveries = deliveries.filter(d => d.deliveryStatus === 'Pendente');
+        const deliveriesToReceive = deliveries.filter(
+            (d) => d.deliveryStatus === 'Entregue' && d.paymentStatus === 'Pendente'
+        );
+        
         if (!dateRange?.from) {
             // Se não há filtro de data, mostrar todas
-            setPendingDeliveries(deliveries.filter(d => d.deliveryStatus === 'Pendente'));
+            setPendingDeliveries(pendingDeliveries);
             setDeliveryHistory(deliveries.filter(d => d.deliveryStatus !== 'Pendente'));
-            setDeliveriesToReceive(deliveries.filter(
-                (d) => d.deliveryStatus === 'Entregue' && d.paymentStatus === 'Pendente'
-            ));
+            setDeliveriesToReceive(deliveriesToReceive);
             return;
         }
 
+        // Filtrar apenas o histórico por data (entregas pendentes e com pagamento pendente sempre aparecem)
         const filteredDeliveries = deliveries.filter(delivery => {
             const deliveryDate = delivery.date.toDate();
             const fromDate = dateRange.from!;
@@ -147,11 +152,10 @@ function EntregasContent() {
             return deliveryDate >= startOfDay && deliveryDate <= endOfDay;
         });
 
-        setPendingDeliveries(filteredDeliveries.filter(d => d.deliveryStatus === 'Pendente'));
+        // Manter entregas pendentes e com pagamento pendente sempre visíveis
+        setPendingDeliveries(pendingDeliveries);
         setDeliveryHistory(filteredDeliveries.filter(d => d.deliveryStatus !== 'Pendente'));
-        setDeliveriesToReceive(filteredDeliveries.filter(
-            (d) => d.deliveryStatus === 'Entregue' && d.paymentStatus === 'Pendente'
-        ));
+        setDeliveriesToReceive(deliveriesToReceive);
     }, [dateRange]);
 
     const fetchData = useCallback(async (uid: string) => {
@@ -196,6 +200,28 @@ function EntregasContent() {
             refreshWithDelay(() => fetchData(user!.uid));
         } catch (error) {
             toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível processar a solicitação.'})
+        }
+    }
+
+    const handleDeleteDelivery = async (deliveryId: string) => {
+        if (!confirm('Tem certeza que deseja excluir esta entrega? Esta ação não pode ser desfeita.')) {
+            return;
+        }
+
+        try {
+            await deleteTransaction(deliveryId);
+            toast({ 
+                title: 'Sucesso!', 
+                description: 'Entrega excluída com sucesso.' 
+            });
+            refreshWithDelay(() => fetchData(user!.uid));
+        } catch (error) {
+            console.error("Erro ao excluir entrega:", error);
+            toast({ 
+                variant: 'destructive', 
+                title: 'Erro', 
+                description: 'Não foi possível excluir a entrega.' 
+            });
         }
     }
 
@@ -560,6 +586,16 @@ function EntregasContent() {
                                                     <p className="text-xs sm:text-sm text-gray-500">
                                                         📅 {delivery.date.toDate().toLocaleDateString('pt-BR')}
                                                     </p>
+                                                </div>
+                                                <div className="flex flex-col items-end gap-2 ml-4">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        onClick={() => handleDeleteDelivery(delivery.id!)}
+                                                        className="text-gray-400 hover:text-red-600 hover:bg-red-50 p-2"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
                                                 </div>
                                             </div>
                                         </div>
