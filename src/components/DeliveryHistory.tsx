@@ -305,7 +305,15 @@ export function DeliveryHistory({ onAction, deliveries, loading, isHistoryTab = 
                                         {delivery.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                     </TableCell>
                                     <TableCell className="text-center space-x-1">
-                                         {renderStatusButton(delivery)}
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            onClick={() => handleCardClick(delivery)}
+                                            title="Abrir Rastreamento"
+                                        >
+                                            <Eye className="h-4 w-4 text-blue-600" />
+                                        </Button>
+                                        {renderStatusButton(delivery)}
                                         <Button variant="ghost" size="icon" onClick={() => handleEditClick(delivery)}>
                                             <Pencil className="h-4 w-4" />
                                         </Button>
