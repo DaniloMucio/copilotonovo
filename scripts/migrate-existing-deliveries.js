@@ -90,8 +90,12 @@ async function migrateExistingDeliveries() {
           id: transactionId,
           trackingCode,
           status: transaction.deliveryStatus || 'Pendente',
-          recipientName: transaction.recipientName || 'N/A',
-          recipientAddress: transaction.recipientAddress || 'N/A',
+          recipientName: transaction.recipientCompany || transaction.recipientName || 'N/A',
+          recipientAddress: transaction.recipientAddress ? 
+            `${transaction.recipientAddress.street || ''}, ${transaction.recipientAddress.number || ''} - ${transaction.recipientAddress.neighborhood || ''}, ${transaction.recipientAddress.city || ''} - ${transaction.recipientAddress.state || ''}` : 
+            'N/A',
+          recipientPhone: transaction.recipientPhone,
+          senderCompany: transaction.senderCompany,
           createdAt: transaction.date?.toDate?.()?.toISOString() || new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           estimatedDelivery: transaction.estimatedDelivery,

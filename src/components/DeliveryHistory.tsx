@@ -7,7 +7,7 @@ import { deleteTransaction, updateTransaction, type Transaction, type Address } 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Button } from './ui/button';
-import { Map, Pencil, Trash2, Check, Loader2, DollarSign, X, ThumbsUp } from 'lucide-react';
+import { Map, Pencil, Trash2, Check, Loader2, DollarSign, X, ThumbsUp, Eye } from 'lucide-react';
 import { SimpleTrackingButton } from './SimpleTrackingButton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -172,10 +172,26 @@ export function DeliveryHistory({ onAction, deliveries, loading, isHistoryTab = 
         if (onRespond && delivery.deliveryStatus === 'Pendente') {
             return (
                 <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => onRespond(delivery.id, true)} title="Aceitar Entrega">
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onRespond(delivery.id, true);
+                        }} 
+                        title="Aceitar Entrega"
+                    >
                         <ThumbsUp className="h-4 w-4 text-green-600" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => onRespond(delivery.id, false)} title="Recusar Entrega">
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onRespond(delivery.id, false);
+                        }} 
+                        title="Recusar Entrega"
+                    >
                         <X className="h-4 w-4 text-red-600" />
                     </Button>
                 </div>
@@ -187,7 +203,10 @@ export function DeliveryHistory({ onAction, deliveries, loading, isHistoryTab = 
                 <Button 
                     variant="ghost" 
                     size="icon" 
-                    onClick={() => handlePayment(delivery)} 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handlePayment(delivery);
+                    }} 
                     title="Registrar Pagamento"
                     disabled={isHistoryTab}
                 >
@@ -200,7 +219,15 @@ export function DeliveryHistory({ onAction, deliveries, loading, isHistoryTab = 
         switch (delivery.deliveryStatus) {
             case 'A caminho':
                 return (
-                    <Button variant="ghost" size="icon" onClick={() => handleStatusUpdate(delivery)} title="Marcar como Entregue">
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleStatusUpdate(delivery);
+                        }} 
+                        title="Marcar como Entregue"
+                    >
                         <Check className="h-4 w-4 text-red-600" />
                     </Button>
                 );
@@ -212,7 +239,15 @@ export function DeliveryHistory({ onAction, deliveries, loading, isHistoryTab = 
                 );
             case 'Confirmada':
                 return (
-                    <Button variant="ghost" size="icon" onClick={() => handleStatusUpdate(delivery)} title="Iniciar Rota">
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleStatusUpdate(delivery);
+                        }} 
+                        title="Iniciar Rota"
+                    >
                         <Map className="h-4 w-4 text-blue-600" />
                     </Button>
                 );
@@ -309,13 +344,7 @@ export function DeliveryHistory({ onAction, deliveries, loading, isHistoryTab = 
                 <Accordion type="single" collapsible className="w-full">
                     {deliveries.map((delivery, index) => (
                         <AccordionItem key={delivery.id} value={delivery.id}>
-                            <AccordionTrigger 
-                                className="hover:no-underline cursor-pointer"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleCardClick(delivery);
-                                }}
-                            >
+                            <AccordionTrigger className="hover:no-underline">
                                 <div className="flex justify-between w-full pr-4 items-center">
                                     <div className="flex items-center gap-4">
                                          <span className="font-bold text-lg">{index + 1}</span>
@@ -324,9 +353,23 @@ export function DeliveryHistory({ onAction, deliveries, loading, isHistoryTab = 
                                             <span className="text-sm text-muted-foreground">{format(delivery.date.toDate(), 'dd/MM/yyyy')}</span>
                                         </div>
                                     </div>
-                                    <Badge variant={getStatusBadgeVariant(delivery.deliveryStatus)} className="ml-auto">
-                                        {delivery.deliveryStatus || 'Pendente'}
-                                    </Badge>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleCardClick(delivery);
+                                            }}
+                                            title="Abrir Rastreamento"
+                                            className="h-8 w-8"
+                                        >
+                                            <Eye className="h-4 w-4 text-blue-600" />
+                                        </Button>
+                                        <Badge variant={getStatusBadgeVariant(delivery.deliveryStatus)}>
+                                            {delivery.deliveryStatus || 'Pendente'}
+                                        </Badge>
+                                    </div>
                                 </div>
                             </AccordionTrigger>
                             <AccordionContent>
@@ -334,8 +377,19 @@ export function DeliveryHistory({ onAction, deliveries, loading, isHistoryTab = 
                                     <div className="flex justify-between items-center">
                                          <p className="text-lg font-bold text-emerald-600">{delivery.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                                           <div className="flex items-center">
-                                            {renderStatusButton(delivery)}
-                                            <Button variant="ghost" size="icon" onClick={() => handleEditClick(delivery)}><Pencil className="h-4 w-4" /></Button>
+                                            <div onClick={(e) => e.stopPropagation()}>
+                                              {renderStatusButton(delivery)}
+                                            </div>
+                                            <Button 
+                                              variant="ghost" 
+                                              size="icon" 
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEditClick(delivery);
+                                              }}
+                                            >
+                                              <Pencil className="h-4 w-4" />
+                                            </Button>
                                              <AlertDialog>
                                                 <AlertDialogTrigger asChild>
                                                     <Button 

@@ -83,7 +83,16 @@ export async function generateUniqueTrackingCode(): Promise<string> {
 // Função para criar dados de rastreamento para uma entrega
 export async function createTrackingData(transaction: Transaction | any): Promise<TrackingData> {
   try {
+    console.log('🔍 Criando dados de rastreamento para transação:', {
+      id: transaction.id,
+      category: transaction.category,
+      deliveryStatus: transaction.deliveryStatus,
+      recipientCompany: transaction.recipientCompany
+    });
+
     const trackingCode = await generateUniqueTrackingCode();
+    console.log('🎯 Código de rastreamento gerado:', trackingCode);
+    
     const now = new Date().toISOString();
     
     const trackingData: TrackingData = {
@@ -106,16 +115,32 @@ export async function createTrackingData(transaction: Transaction | any): Promis
         }
       ],
       clientId: transaction.clientId || transaction.userId,
-      driverId: transaction.assignedDriverId
+      driverId: transaction.assignedDriverId || null // Usar null em vez de undefined
     };
+
+    console.log('📝 Dados de rastreamento preparados:', {
+      id: trackingData.id,
+      trackingCode: trackingData.trackingCode,
+      status: trackingData.status,
+      recipientName: trackingData.recipientName
+    });
+
+    // Limpar dados removendo campos undefined
+    const cleanTrackingData = Object.fromEntries(
+      Object.entries(trackingData).filter(([_, value]) => value !== undefined)
+    );
+
+    console.log('🧹 Dados limpos (removendo undefined):', cleanTrackingData);
 
     // Salvar no Firestore
     const trackingRef = doc(db, 'tracking', transaction.id);
-    await setDoc(trackingRef, trackingData);
+    await setDoc(trackingRef, cleanTrackingData);
+    console.log('💾 Dados salvos no Firestore com sucesso');
 
     return trackingData;
   } catch (error) {
-    console.error('Erro ao criar dados de rastreamento:', error);
+    console.error('❌ Erro ao criar dados de rastreamento:', error);
+    console.error('❌ Stack trace:', error.stack);
     throw error;
   }
 }
@@ -260,4 +285,55 @@ export function formatTrackingCode(code: string): string {
 export function isValidTrackingCode(code: string): boolean {
   const cleanCode = code.replace(/[^A-Z0-9]/g, '');
   return cleanCode.length === 8 && /^[A-Z0-9]{8}$/.test(cleanCode);
+}
+
+// Função para migrar entregas existentes que não possuem código de rastreamento
+export async function migrateExistingDeliveriesWithoutTracking(): Promise<{ migrated: number; errors: number }> {
+  try {
+    console.log('🚀 Iniciando migração de entregas existentes...');
+    
+    // Buscar todas as transações que são entregas
+    const transactionsRef = collection(db, 'transactions');
+    const q = query(transactionsRef, where('category', '==', 'Entrega'));
+    const querySnapshot = await getDocs(q);
+    
+    console.log(`📦 Encontradas ${querySnapshot.size} entregas para verificar`);
+    
+    let migrated = 0;
+    let errors = 0;
+    
+    for (const doc of querySnapshot.docs) {
+      try {
+        const transaction = doc.data();
+        const transactionId = doc.id;
+        
+        // Verificar se já existe dados de rastreamento
+        const trackingData = await getTrackingDataById(transactionId);
+        
+        if (trackingData) {
+          console.log(`⏭️  Entrega ${transactionId} já possui dados de rastreamento, pulando...`);
+          continue;
+        }
+        
+        // Criar dados de rastreamento para esta entrega
+        await createTrackingData({ ...transaction, id: transactionId });
+        
+        console.log(`✅ Entrega ${transactionId} migrada com sucesso`);
+        migrated++;
+        
+      } catch (error) {
+        console.error(`❌ Erro ao migrar entrega ${doc.id}:`, error);
+        errors++;
+      }
+    }
+    
+    console.log(`\n🎉 Migração concluída!`);
+    console.log(`✅ Entregas migradas: ${migrated}`);
+    console.log(`❌ Erros: ${errors}`);
+    
+    return { migrated, errors };
+  } catch (error) {
+    console.error('❌ Erro durante a migração:', error);
+    throw error;
+  }
 }

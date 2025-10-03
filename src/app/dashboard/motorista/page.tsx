@@ -183,6 +183,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
     }
   }
 
+
   const getCurrentMonthInterval = () => {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);

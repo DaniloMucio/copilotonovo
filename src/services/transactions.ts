@@ -101,11 +101,21 @@ export const addTransaction = async (transactionData: TransactionInput) => {
         // Criar dados de rastreamento se for uma entrega
         if (transactionData.category === 'Entrega') {
             try {
+                console.log('🚀 Iniciando criação de dados de rastreamento para entrega:', docRef.id);
                 const transactionWithId = { ...transactionData, id: docRef.id };
-                await createTrackingData(transactionWithId);
-                console.log('✅ Dados de rastreamento criados para entrega:', docRef.id);
+                const trackingData = await createTrackingData(transactionWithId);
+                console.log('✅ Dados de rastreamento criados com sucesso:', {
+                    id: trackingData.id,
+                    trackingCode: trackingData.trackingCode,
+                    status: trackingData.status
+                });
             } catch (error) {
-                console.error('Erro ao criar dados de rastreamento:', error);
+                console.error('❌ Erro ao criar dados de rastreamento:', error);
+                console.error('❌ Detalhes do erro:', {
+                    message: error.message,
+                    stack: error.stack,
+                    transactionData: transactionData
+                });
                 // Não falhar a transação por causa do rastreamento
             }
         }
