@@ -121,6 +121,11 @@ function EntregasClienteContent() {
   const [deliveryHistory, setDeliveryHistory] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  
+  // Debug: Log do estado do modal
+  useEffect(() => {
+    console.log('🔄 EntregasCliente: isFormOpen mudou para:', isFormOpen);
+  }, [isFormOpen]);
   const [drivers, setDrivers] = useState<(UserData & { uid: string })[]>([]);
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [trackingModalOpen, setTrackingModalOpen] = useState(false);
@@ -196,6 +201,7 @@ function EntregasClienteContent() {
   }, [toast]);
 
   const handleOpenForm = () => {
+    console.log('🔄 EntregasCliente: handleOpenForm chamado');
     setIsFormOpen(true);
   };
 
@@ -300,18 +306,20 @@ function EntregasClienteContent() {
             </p>
           </div>
         </div>
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: "spring", stiffness: 400, damping: 10 }}
-        >
+        <div className="relative z-10">
           <Button 
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
-            onClick={handleOpenForm}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium w-full sm:w-auto"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('🔄 EntregasCliente: Botão Nova Entrega clicado');
+              handleOpenForm();
+            }}
           >
             <Plus className="h-4 w-4 mr-2" />
             Nova Entrega
           </Button>
-        </motion.div>
+        </div>
       </motion.div>
 
       <motion.div
@@ -678,19 +686,32 @@ function EntregasClienteContent() {
 
       {/* Modal Nova Entrega */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DeliveryForm 
-              onFormSubmit={handleFormSubmit}
-              onCancel={handleCloseForm}
-              drivers={drivers}
-              recipients={recipients}
-              onSuccess={() => {
-                // Auto-refresh após criação
-                console.log('🔄 EntregasCliente: onSuccess chamado, forçando refresh...');
-                forceRefresh();
-              }}
-            />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
+          <div className="w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto bg-white rounded-lg sm:rounded-xl shadow-2xl mx-2 sm:mx-0">
+            <div className="p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Nova Entrega</h2>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleCloseForm}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </Button>
+              </div>
+              <DeliveryForm 
+                onFormSubmit={handleFormSubmit}
+                onCancel={handleCloseForm}
+                drivers={drivers}
+                recipients={recipients}
+                onSuccess={() => {
+                  // Auto-refresh após criação
+                  console.log('🔄 EntregasCliente: onSuccess chamado, forçando refresh...');
+                  forceRefresh();
+                }}
+              />
+            </div>
           </div>
         </div>
       )}
