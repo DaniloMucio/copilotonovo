@@ -63,6 +63,12 @@ export default function HomePage() {
 
   const features = [
     {
+      icon: <Truck className="h-8 w-8" />,
+      title: "Rastreamento de Entregas",
+      description: "Sistema completo de rastreamento com código único, página pública e notificações WhatsApp",
+      color: "from-green-500 to-green-600"
+    },
+    {
       icon: <Car className="h-8 w-8" />,
       title: "Gestão de Veículos",
       description: "Controle completo de informações, manutenções e histórico do seu veículo",
@@ -72,7 +78,7 @@ export default function HomePage() {
       icon: <Fuel className="h-8 w-8" />,
       title: "Controle de Combustível",
       description: "Acompanhe abastecimentos, consumo médio e custos de combustível",
-      color: "from-green-500 to-green-600"
+      color: "from-yellow-500 to-yellow-600"
     },
     {
       icon: <Wrench className="h-8 w-8" />,
@@ -91,12 +97,6 @@ export default function HomePage() {
       title: "Relatórios Financeiros",
       description: "Análises detalhadas de receitas, despesas e lucro",
       color: "from-emerald-500 to-emerald-600"
-    },
-    {
-      icon: <Shield className="h-8 w-8" />,
-      title: "Segurança Total",
-      description: "Autenticação Firebase e dados protegidos com criptografia",
-      color: "from-red-500 to-red-600"
     }
   ];
 
@@ -108,6 +108,8 @@ export default function HomePage() {
   ];
 
   const benefits = [
+    "Sistema completo de rastreamento de entregas",
+    "Notificações automáticas via WhatsApp",
     "Controle financeiro detalhado em tempo real",
     "Gestão completa de jornadas de trabalho",
     "Administração inteligente de entregas",
@@ -284,6 +286,17 @@ export default function HomePage() {
               >
                 <Button size="lg" variant="outline" className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
                   Já tenho conta
+                </Button>
+              </motion.div>
+            </Link>
+            <Link href="/rastreio">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button size="lg" variant="outline" className="border-2 border-green-300 text-green-700 hover:bg-green-50 rounded-full px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
+                  <Truck className="mr-2 h-5 w-5" />
+                  Rastrear Entrega
                 </Button>
               </motion.div>
             </Link>

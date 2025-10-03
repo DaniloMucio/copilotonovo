@@ -19,7 +19,8 @@ import {
   Zap,
   Shield,
   Globe,
-  Heart
+  Heart,
+  Truck
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -31,6 +32,25 @@ export default function AtualizacoesPage() {
   }, []);
 
   const updates = [
+    {
+      version: "v1.4.0",
+      date: "Janeiro 2025",
+      title: "Sistema de Rastreamento de Entregas",
+      description: "Nova funcionalidade completa de rastreamento de entregas com código único, página pública de rastreamento e integração com WhatsApp para notificações automáticas.",
+      features: [
+        "Geração automática de código de rastreamento único",
+        "Página pública de rastreamento (/rastreio) sem necessidade de login",
+        "Modal de rastreamento com 3 opções: Abrir Rastreamento, Compartilhar WhatsApp, Sair",
+        "Integração com WhatsApp para envio automático de notificações",
+        "Mensagens personalizadas com dados da empresa remetente",
+        "Auto-refresh inteligente após cadastro e exclusão de entregas",
+        "Sistema de estados para controle de modal e dados",
+        "Interface responsiva e otimizada para mobile"
+      ],
+      icon: <Truck className="h-6 w-6" />,
+      type: "feature",
+      highlights: ["Rastreamento", "WhatsApp", "PWA", "Mobile"]
+    },
     {
       version: "v1.3.0",
       date: "Setembro 2025",
@@ -275,16 +295,16 @@ export default function AtualizacoesPage() {
                 </Badge>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                Sistema de Administração Aprimorado v1.3.0
+                Sistema de Rastreamento de Entregas v1.4.0
               </h2>
               <p className="text-gray-600 mb-4">
-                Novas funcionalidades administrativas com relatórios em PDF, visualização de motoristas online e interface otimizada.
+                Nova funcionalidade completa de rastreamento com código único, página pública e integração com WhatsApp para notificações automáticas.
               </p>
               <div className="flex flex-wrap justify-center gap-2">
-                <Badge variant="outline" className="text-xs">PDF Export</Badge>
-                <Badge variant="outline" className="text-xs">Admin Dashboard</Badge>
-                <Badge variant="outline" className="text-xs">UX Melhorada</Badge>
-                <Badge variant="outline" className="text-xs">Motoristas Online</Badge>
+                <Badge variant="outline" className="text-xs">Rastreamento</Badge>
+                <Badge variant="outline" className="text-xs">WhatsApp</Badge>
+                <Badge variant="outline" className="text-xs">PWA</Badge>
+                <Badge variant="outline" className="text-xs">Mobile</Badge>
               </div>
             </motion.div>
           </motion.div>

@@ -18,6 +18,7 @@ import { startOfMonth, endOfMonth } from "date-fns";
 import { db } from "@/lib/firebase";
 import { firestoreCache, CacheStrategies } from "@/lib/firestore-cache";
 import { notificationService } from "./notifications";
+import { createTrackingData, syncTrackingWithTransaction } from "./tracking";
 
 // Estrutura de dados para transação no Firestore
 export interface Transaction {
@@ -40,6 +41,7 @@ export interface Transaction {
     paymentStatus?: 'Pendente' | 'Pago'; 
     senderCompany?: string;
     recipientCompany?: string;
+    recipientPhone?: string;
     senderAddress?: Address;
     recipientAddress?: Address;
     driverId?: string;
@@ -93,6 +95,18 @@ export const addTransaction = async (transactionData: TransactionInput) => {
                 );
             } catch (error) {
                 console.error('Erro ao enviar notificação de entrega criada:', error);
+            }
+        }
+
+        // Criar dados de rastreamento se for uma entrega
+        if (transactionData.category === 'Entrega') {
+            try {
+                const transactionWithId = { ...transactionData, id: docRef.id };
+                await createTrackingData(transactionWithId);
+                console.log('✅ Dados de rastreamento criados para entrega:', docRef.id);
+            } catch (error) {
+                console.error('Erro ao criar dados de rastreamento:', error);
+                // Não falhar a transação por causa do rastreamento
             }
         }
         
@@ -159,6 +173,21 @@ export const updateTransaction = async (transactionId: string, transactionData: 
                 }
             } catch (error) {
                 console.error('Erro ao enviar notificação de atualização de entrega:', error);
+            }
+        }
+
+        // Sincronizar dados de rastreamento se for uma entrega
+        if (transactionData.category === 'Entrega' || transactionData.deliveryStatus) {
+            try {
+                const transactionDoc = await getDoc(transactionRef);
+                if (transactionDoc.exists()) {
+                    const transaction = transactionDoc.data() as Transaction;
+                    await syncTrackingWithTransaction(transaction);
+                    console.log('✅ Dados de rastreamento sincronizados para entrega:', transactionId);
+                }
+            } catch (error) {
+                console.error('Erro ao sincronizar dados de rastreamento:', error);
+                // Não falhar a atualização por causa do rastreamento
             }
         }
         
@@ -391,6 +420,27 @@ export const getDeliveriesByClientSync = async (clientId: string): Promise<Trans
         console.error("Erro ao buscar entregas do cliente:", error);
         return [];
     }
+};
+
+/**
+ * Busca uma transação específica por ID.
+ * @param transactionId - O ID da transação.
+ * @returns Uma Promise com a transação ou null se não encontrada.
+ */
+export const getTransactionById = async (transactionId: string): Promise<Transaction | null> => {
+  try {
+    const transactionRef = doc(db, "transactions", transactionId);
+    const transactionDoc = await getDoc(transactionRef);
+    
+    if (!transactionDoc.exists()) {
+      return null;
+    }
+    
+    return { id: transactionDoc.id, ...transactionDoc.data() } as Transaction;
+  } catch (error) {
+    console.error("Erro ao buscar transação por ID:", error);
+    return null;
+  }
 };
 
 /**

@@ -37,6 +37,10 @@ const deliveryFormSchema = z.object({
     senderCompany: z.string().min(1, "Nome/Empresa do remetente é obrigatório"),
     recipientId: z.string().optional(),
     recipientCompany: z.string().min(1, "Nome/Empresa do destinatário é obrigatório"),
+    recipientPhone: z.string().optional().refine((val) => {
+        if (!val || val.trim() === '') return true; // Permite vazio
+        return val.length >= 10; // Se preenchido, deve ter pelo menos 10 dígitos
+    }, 'Telefone deve ter pelo menos 10 dígitos.'),
     senderAddress: addressSchema,
     recipientAddress: addressSchema,
     observations: z.string().optional(),
@@ -51,9 +55,10 @@ interface DeliveryFormProps {
     transactionToEdit?: Transaction | null;
     drivers?: any[];
     recipients?: Recipient[];
+    onSuccess?: () => void; // Callback para sucesso
 }
 
-export function DeliveryForm({ onFormSubmit, onCancel, transactionToEdit, drivers = [], recipients = [] }: DeliveryFormProps) {
+export function DeliveryForm({ onFormSubmit, onCancel, transactionToEdit, drivers = [], recipients = [], onSuccess }: DeliveryFormProps) {
     const { toast } = useToast();
     const { userData } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,6 +91,7 @@ export function DeliveryForm({ onFormSubmit, onCancel, transactionToEdit, driver
             senderCompany: userData?.userType === 'cliente' ? (userData.companyName || userData.displayName || '') : '',
             recipientId: '',
             recipientCompany: '',
+            recipientPhone: '',
             senderAddress: userData?.userType === 'cliente' && userData.address ? {
                 cep: userData.address.cep || '',
                 street: userData.address.street || '',
@@ -219,6 +225,7 @@ export function DeliveryForm({ onFormSubmit, onCancel, transactionToEdit, driver
             setSelectedRecipient(null);
             form.setValue('recipientId', '');
             form.setValue('recipientCompany', '');
+            form.setValue('recipientPhone', '');
             form.setValue('recipientAddress', { cep: '', street: '', number: '', neighborhood: '', city: '', state: '' });
         } else {
             const recipient = recipients.find(r => r.id === recipientId);
@@ -234,6 +241,7 @@ export function DeliveryForm({ onFormSubmit, onCancel, transactionToEdit, driver
                 // Usar batch para definir todos os valores de uma vez
                 form.setValue('recipientId', recipient.id);
                 form.setValue('recipientCompany', recipient.name);
+                form.setValue('recipientPhone', recipient.phone || '');
                 form.setValue('recipientAddress', recipient.address);
                 
                 // Forçar re-render dos campos do destinatário
@@ -262,6 +270,22 @@ export function DeliveryForm({ onFormSubmit, onCancel, transactionToEdit, driver
             toast({ variant: 'destructive', title: 'Usuário não autenticado.' });
             return;
         }
+
+        // Verificar se o telefone está preenchido e mostrar aviso se necessário
+        if (!values.recipientPhone || values.recipientPhone.trim() === '') {
+            const shouldContinue = window.confirm(
+                '⚠️ Telefone do destinatário não informado.\n\n' +
+                'Sem o telefone, não será possível:\n' +
+                '• Enviar notificações via WhatsApp\n' +
+                '• Compartilhar o rastreamento automaticamente\n\n' +
+                'Deseja continuar mesmo assim?'
+            );
+            
+            if (!shouldContinue) {
+                return; // Usuário cancelou, não prossegue
+            }
+        }
+
         setIsSubmitting(true);
         try {
             if (userData?.userType === 'cliente' && !values.driverId && !transactionToEdit) {
@@ -289,7 +313,8 @@ export function DeliveryForm({ onFormSubmit, onCancel, transactionToEdit, driver
                     const recipient = await findOrCreateRecipient(
                         user.uid,
                         values.recipientCompany,
-                        values.recipientAddress
+                        values.recipientAddress,
+                        values.recipientPhone
                     );
                     finalRecipientData = {
                         recipientCompany: recipient.name,
@@ -338,6 +363,11 @@ export function DeliveryForm({ onFormSubmit, onCancel, transactionToEdit, driver
             onFormSubmit();
             form.reset();
             setSelectedRecipient(null);
+            
+            // Callback de sucesso para auto-refresh
+            if (onSuccess) {
+                onSuccess();
+            }
         } catch (error) {
             console.error("Erro detalhado ao salvar entrega:", error);
             toast({ variant: 'destructive', title: 'Erro ao salvar entrega.', description: 'Verifique o console para mais detalhes' });
@@ -632,6 +662,21 @@ export function DeliveryForm({ onFormSubmit, onCancel, transactionToEdit, driver
                                 <FormControl>
                                     <Input 
                                         {...field} 
+                                        disabled={selectedRecipient !== null}
+                                        className={`${selectedRecipient ? 'bg-gray-100' : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'} rounded-xl shadow-md hover:shadow-lg transition-all duration-300`}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                        <FormField control={form.control} name="recipientPhone" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-gray-900 font-medium">Telefone (WhatsApp)</FormLabel>
+                                <FormControl>
+                                    <Input 
+                                        {...field} 
+                                        type="tel"
+                                        placeholder="(11) 99999-9999"
                                         disabled={selectedRecipient !== null}
                                         className={`${selectedRecipient ? 'bg-gray-100' : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'} rounded-xl shadow-md hover:shadow-lg transition-all duration-300`}
                                     />

@@ -6,6 +6,7 @@ export interface Recipient {
     id: string;
     userId: string;
     name: string;
+    phone?: string;
     address: Address;
     createdAt: Date;
     updatedAt: Date;
@@ -14,12 +15,13 @@ export interface Recipient {
 export type RecipientInput = Omit<Recipient, 'id' | 'createdAt' | 'updatedAt'>;
 
 // Função para criar um novo destinatário
-export async function createRecipient(userId: string, name: string, address: Address): Promise<Recipient> {
+export async function createRecipient(userId: string, name: string, address: Address, phone?: string): Promise<Recipient> {
     try {
         const now = new Date();
         const recipientToCreate = {
             userId,
             name,
+            phone,
             address,
             createdAt: now,
             updatedAt: now,
@@ -103,7 +105,8 @@ export async function findRecipientByName(userId: string, name: string): Promise
 export async function findOrCreateRecipient(
     userId: string, 
     name: string, 
-    address: Address
+    address: Address,
+    phone?: string
 ): Promise<Recipient> {
     try {
         console.log(`🔍 Buscando destinatário "${name}" para o usuário ${userId}`);
@@ -119,7 +122,7 @@ export async function findOrCreateRecipient(
         console.log(`➕ Destinatário "${name}" não encontrado. Criando novo...`);
         
         // Se não encontrou, cria um novo destinatário
-        const newRecipient = await createRecipient(userId, name, address);
+        const newRecipient = await createRecipient(userId, name, address, phone);
         
         console.log(`✅ Novo destinatário "${name}" criado com sucesso! ID: ${newRecipient.id}`);
         

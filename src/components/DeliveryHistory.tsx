@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFoo
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Button } from './ui/button';
 import { Map, Pencil, Trash2, Check, Loader2, DollarSign, X, ThumbsUp } from 'lucide-react';
+import { SimpleTrackingButton } from './SimpleTrackingButton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
@@ -28,16 +29,30 @@ export function DeliveryHistory({ onAction, deliveries, loading, isHistoryTab = 
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
     const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+    const [trackingModalOpen, setTrackingModalOpen] = useState(false);
+    const [selectedDeliveryId, setSelectedDeliveryId] = useState<string | null>(null);
 
     const handleEditClick = (delivery: Transaction) => {
         setTransactionToEdit(delivery);
         setIsEditDialogOpen(true);
     };
 
+    const handleCardClick = (delivery: Transaction) => {
+        setSelectedDeliveryId(delivery.id!);
+        setTrackingModalOpen(true);
+    };
+
     const handleDelete = async (transactionId: string) => {
         try {
             await deleteTransaction(transactionId);
             toast({ title: "Sucesso!", description: "Entrega excluída." });
+            
+            // Fechar modal de rastreamento se a entrega excluída for a mesma sendo exibida
+            if (selectedDeliveryId === transactionId) {
+                setTrackingModalOpen(false);
+                setSelectedDeliveryId(null);
+            }
+            
             onAction();
         } catch (error) {
             toast({ variant: "destructive", title: "Erro", description: "Ocorreu um problema ao excluir a entrega." });
@@ -294,7 +309,13 @@ export function DeliveryHistory({ onAction, deliveries, loading, isHistoryTab = 
                 <Accordion type="single" collapsible className="w-full">
                     {deliveries.map((delivery, index) => (
                         <AccordionItem key={delivery.id} value={delivery.id}>
-                            <AccordionTrigger>
+                            <AccordionTrigger 
+                                className="hover:no-underline cursor-pointer"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleCardClick(delivery);
+                                }}
+                            >
                                 <div className="flex justify-between w-full pr-4 items-center">
                                     <div className="flex items-center gap-4">
                                          <span className="font-bold text-lg">{index + 1}</span>
@@ -316,7 +337,17 @@ export function DeliveryHistory({ onAction, deliveries, loading, isHistoryTab = 
                                             {renderStatusButton(delivery)}
                                             <Button variant="ghost" size="icon" onClick={() => handleEditClick(delivery)}><Pencil className="h-4 w-4" /></Button>
                                              <AlertDialog>
-                                                <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                        }}
+                                                    >
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
                                                 <AlertDialogContent>
                                                     <AlertDialogHeader><AlertDialogTitle>Você tem certeza?</AlertDialogTitle><AlertDialogDescription>Essa ação não pode ser desfeita.</AlertDialogDescription></AlertDialogHeader>
                                                     <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(delivery.id)}>Excluir</AlertDialogAction></AlertDialogFooter>
@@ -362,6 +393,17 @@ export function DeliveryHistory({ onAction, deliveries, loading, isHistoryTab = 
                     </div>
                 </DialogContent>
             </Dialog>
+
+            {/* Modal de Rastreamento */}
+            {trackingModalOpen && selectedDeliveryId && (
+                <SimpleTrackingButton 
+                    transactionId={selectedDeliveryId}
+                    onClose={() => {
+                        setTrackingModalOpen(false);
+                        setSelectedDeliveryId(null);
+                    }}
+                />
+            )}
         </div>
     );
 }

@@ -372,6 +372,12 @@ function EntregasContent() {
                     <DeliveryForm 
                         onFormSubmit={handleAction}
                         recipients={recipients}
+                        onSuccess={() => {
+                            // Auto-refresh após criação
+                            if (user) {
+                                fetchData(user.uid);
+                            }
+                        }}
                     />
                 </CardContent>
             </Card>
@@ -413,7 +419,7 @@ function EntregasContent() {
                             </div>
                             <CardDescription className="text-gray-600">Novas solicitações de entrega para você aceitar ou recusar.</CardDescription>
                         </CardHeader>
-                        <CardContent className="relative z-10">
+                        <CardContent className="relative z-10 space-y-6">
                            <DeliveryHistory 
                                 onAction={handleAction} 
                                 deliveries={pendingDeliveries} 
@@ -421,6 +427,8 @@ function EntregasContent() {
                                 isHistoryTab={false}
                                 onRespond={handleDeliveryRequest}
                             />
+                            
+                            {/* Componente de Rastreamento */}
                         </CardContent>
                     </Card>
                 </TabsContent>

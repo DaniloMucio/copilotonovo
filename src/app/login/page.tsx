@@ -299,6 +299,24 @@ export default function LoginPage() {
             </p>
           </motion.div>
 
+          {/* App Version */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="text-center mt-8"
+          >
+            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-full">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-gray-600 font-medium">
+                Versão v1.4.0
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Sistema de Rastreamento de Entregas
+            </p>
+          </motion.div>
+
         </div>
       </div>
     </div>

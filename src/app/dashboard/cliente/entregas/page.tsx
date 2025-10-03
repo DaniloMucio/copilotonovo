@@ -14,7 +14,6 @@ import { getCurrentMonthDeliveriesByClient, getAllDeliveriesByClient, deleteTran
 import { getUserDocument, type UserData, getOnlineDrivers } from '@/services/firestore';
 import { getRecipientsByUser, type Recipient } from '@/services/recipients';
 import { useToast } from '@/hooks/use-toast';
-import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { 
@@ -36,6 +35,7 @@ import { DeliveryForm } from '@/components/forms/DeliveryForm';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { OptimizedMotion, OptimizedSkeleton, useOptimizedAnimation } from '@/components/ui/optimized-motion';
+import { SimpleTrackingButton } from '@/components/SimpleTrackingButton';
 
 function EntregasClienteSkeleton() {
   const { animationProps } = useOptimizedAnimation();
@@ -123,11 +123,19 @@ function EntregasClienteContent() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [drivers, setDrivers] = useState<(UserData & { uid: string })[]>([]);
   const [recipients, setRecipients] = useState<Recipient[]>([]);
+  const [trackingModalOpen, setTrackingModalOpen] = useState(false);
+  const [selectedDeliveryId, setSelectedDeliveryId] = useState<string | null>(null);
   const { toast } = useToast();
   const { animationProps } = useOptimizedAnimation();
   
-  // Auto refresh hook
-  const { refreshWithDelay } = useAutoRefresh();
+  // Estado para forçar refresh
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Função simples para forçar refresh
+  const forceRefresh = useCallback(() => {
+    console.log('🔄 EntregasCliente: Forçando refresh...');
+    setRefreshKey(prev => prev + 1);
+  }, []);
 
   const fetchData = useCallback(async (uid: string) => {
     setLoading(true);
@@ -165,6 +173,14 @@ function EntregasClienteContent() {
     }
   }, [toast]);
 
+  // Executar fetchData quando refreshKey mudar
+  useEffect(() => {
+    if (user && refreshKey > 0) {
+      console.log('🔄 EntregasCliente: refreshKey mudou, executando fetchData...');
+      fetchData(user.uid);
+    }
+  }, [refreshKey, user, fetchData]);
+
   const fetchDrivers = useCallback(async () => {
     try {
       const onlineDrivers = await getOnlineDrivers();
@@ -187,29 +203,35 @@ function EntregasClienteContent() {
     setIsFormOpen(false);
   };
 
+  const handleCardClick = (delivery: Transaction) => {
+    setSelectedDeliveryId(delivery.id!);
+    setTrackingModalOpen(true);
+  };
+
   const handleFormSubmit = async () => {
     setIsFormOpen(false);
-    if (user) {
-      // Usar refreshWithDelay para garantir que os dados sejam atualizados
-      refreshWithDelay(() => fetchData(user.uid));
-    }
+    // Forçar refresh após fechar o modal
+    setTimeout(() => {
+      forceRefresh();
+    }, 100);
   };
 
   const handleDeleteDelivery = async (deliveryId: string) => {
-    if (!confirm('Tem certeza que deseja excluir esta entrega? Esta ação não pode ser desfeita.')) {
-      return;
-    }
-
     try {
       await deleteTransaction(deliveryId);
       toast({
         title: 'Sucesso!',
         description: 'Entrega excluída com sucesso.'
       });
-      // Recarregar os dados após exclusão
-      if (user) {
-        refreshWithDelay(() => fetchData(user.uid));
+      
+      // Fechar modal de rastreamento se a entrega excluída for a mesma sendo exibida
+      if (selectedDeliveryId === deliveryId) {
+        setTrackingModalOpen(false);
+        setSelectedDeliveryId(null);
       }
+      
+      // Forçar refresh após exclusão
+      forceRefresh();
     } catch (error) {
       console.error("Erro ao excluir entrega:", error);
       toast({
@@ -450,11 +472,15 @@ function EntregasClienteContent() {
                     Entregas aguardando confirmação ou em andamento
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="relative z-10">
+                <CardContent className="relative z-10 space-y-6">
                   {pendingDeliveries.length > 0 ? (
                     <div className="space-y-4">
                       {pendingDeliveries.map((delivery) => (
-                        <div key={delivery.id} className="flex items-center justify-between p-4 border rounded-lg bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300">
+                        <div 
+                          key={delivery.id} 
+                          className="flex items-center justify-between p-4 border rounded-lg bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer hover:bg-blue-50/50"
+                          onClick={() => handleCardClick(delivery)}
+                        >
                           <div className="space-y-1">
                             <p className="font-medium text-gray-900">{delivery.description}</p>
                             <p className="text-sm text-gray-600">
@@ -470,7 +496,14 @@ function EntregasClienteContent() {
                             </Badge>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                  }}
+                                >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </AlertDialogTrigger>
@@ -495,6 +528,7 @@ function EntregasClienteContent() {
                           </div>
                         </div>
                       ))}
+                      
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
@@ -651,9 +685,25 @@ function EntregasClienteContent() {
               onCancel={handleCloseForm}
               drivers={drivers}
               recipients={recipients}
+              onSuccess={() => {
+                // Auto-refresh após criação
+                console.log('🔄 EntregasCliente: onSuccess chamado, forçando refresh...');
+                forceRefresh();
+              }}
             />
           </div>
         </div>
+      )}
+
+      {/* Modal de Rastreamento */}
+      {trackingModalOpen && selectedDeliveryId && (
+        <SimpleTrackingButton 
+          transactionId={selectedDeliveryId}
+          onClose={() => {
+            setTrackingModalOpen(false);
+            setSelectedDeliveryId(null);
+          }}
+        />
       )}
     </div>
   );
