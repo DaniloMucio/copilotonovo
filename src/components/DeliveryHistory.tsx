@@ -68,11 +68,16 @@ export function DeliveryHistory({ onAction, deliveries, loading, isHistoryTab = 
     const handlePayment = async (delivery: Transaction) => {
         setUpdatingStatusId(delivery.id);
         try {
+            // Atualizar transação como receita com data atual
             await updateTransaction(delivery.id, {
                 type: 'receita',
                 paymentStatus: 'Pago',
+                date: new Date(), // Data atual do pagamento
             });
-            toast({ title: "Sucesso!", description: "Pagamento registrado." });
+            toast({ 
+                title: "Sucesso!", 
+                description: "Pagamento registrado como receita com data atual." 
+            });
             onAction();
         } catch (error) {
             toast({ variant: "destructive", title: "Erro", description: "Não foi possível registrar o pagamento." });
