@@ -7,7 +7,8 @@ import {
   reauthenticateWithCredential,
   updatePassword,
   deleteUser,
-  signOut
+  signOut,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { createUserDocument, getUserDocument } from './firestore';
 import { AppErrorHandler } from '@/lib/errors';
@@ -192,5 +193,37 @@ export const deleteUserAccount = async (password: string) => {
         }
         
         throw new Error("Não foi possível excluir sua conta. Tente novamente mais tarde.");
+    }
+};
+
+/**
+ * Envia um email de recuperação de senha para o usuário.
+ * @param email - O email do usuário que deseja recuperar a senha.
+ */
+export const sendPasswordReset = async (email: string) => {
+    try {
+        await sendPasswordResetEmail(auth, email);
+        console.log('✅ Email de recuperação de senha enviado com sucesso');
+    } catch (error: any) {
+        console.error("Erro ao enviar email de recuperação:", error);
+        
+        // Tratar erros específicos do Firebase
+        if (error.code === 'auth/user-not-found') {
+            throw new Error('Usuário não encontrado. Verifique o email informado.');
+        }
+        
+        if (error.code === 'auth/invalid-email') {
+            throw new Error('Email inválido. Verifique o formato do email.');
+        }
+        
+        if (error.code === 'auth/too-many-requests') {
+            throw new Error('Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.');
+        }
+        
+        if (error.code === 'auth/network-request-failed') {
+            throw new Error('Erro de conexão. Verifique sua internet e tente novamente.');
+        }
+        
+        throw new Error("Não foi possível enviar o email de recuperação. Tente novamente mais tarde.");
     }
 };

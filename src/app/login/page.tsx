@@ -312,9 +312,6 @@ export default function LoginPage() {
                 Versão v1.4.0
               </span>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
-              Sistema de Rastreamento de Entregas
-            </p>
           </motion.div>
 
         </div>
