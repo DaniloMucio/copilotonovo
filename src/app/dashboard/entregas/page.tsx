@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { getTransactions, type Transaction, updateTransaction, deleteTransaction } from '@/services/transactions';
+import { getTransactions, type Transaction, updateTransaction, deleteTransaction, addTransaction } from '@/services/transactions';
 import { getRecipientsByUser, type Recipient } from '@/services/recipients';
 import { optimizeRoute } from '@/services/route-optimization';
 import { useToast } from '@/hooks/use-toast';
@@ -325,6 +325,12 @@ function EntregasContent() {
 
         setIsProcessingPayments(true);
         try {
+            // Calcular valor total das entregas selecionadas
+            const selectedDeliveries = deliveriesToReceive.filter(delivery => 
+                selectedPayments.includes(delivery.id)
+            );
+            const totalAmount = selectedDeliveries.reduce((sum, delivery) => sum + delivery.amount, 0);
+            
             // Atualizar status de pagamento para todas as entregas selecionadas
             const updatePromises = selectedPayments.map(deliveryId => 
                 updateTransaction(deliveryId, { paymentStatus: 'Pago' as any })
@@ -332,9 +338,26 @@ function EntregasContent() {
             
             await Promise.all(updatePromises);
             
+            // Criar transação de receita automática
+            const currentDate = new Date();
+            const formattedDate = currentDate.toLocaleDateString('pt-BR');
+            const deliveryCount = selectedPayments.length;
+            
+            const incomeTransaction = {
+                userId: user!.uid,
+                type: 'receita' as const,
+                description: `Receita de entregas - ${deliveryCount} entrega(s) - ${formattedDate}`,
+                amount: totalAmount,
+                category: 'Entrega',
+                date: currentDate,
+                observations: `Receita gerada automaticamente ao dar baixa em ${deliveryCount} entrega(s) no valor total de R$ ${totalAmount.toFixed(2)}`
+            };
+            
+            await addTransaction(incomeTransaction);
+            
             toast({
                 title: 'Pagamentos Processados!',
-                description: `${selectedPayments.length} pagamento(s) marcado(s) como pago(s).`
+                description: `${selectedPayments.length} pagamento(s) marcado(s) como pago(s). Receita de R$ ${totalAmount.toFixed(2)} criada automaticamente.`
             });
             
             // Limpar seleção e atualizar dados
