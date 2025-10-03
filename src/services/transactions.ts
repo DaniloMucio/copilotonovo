@@ -112,8 +112,8 @@ export const addTransaction = async (transactionData: TransactionInput) => {
             } catch (error) {
                 console.error('❌ Erro ao criar dados de rastreamento:', error);
                 console.error('❌ Detalhes do erro:', {
-                    message: error.message,
-                    stack: error.stack,
+                    message: error instanceof Error ? error.message : String(error),
+                    stack: error instanceof Error ? error.stack : undefined,
                     transactionData: transactionData
                 });
                 // Não falhar a transação por causa do rastreamento

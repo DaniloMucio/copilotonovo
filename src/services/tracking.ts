@@ -140,7 +140,9 @@ export async function createTrackingData(transaction: Transaction | any): Promis
     return trackingData;
   } catch (error) {
     console.error('❌ Erro ao criar dados de rastreamento:', error);
-    console.error('❌ Stack trace:', error.stack);
+    if (error instanceof Error) {
+      console.error('❌ Stack trace:', error.stack);
+    }
     throw error;
   }
 }
