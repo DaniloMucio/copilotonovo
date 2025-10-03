@@ -137,15 +137,24 @@ export const addTransaction = async (transactionData: TransactionInput) => {
  */
 export const updateTransaction = async (transactionId: string, transactionData: TransactionUpdateInput) => {
     try {
+        console.log('🔄 Atualizando transação:', {
+            transactionId,
+            transactionData
+        });
+
         const transactionRef = doc(db, "transactions", transactionId);
         
         const dataToUpdate: Record<string, any> = { ...transactionData };
         if (transactionData.date) {
             dataToUpdate.date = Timestamp.fromDate(transactionData.date);
+            console.log('📅 Data convertida para Timestamp:', dataToUpdate.date);
         }
 
         const cleanedData = cleanData(dataToUpdate);
+        console.log('🧹 Dados limpos para atualização:', cleanedData);
+        
         await updateDoc(transactionRef, cleanedData);
+        console.log('✅ Transação atualizada no Firestore com sucesso');
         
         // Enviar notificações baseadas no tipo de atualização
         if (transactionData.deliveryStatus) {
