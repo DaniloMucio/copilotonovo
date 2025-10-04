@@ -63,9 +63,10 @@ const expenseCategories = [
 interface ExpenseFormProps {
     onFormSubmit: () => void;
     transactionToEdit?: Transaction | null;
+    onSuccess?: () => void; // Callback padronizado para sucesso
 }
 
-export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProps) {
+export function ExpenseForm({ onFormSubmit, transactionToEdit, onSuccess }: ExpenseFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [vehicles, setVehicles] = useState<VehicleInfo[]>([]);
@@ -180,6 +181,11 @@ export function ExpenseForm({ onFormSubmit, transactionToEdit }: ExpenseFormProp
         }
       form.reset();
       onFormSubmit();
+      
+      // Callback de sucesso para auto-refresh
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       toast({
         variant: 'destructive',

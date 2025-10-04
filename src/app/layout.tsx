@@ -7,10 +7,7 @@ import { InactiveUserAlert } from '@/components/InactiveUserAlert';
 import { metadata } from './metadata';
 
 // Funções de migração disponíveis apenas em desenvolvimento
-// Para usar: abra o console do navegador e execute fixUsersIsActiveField() ou auditUsersIsActiveField()
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  import('@/services/migration-fix-isactive');
-}
+// Migration scripts removidos durante limpeza
 
 export { metadata };
 

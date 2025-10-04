@@ -88,6 +88,12 @@ export function Sidebar({ className }: SidebarProps) {
       description: 'Agendamentos e compromissos'
     },
     {
+      name: 'Destinatários',
+      href: '/dashboard/clientes',
+      icon: Users,
+      description: 'Gestão de destinatários'
+    },
+    {
       name: 'Rádio',
       href: '/dashboard/radio',
       icon: Radio,
@@ -121,6 +127,12 @@ export function Sidebar({ className }: SidebarProps) {
       href: '/dashboard/cliente/agenda',
       icon: Calendar,
       description: 'Agendamentos e compromissos'
+    },
+    {
+      name: 'Destinatários',
+      href: '/dashboard/clientes',
+      icon: Users,
+      description: 'Gestão de destinatários'
     },
     {
       name: 'Configurações',

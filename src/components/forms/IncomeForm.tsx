@@ -56,9 +56,10 @@ const incomeCategories = [
 interface IncomeFormProps {
     onFormSubmit: () => void;
     transactionToEdit?: Transaction | null;
+    onSuccess?: () => void; // Callback padronizado para sucesso
 }
 
-export function IncomeForm({ onFormSubmit, transactionToEdit }: IncomeFormProps) {
+export function IncomeForm({ onFormSubmit, transactionToEdit, onSuccess }: IncomeFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -132,6 +133,11 @@ export function IncomeForm({ onFormSubmit, transactionToEdit }: IncomeFormProps)
         }
       form.reset();
       onFormSubmit();
+      
+      // Callback de sucesso para auto-refresh
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       toast({
         variant: 'destructive',

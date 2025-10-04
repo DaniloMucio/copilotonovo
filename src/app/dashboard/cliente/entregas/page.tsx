@@ -14,6 +14,7 @@ import { getCurrentMonthDeliveriesByClient, getAllDeliveriesByClient, deleteTran
 import { getUserDocument, type UserData, getOnlineDrivers } from '@/services/firestore';
 import { getRecipientsByUser, type Recipient } from '@/services/recipients';
 import { useToast } from '@/hooks/use-toast';
+import { useDashboardRefresh } from '@/hooks/use-unified-refresh';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { 
@@ -133,14 +134,8 @@ function EntregasClienteContent() {
   const { toast } = useToast();
   const { animationProps } = useOptimizedAnimation();
   
-  // Estado para forçar refresh
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  // Função simples para forçar refresh
-  const forceRefresh = useCallback(() => {
-    console.log('🔄 EntregasCliente: Forçando refresh...');
-    setRefreshKey(prev => prev + 1);
-  }, []);
+  // Auto refresh hook
+  const { refreshDeliveries } = useDashboardRefresh();
 
   const fetchData = useCallback(async (uid: string) => {
     setLoading(true);
@@ -178,13 +173,6 @@ function EntregasClienteContent() {
     }
   }, [toast]);
 
-  // Executar fetchData quando refreshKey mudar
-  useEffect(() => {
-    if (user && refreshKey > 0) {
-      console.log('🔄 EntregasCliente: refreshKey mudou, executando fetchData...');
-      fetchData(user.uid);
-    }
-  }, [refreshKey, user, fetchData]);
 
   const fetchDrivers = useCallback(async () => {
     try {
@@ -216,10 +204,10 @@ function EntregasClienteContent() {
 
   const handleFormSubmit = async () => {
     setIsFormOpen(false);
-    // Forçar refresh após fechar o modal
-    setTimeout(() => {
-      forceRefresh();
-    }, 100);
+    // Usar refresh padronizado
+    if (user) {
+      refreshDeliveries(() => fetchData(user.uid));
+    }
   };
 
   const handleDeleteDelivery = async (deliveryId: string) => {
@@ -236,8 +224,10 @@ function EntregasClienteContent() {
         setSelectedDeliveryId(null);
       }
       
-      // Forçar refresh após exclusão
-      forceRefresh();
+      // Usar refresh padronizado
+      if (user) {
+        refreshDeliveries(() => fetchData(user.uid));
+      }
     } catch (error) {
       console.error("Erro ao excluir entrega:", error);
       toast({
@@ -707,8 +697,10 @@ function EntregasClienteContent() {
                 recipients={recipients}
                 onSuccess={() => {
                   // Auto-refresh após criação
-                  console.log('🔄 EntregasCliente: onSuccess chamado, forçando refresh...');
-                  forceRefresh();
+                  console.log('🔄 EntregasCliente: onSuccess chamado, executando refresh...');
+                  if (user) {
+                    refreshDeliveries(() => fetchData(user.uid));
+                  }
                 }}
               />
             </div>

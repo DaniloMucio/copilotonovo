@@ -14,7 +14,7 @@ import { getTransactions, type Transaction, updateTransaction, deleteTransaction
 import { getRecipientsByUser, type Recipient } from '@/services/recipients';
 import { optimizeRoute } from '@/services/route-optimization';
 import { useToast } from '@/hooks/use-toast';
-import { useAutoRefresh } from '@/hooks/use-auto-refresh';
+import { useDashboardRefresh } from '@/hooks/use-unified-refresh';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -112,7 +112,7 @@ function EntregasContent() {
     const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
     
     // Auto refresh hook
-    const { refreshWithDelay } = useAutoRefresh();
+    const { refreshDeliveries } = useDashboardRefresh();
     
     // Estado para o seletor de data - padrão: mês atual
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -197,7 +197,7 @@ function EntregasContent() {
             const status = accept ? 'Confirmada' : 'Recusada';
             await updateTransaction(deliveryId, { deliveryStatus: status as any });
             toast({ title: 'Sucesso!', description: `Entrega ${status.toLowerCase()}.` });
-            refreshWithDelay(() => fetchData(user!.uid));
+            refreshDeliveries(() => fetchData(user!.uid));
         } catch (error) {
             toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível processar a solicitação.'})
         }
@@ -214,7 +214,7 @@ function EntregasContent() {
                 title: 'Sucesso!', 
                 description: 'Entrega excluída com sucesso.' 
             });
-            refreshWithDelay(() => fetchData(user!.uid));
+            refreshDeliveries(() => fetchData(user!.uid));
         } catch (error) {
             console.error("Erro ao excluir entrega:", error);
             toast({ 
@@ -238,9 +238,9 @@ function EntregasContent() {
 
     const handleAction = useCallback(async () => {
         if (user) {
-           refreshWithDelay(() => fetchData(user.uid));
+           refreshDeliveries(() => fetchData(user.uid));
         }
-    }, [user, fetchData, refreshWithDelay]);
+    }, [user, fetchData, refreshDeliveries]);
 
     // Funções para gerenciamento de rotas
     const handleSelectAll = (checked: boolean) => {
@@ -363,7 +363,7 @@ function EntregasContent() {
             // Limpar seleção e atualizar dados
             setSelectedPayments([]);
             if (user) {
-                refreshWithDelay(() => fetchData(user.uid));
+                refreshDeliveries(() => fetchData(user.uid));
             }
             
         } catch (error) {

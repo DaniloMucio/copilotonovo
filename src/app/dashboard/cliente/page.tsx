@@ -31,7 +31,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
 import { usePWAInstall } from '@/hooks/use-pwa-install';
-import { useAutoRefresh } from '@/hooks/use-auto-refresh';
+import { useDashboardRefresh } from '@/hooks/use-unified-refresh';
 import { Timestamp } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import { OptimizedMotion, OptimizedSkeleton, useOptimizedAnimation } from '@/components/ui/optimized-motion';
@@ -131,7 +131,7 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
   const { canInstall: pwaCanInstall, installApp: pwaInstall } = usePWAInstall();
   
   // Auto refresh hook
-  const { refreshData, refreshWithDelay } = useAutoRefresh();
+  const { refreshDeliveries } = useDashboardRefresh();
 
   const fetchUserData = useCallback(async (uid: string) => {
     const data = await getUserDocument(uid);
@@ -162,7 +162,7 @@ function ClienteDashboard({ canInstall = false, install = () => {} }: ClienteDas
         description: "Entrega excluída com sucesso.",
       });
       if (user) {
-        await fetchTransactions(user.uid);
+        refreshDeliveries(() => fetchTransactions(user.uid));
       }
     } catch (error) {
       console.error("Erro ao excluir entrega:", error);

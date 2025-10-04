@@ -38,6 +38,7 @@ import { IncomeForm } from '@/components/forms/IncomeForm';
 import { Transaction, deleteTransaction } from '@/services/transactions';
 import type { User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
+import { useDashboardRefresh } from '@/hooks/use-unified-refresh';
 
 
 interface IncomeManagerProps {
@@ -51,10 +52,14 @@ export function IncomeManager({ user, transactions, onAction }: IncomeManagerPro
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
   const { toast } = useToast();
+  const { refreshTransactions } = useDashboardRefresh();
 
   const handleFormSubmit = () => {
-    onAction();
-    setIsAddFormOpen(false);
+    // Usar refresh padronizado
+    refreshTransactions(async () => {
+      onAction();
+    });
+    setIsAddFormOpen(false); 
     setIsEditFormOpen(false);
     setTransactionToEdit(null);
   };
@@ -76,7 +81,10 @@ export function IncomeManager({ user, transactions, onAction }: IncomeManagerPro
             title: "Sucesso!",
             description: "Receita excluída."
         });
-        onAction();
+        // Usar refresh padronizado
+        refreshTransactions(async () => {
+            onAction();
+        });
     } catch (error) {
         toast({
             variant: "destructive",
@@ -117,7 +125,15 @@ export function IncomeManager({ user, transactions, onAction }: IncomeManagerPro
                     
                     {/* Conteúdo do formulário */}
                     <div className="p-6">
-                        <IncomeForm onFormSubmit={handleFormSubmit} />
+                        <IncomeForm 
+                          onFormSubmit={handleFormSubmit} 
+                          onSuccess={() => {
+                            // Auto-refresh após criação
+                            refreshTransactions(async () => {
+            onAction();
+        });
+                          }}
+                        />
                     </div>
                 </DialogContent>
             </Dialog>
@@ -184,7 +200,16 @@ export function IncomeManager({ user, transactions, onAction }: IncomeManagerPro
                                 Altere os dados da sua receita.
                                 </DialogDescription>
                                 </DialogHeader>
-                                <IncomeForm onFormSubmit={handleFormSubmit} transactionToEdit={transactionToEdit} />
+                                <IncomeForm 
+                                  onFormSubmit={handleFormSubmit} 
+                                  transactionToEdit={transactionToEdit}
+                                  onSuccess={() => {
+                                    // Auto-refresh após edição
+                                    refreshTransactions(async () => {
+            onAction();
+        });
+                                  }}
+                                />
                             </DialogContent>
                         </Dialog>
                         <AlertDialog>

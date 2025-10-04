@@ -46,7 +46,7 @@ import { getUserDocument, type UserData } from '@/services/firestore';
 import { ReportsManager } from '@/components/ReportsManager';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
 import { usePWAInstall } from '@/hooks/use-pwa-install';
-import { useAutoRefresh } from '@/hooks/use-auto-refresh';
+import { useDashboardRefresh } from '@/hooks/use-unified-refresh';
 
 
 interface MotoristaDashboardProps {
@@ -71,7 +71,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
   const { canInstall: pwaCanInstall, installApp: pwaInstall } = usePWAInstall();
   
   // Auto refresh hook
-  const { refreshData, refreshWithDelay } = useAutoRefresh();
+  const { refreshTransactions } = useDashboardRefresh();
 
   const defaultTab = searchParams.get('tab') || 'overview';
   const [activeTab, setActiveTab] = useState(defaultTab);
@@ -159,8 +159,8 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
   const onTransactionAddedOrUpdated = () => {
     console.log('🔄 MotoristaDashboard: onTransactionAddedOrUpdated chamado');
     if (user) {
-      console.log('🔄 MotoristaDashboard: Chamando refreshWithDelay...');
-      refreshWithDelay(() => refreshAllData(user.uid));
+      console.log('🔄 MotoristaDashboard: Chamando refreshTransactions...');
+      refreshTransactions(() => refreshAllData(user.uid));
     }
     setIsEditDialogOpen(false);
     setTransactionToEdit(null);
@@ -177,7 +177,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
     try {
       await deleteTransaction(transactionId);
       toast({ title: "Sucesso!", description: "Transação excluída." });
-      refreshWithDelay(() => refreshAllData(user.uid));
+      refreshTransactions(() => refreshAllData(user.uid));
     } catch (error) {
       toast({ variant: "destructive", title: "Erro", description: "Ocorreu um problema ao excluir a transação." });
     }
@@ -540,7 +540,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
                 <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
               </div>
             </div>
-            <IncomeManager user={user} transactions={incomeTransactions} onAction={() => refreshWithDelay(() => refreshAllData(user.uid))} />
+            <IncomeManager user={user} transactions={incomeTransactions} onAction={() => refreshTransactions(() => refreshAllData(user.uid))} />
           </div>
         )}
         
@@ -552,7 +552,7 @@ function MotoristaDashboard({ canInstall = false, install = () => {} }: Motorist
                 <span>Dados do mês atual - {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
               </div>
             </div>
-            <ExpenseManager user={user} transactions={expenseTransactions} onAction={() => refreshWithDelay(() => refreshAllData(user.uid))} />
+            <ExpenseManager user={user} transactions={expenseTransactions} onAction={() => refreshTransactions(() => refreshAllData(user.uid))} />
           </div>
         )}
         

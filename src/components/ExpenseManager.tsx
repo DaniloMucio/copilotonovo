@@ -38,6 +38,7 @@ import { ExpenseForm } from '@/components/forms/ExpenseForm';
 import { Transaction, deleteTransaction } from '@/services/transactions';
 import type { User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
+import { useDashboardRefresh } from '@/hooks/use-unified-refresh';
 
 interface ExpenseManagerProps {
   user: User;
@@ -50,9 +51,13 @@ export function ExpenseManager({ user, transactions, onAction }: ExpenseManagerP
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
   const { toast } = useToast();
+  const { refreshTransactions } = useDashboardRefresh();
 
   const handleFormSubmit = () => {
-    onAction(); 
+    // Usar refresh padronizado
+    refreshTransactions(async () => {
+      onAction();
+    });
     setIsAddFormOpen(false); 
     setIsEditFormOpen(false);
     setTransactionToEdit(null);
@@ -75,7 +80,10 @@ export function ExpenseManager({ user, transactions, onAction }: ExpenseManagerP
             title: "Sucesso!",
             description: "Despesa excluída."
         });
-        onAction();
+        // Usar refresh padronizado
+        refreshTransactions(async () => {
+            onAction();
+        });
     } catch (error) {
         toast({
             variant: "destructive",
@@ -116,7 +124,15 @@ export function ExpenseManager({ user, transactions, onAction }: ExpenseManagerP
             
             {/* Conteúdo do formulário */}
             <div className="p-6">
-              <ExpenseForm onFormSubmit={handleFormSubmit} />
+              <ExpenseForm 
+                onFormSubmit={handleFormSubmit} 
+                onSuccess={() => {
+                  // Auto-refresh após criação
+                  refreshTransactions(async () => {
+                    onAction();
+                  });
+                }}
+              />
             </div>
           </DialogContent>
         </Dialog>
@@ -186,7 +202,16 @@ export function ExpenseManager({ user, transactions, onAction }: ExpenseManagerP
                                     <DialogTitle>Editar Despesa</DialogTitle>
                                     <DialogDescription>Altere os dados da sua despesa.</DialogDescription>
                                 </DialogHeader>
-                                <ExpenseForm onFormSubmit={handleFormSubmit} transactionToEdit={transactionToEdit} />
+                                <ExpenseForm 
+                                  onFormSubmit={handleFormSubmit} 
+                                  transactionToEdit={transactionToEdit}
+                                  onSuccess={() => {
+                                    // Auto-refresh após edição
+                                    refreshTransactions(async () => {
+                                      onAction();
+                                    });
+                                  }}
+                                />
                             </DialogContent>
                         </Dialog>
                         <AlertDialog>

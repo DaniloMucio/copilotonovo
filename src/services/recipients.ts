@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, query, where, orderBy, doc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, orderBy, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { Address } from './transactions';
 
 export interface Recipient {
@@ -153,5 +153,50 @@ export async function getRecipientById(recipientId: string): Promise<Recipient |
     } catch (error) {
         console.error('Erro ao buscar destinatário por ID:', error);
         throw new Error('Falha ao buscar destinatário');
+    }
+}
+
+// Função para atualizar um destinatário
+export async function updateRecipient(
+    recipientId: string, 
+    name: string, 
+    address: Address, 
+    phone?: string
+): Promise<Recipient> {
+    try {
+        const now = new Date();
+        const recipientRef = doc(db, 'recipients', recipientId);
+        
+        await updateDoc(recipientRef, {
+            name,
+            phone,
+            address,
+            updatedAt: now,
+        });
+        
+        // Busca o destinatário atualizado
+        const updatedRecipient = await getRecipientById(recipientId);
+        if (!updatedRecipient) {
+            throw new Error('Destinatário não encontrado após atualização');
+        }
+        
+        console.log(`✅ Destinatário "${name}" atualizado com sucesso!`);
+        return updatedRecipient;
+    } catch (error) {
+        console.error('Erro ao atualizar destinatário:', error);
+        throw new Error('Falha ao atualizar destinatário');
+    }
+}
+
+// Função para excluir um destinatário
+export async function deleteRecipient(recipientId: string): Promise<void> {
+    try {
+        const recipientRef = doc(db, 'recipients', recipientId);
+        await deleteDoc(recipientRef);
+        
+        console.log(`✅ Destinatário ${recipientId} excluído com sucesso!`);
+    } catch (error) {
+        console.error('Erro ao excluir destinatário:', error);
+        throw new Error('Falha ao excluir destinatário');
     }
 }
